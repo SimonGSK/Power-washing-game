@@ -189,6 +189,17 @@
   .section-title{font-size:19px;margin:0 0 2px;}
   .subtle{color:#6b5a3f;font-size:12.5px;margin:0 0 6px;}
   .divider{border:none;border-top:3px dashed #cbb98a;margin:8px 0;}
+
+  /* ---------- JUICE: stars, modal pop, shake, weather ---------- */
+  .stars{font-size:32px;letter-spacing:6px;margin:6px 0 2px;}
+  .stars span{display:inline-block;color:#cbb98a;}
+  .stars span.filled{color:var(--yellow-dark);animation:starPop .4s ease backwards;}
+  @keyframes starPop{0%{transform:scale(0) rotate(-25deg);opacity:0;}60%{transform:scale(1.35) rotate(10deg);opacity:1;}100%{transform:scale(1) rotate(0);}}
+  @keyframes modalPop{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+  #modal-content{animation:modalPop .18s ease;}
+  @keyframes shakeWrap{0%{transform:translate(0,0);}20%{transform:translate(-4px,2px);}40%{transform:translate(4px,-2px);}60%{transform:translate(-3px,1px);}80%{transform:translate(3px,-1px);}100%{transform:translate(0,0);}}
+  #canvas-wrap.shake{animation:shakeWrap .3s ease;}
+  #weatherTint{position:absolute;inset:0;z-index:3;pointer-events:none;transition:background .3s ease;}
 </style>
 </head>
 <body>
@@ -197,6 +208,7 @@
   <div id="topbar">
     <div class="badge"><span class="emoji">💵</span><span id="cashBadge">$0</span></div>
     <div class="badge"><span class="emoji">⭐</span><span id="repBadge">0</span></div>
+    <div class="badge hidden" id="streakBadge"><span class="emoji">🔥</span><span id="streakVal">0</span></div>
   </div>
 
   <!-- MENU -->
@@ -236,6 +248,8 @@
 
     <div class="panel" id="loanPanel"></div>
 
+    <div class="panel" id="buyoutPanel"></div>
+
     <div class="panel">
       <div class="bill-meter">
         <div class="label-row"><span>Next overhead bill</span><span id="billDueLabel">$0 in 3 jobs</span></div>
@@ -250,6 +264,7 @@
     </div>
     <div class="row center" style="gap:16px;">
       <a class="link-muted" id="btnStory">📖 Our Story</a>
+      <a class="link-muted" id="btnStats">📊 Stats</a>
       <a class="link-muted" id="btnReset">Reset save</a>
     </div>
   </div>
@@ -271,6 +286,7 @@
       <canvas id="cleanCanvas" width="800" height="500"></canvas>
       <canvas id="dirtyCanvas" width="800" height="500"></canvas>
       <canvas id="fxCanvas" width="800" height="500"></canvas>
+      <div id="weatherTint"></div>
       <div id="jobIntro" class="hidden">
         <div id="introTruck"></div>
       </div>
@@ -324,6 +340,18 @@
     <div class="perk-grid" id="unlockGrid"></div>
   </div>
 
+  <!-- STATS -->
+  <div id="screen-stats" class="screen col hidden">
+    <div class="row spread center">
+      <h2 class="section-title">Stats &amp; Achievements</h2>
+      <button class="btn ghost small" id="btnBackFromStats">Back</button>
+    </div>
+    <div class="panel" id="statsPanel"></div>
+    <hr class="divider">
+    <h3 style="margin:0;">Achievements</h3>
+    <div class="perk-grid" id="achieveGrid"></div>
+  </div>
+
   <div id="modal-overlay" class="hidden">
     <div class="panel" id="modal-content"></div>
   </div>
@@ -348,9 +376,13 @@
       cashSinceRepo: 0,
       seenIntro: false,
       legacyAvailable: false,
+      streak: 0,
+      lifetimeEarnings: 0,
+      ownedOutright: false,
       gear: { nozzle:0, pressure:0, refill:0, rent:0, pay:0, patience:0, tipjar:0, watertank:0, prowasher:0, foamcannon:0, degreaser:0, permit:0 },
       perks: { headstart:false, discount:false, lowoverhead:false, basepay:false, wordofmouth:false },
-      unlocks: { dock:false, pool:false }
+      unlocks: { dock:false, pool:false, fence:false, roof:false },
+      stats: { bestCleanliness:0, longestStreak:0, repoCount:0 }
     };
   };
   var state = loadState();
@@ -364,6 +396,7 @@
       parsed.gear = Object.assign(d.gear, parsed.gear||{});
       parsed.perks = Object.assign(d.perks, parsed.perks||{});
       parsed.unlocks = Object.assign(d.unlocks, parsed.unlocks||{});
+      parsed.stats = Object.assign(d.stats, parsed.stats||{});
       return Object.assign(d, parsed);
     }catch(e){ return defaultState(); }
   }
@@ -406,26 +439,44 @@
   ];
   var DOCK_TYPE = { type:"dock", name:"Boat Dock", clean:"#a9a099", margin:{top:0,bottom:64,left:0,right:0} };
   var POOL_TYPE = { type:"pool", name:"Pool Deck", clean:"#d9d2c2", margin:{top:0,bottom:54,left:0,right:0} };
+  var FENCE_TYPE = { type:"fence", name:"Garden Fence", clean:"#c9b184", margin:{top:38,bottom:36,left:0,right:0} };
+  var ROOF_TYPE = { type:"roof", name:"Rooftop", clean:"#8fa3ad", margin:{top:0,bottom:48,left:18,right:18} };
 
   var UNLOCK_DEFS = {
     dock: { title:"Boat Dock Route", icon:"🛥️", cost:6, desc:"Unlocks Boat Dock jobs — new scenery in the rotation for good." },
-    pool: { title:"Pool Deck Route", icon:"🏊", cost:8, desc:"Unlocks Pool Deck jobs — new scenery in the rotation for good." }
+    pool: { title:"Pool Deck Route", icon:"🏊", cost:8, desc:"Unlocks Pool Deck jobs — new scenery in the rotation for good." },
+    fence: { title:"Garden Fence Route", icon:"🌿", cost:5, desc:"Unlocks Garden Fence jobs — new scenery in the rotation for good." },
+    roof: { title:"Rooftop Route", icon:"🏠", cost:9, desc:"Unlocks Rooftop jobs — new scenery in the rotation for good." }
   };
   function pickJob(){
     var pool = JOB_TYPES.slice();
     if(state.unlocks.dock) pool.push(DOCK_TYPE);
     if(state.unlocks.pool) pool.push(POOL_TYPE);
+    if(state.unlocks.fence) pool.push(FENCE_TYPE);
+    if(state.unlocks.roof) pool.push(ROOF_TYPE);
     return pool[state.jobsCompleted % pool.length];
   }
 
   /* Difficulty scales with your rig tier: better gear unlocks tougher (better-paying) grime */
   var GRIME_TIERS = [
-    { name:"Everyday Dirt", a:"#5b4327", b:"#463319", payMult:1.00, toughness:1.00 },
-    { name:"Moss & Algae", a:"#4a5d23", b:"#374717", payMult:1.15, toughness:1.25 },
-    { name:"Grease & Grime", a:"#2b2620", b:"#1c1812", payMult:1.30, toughness:1.50 },
-    { name:"Rust Stains", a:"#8a4a1f", b:"#6b3714", payMult:1.45, toughness:1.75 },
-    { name:"Old Paint & Graffiti", a:"#5e3d7a", b:"#7a2e5e", payMult:1.60, toughness:2.00 }
+    { name:"Everyday Dirt", a:"#5b4327", b:"#463319", payMult:1.00, toughness:1.00, splash:"#d8c9a3" },
+    { name:"Moss & Algae", a:"#4a5d23", b:"#374717", payMult:1.15, toughness:1.25, splash:"#bfe0a0" },
+    { name:"Grease & Grime", a:"#2b2620", b:"#1c1812", payMult:1.30, toughness:1.50, splash:"#cfd0c8" },
+    { name:"Rust Stains", a:"#8a4a1f", b:"#6b3714", payMult:1.45, toughness:1.75, splash:"#e3b98a" },
+    { name:"Old Paint & Graffiti", a:"#5e3d7a", b:"#7a2e5e", payMult:1.60, toughness:2.00, splash:"#e0b3d6" }
   ];
+
+  /* Weather variety for job backdrops */
+  var WEATHER_TYPES = [
+    { name:"Sunny", sky:"linear-gradient(180deg, #a9d8c9 0%, #f3e3ad 100%)", tint:"transparent", rain:false },
+    { name:"Overcast", sky:"linear-gradient(180deg, #b7c2c9 0%, #d9dfd6 100%)", tint:"rgba(90,100,110,0.10)", rain:false },
+    { name:"Sunset", sky:"linear-gradient(180deg, #e6a97a 0%, #f6d69a 100%)", tint:"rgba(230,140,90,0.10)", rain:false },
+    { name:"Drizzle", sky:"linear-gradient(180deg, #8fa3ad 0%, #c7d3d6 100%)", tint:"rgba(70,90,100,0.16)", rain:true }
+  ];
+
+  /* Lifetime buyout goal -- pays off Uncle Lenny's debt for good */
+  var BUYOUT_TARGET = 25000;
+  var OVERHEAD_EXP_CAP = 14;
 
   /* ---------------- HELPERS ---------------- */
   function $(id){ return document.getElementById(id); }
@@ -463,8 +514,14 @@
   function payMultiplier(){
     return (1 + gearLevel("pay")*0.1) * (state.perks.basepay ? 1.2 : 1);
   }
+  function streakBonusMult(){
+    return 1 + Math.min(0.25, state.streak*0.01);
+  }
   function overheadAmount(n){
-    var amt = Math.round(85 * Math.pow(1.15, n-1));
+    if(state.ownedOutright) return 20;
+    var cappedN = Math.min(n, OVERHEAD_EXP_CAP);
+    var amt = 85 * Math.pow(1.15, cappedN-1);
+    if(n > OVERHEAD_EXP_CAP){ amt += (n-OVERHEAD_EXP_CAP)*40; }
     return Math.round(amt * rentMultiplier());
   }
   function totalGearScore(){
@@ -523,6 +580,13 @@
   function renderTop(){
     $("cashBadge").textContent = "$"+state.cash;
     $("repBadge").textContent = state.rep;
+    var sb = $("streakBadge");
+    if(state.streak > 1){
+      sb.classList.remove("hidden");
+      $("streakVal").textContent = state.streak;
+    } else {
+      sb.classList.add("hidden");
+    }
   }
   function renderMenu(){
     var t = TIER_NAMES[rigTierIndex()];
@@ -535,6 +599,25 @@
     $("billDueLabel").textContent = "$"+due+" in "+remaining+" job"+(remaining===1?"":"s");
     $("billMeterFill").style.width = clamp(state.jobsSinceBill/interval*100,0,100)+"%";
     renderLoanPanel();
+    renderBuyoutPanel();
+  }
+
+  /* ---------------- BUYOUT PROGRESS ---------------- */
+  function renderBuyoutPanel(){
+    var panel = $("buyoutPanel");
+    if(state.ownedOutright){
+      panel.innerHTML =
+        '<div class="loan-row"><span>🏆 Owned outright!</span><span></span></div>' +
+        '<p class="loan-note">Every dollar Uncle Lenny owed is paid off. Overhead is just pocket change now.</p>';
+    } else {
+      var shown = Math.min(state.lifetimeEarnings, BUYOUT_TARGET);
+      var pct = clamp(shown/BUYOUT_TARGET*100,0,100);
+      panel.innerHTML =
+        '<div class="bill-meter" style="margin-top:0;">' +
+        '<div class="label-row"><span>🏆 Own it outright</span><span>$'+Math.round(shown)+' / $'+BUYOUT_TARGET+'</span></div>' +
+        '<div class="meter-track"><div class="meter-fill" style="width:'+pct+'%;background:var(--green);"></div></div>' +
+        '</div>';
+    }
   }
 
   /* ---------------- LOAN ---------------- */
@@ -582,12 +665,13 @@
 
   /* ---------------- SCREEN SWITCH ---------------- */
   function showScreen(id){
-    ["screen-menu","screen-job","screen-equip","screen-perks"].forEach(function(s){
+    ["screen-menu","screen-job","screen-equip","screen-perks","screen-stats"].forEach(function(s){
       $(s).classList.toggle("hidden", s!==id);
     });
     if(id==="screen-menu") renderMenu();
     if(id==="screen-equip"){ renderTree(); renderItems(); }
     if(id==="screen-perks") renderPerks();
+    if(id==="screen-stats") renderStats();
   }
 
   /* ---------------- MODAL ---------------- */
@@ -787,6 +871,41 @@
     });
   }
 
+  /* ---------------- STATS & ACHIEVEMENTS ---------------- */
+  var ACHIEVEMENT_DEFS = [
+    { icon:"💦", title:"First Splash", desc:"Complete your first job.", cond:function(s){ return s.jobsCompleted>=1; } },
+    { icon:"🧽", title:"Regular Route", desc:"Complete 10 jobs.", cond:function(s){ return s.jobsCompleted>=10; } },
+    { icon:"🚿", title:"Old Hand", desc:"Complete 50 jobs.", cond:function(s){ return s.jobsCompleted>=50; } },
+    { icon:"🏆", title:"Town Legend", desc:"Complete 100 jobs.", cond:function(s){ return s.jobsCompleted>=100; } },
+    { icon:"✨", title:"Spotless", desc:"Hit 99%+ cleanliness on a job.", cond:function(s){ return s.stats.bestCleanliness>=99; } },
+    { icon:"🔥", title:"On a Roll", desc:"Reach a 10-job streak.", cond:function(s){ return s.stats.longestStreak>=10; } },
+    { icon:"🚀", title:"Unstoppable", desc:"Reach a 25-job streak.", cond:function(s){ return s.stats.longestStreak>=25; } },
+    { icon:"🚨", title:"Rock Bottom", desc:"Get repossessed for the first time.", cond:function(s){ return s.stats.repoCount>=1; } },
+    { icon:"🗺️", title:"City-Wide", desc:"Unlock every job route.", cond:function(s){ return s.unlocks.dock && s.unlocks.pool && s.unlocks.fence && s.unlocks.roof; } },
+    { icon:"💰", title:"Debt Free", desc:"Own Power Wash Co. outright.", cond:function(s){ return !!s.ownedOutright; } }
+  ];
+  function renderStats(){
+    var panel = $("statsPanel");
+    panel.innerHTML =
+      '<div class="stat-line"><span>Lifetime earned</span><span>$'+Math.round(state.lifetimeEarnings)+'</span></div>' +
+      '<div class="stat-line"><span>Jobs completed</span><span>'+state.jobsCompleted+'</span></div>' +
+      '<div class="stat-line"><span>Best cleanliness</span><span>'+Math.round(state.stats.bestCleanliness)+'%</span></div>' +
+      '<div class="stat-line"><span>Current streak</span><span>🔥 '+state.streak+'</span></div>' +
+      '<div class="stat-line"><span>Longest streak</span><span>🔥 '+state.stats.longestStreak+'</span></div>' +
+      '<div class="stat-line"><span>Times repossessed</span><span>'+state.stats.repoCount+'</span></div>' +
+      '<div class="stat-line"><span>Reputation</span><span>⭐ '+state.rep+'</span></div>';
+
+    var grid = $("achieveGrid");
+    grid.innerHTML = "";
+    ACHIEVEMENT_DEFS.forEach(function(a){
+      var unlocked = a.cond(state);
+      var card = document.createElement("div");
+      card.className = "perk-card"+(unlocked?" owned":"");
+      card.innerHTML = '<h3>'+(unlocked?a.icon:"🔒")+' '+a.title+'</h3><p>'+a.desc+'</p>';
+      grid.appendChild(card);
+    });
+  }
+
   /* ---------------- JOB / CANVAS GAME ---------------- */
   var cleanCanvas = $("cleanCanvas"), dirtyCanvas = $("dirtyCanvas"), fxCanvas = $("fxCanvas");
   var cleanCtx = cleanCanvas.getContext("2d"), dirtyCtx = dirtyCanvas.getContext("2d"), fxCtx = fxCanvas.getContext("2d");
@@ -875,6 +994,11 @@
       drawWaterBand(0,CH-m.bottom,CW,m.bottom,"#6fc3d1","#4a9aab");
       cleanCtx.fillStyle = "#e9dcb8";
       cleanCtx.fillRect(0,CH-m.bottom,CW,4);
+    } else if(def.type==="fence"){
+      drawHedgeBand(0,0,CW,m.top);
+      drawGrassBand(0,CH-m.bottom,CW,m.bottom);
+    } else if(def.type==="roof"){
+      drawGrassBand(0,CH-m.bottom,CW,m.bottom);
     }
 
     cleanCtx.fillStyle = def.clean;
@@ -935,6 +1059,22 @@
       }
       cleanCtx.restore();
       drawUmbrella(ix+50, iy+30);
+    } else if(def.type==="fence"){
+      cleanCtx.save();
+      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
+      for(var fx2=ix+14; fx2<ix+iw; fx2+=22){
+        cleanCtx.beginPath(); cleanCtx.moveTo(fx2,iy); cleanCtx.lineTo(fx2,iy+ih); cleanCtx.stroke();
+      }
+      cleanCtx.restore();
+      drawPottedPlant(ix+iw-90, iy+ih-92);
+    } else if(def.type==="roof"){
+      cleanCtx.save();
+      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
+      for(var ry=iy+18; ry<iy+ih; ry+=16){
+        cleanCtx.beginPath(); cleanCtx.moveTo(ix,ry); cleanCtx.lineTo(ix+iw,ry); cleanCtx.stroke();
+      }
+      cleanCtx.restore();
+      drawChimney(ix+iw*0.62, iy);
     }
 
     cleanCtx.strokeStyle = "#3a2f28";
@@ -1030,6 +1170,17 @@
     cleanCtx.fillRect(x,y+8,72,4);
     cleanCtx.restore();
   }
+  function drawChimney(x,y){
+    cleanCtx.save();
+    cleanCtx.fillStyle = "#6b5a4a";
+    cleanCtx.fillRect(x,y,34,56);
+    cleanCtx.fillStyle = "#4a3d31";
+    cleanCtx.fillRect(x,y,34,10);
+    cleanCtx.strokeStyle = "#3a2f28";
+    cleanCtx.lineWidth = 2;
+    cleanCtx.strokeRect(x,y,34,56);
+    cleanCtx.restore();
+  }
 
   function drawDirtyLayer(grime, ix, iy, iw, ih){
     dirtyCtx.clearRect(0,0,CW,CH);
@@ -1078,9 +1229,36 @@
   }
 
   var particles = [];
-  function spawnParticles(x,y){
+  function spawnParticles(x,y,color){
+    var n = 3 + Math.floor(Math.random()*2);
+    for(var i=0;i<n;i++){
+      particles.push({
+        x:x, y:y,
+        vx:(Math.random()*2-1)*1.6,
+        vy:(Math.random()*-1.5-0.4),
+        life:1,
+        size: 2.2 + Math.random()*2.2,
+        color: color || "#eaf9ff"
+      });
+    }
+  }
+  function spawnBurst(x,y,color){
+    for(var i=0;i<18;i++){
+      var ang = Math.random()*Math.PI*2, spd = 1.5+Math.random()*3.2;
+      particles.push({
+        x:x, y:y,
+        vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd-1.2,
+        life:1, size: 2.5+Math.random()*3, color: color || "#eaf9ff"
+      });
+    }
+  }
+  function spawnRain(){
     for(var i=0;i<3;i++){
-      particles.push({ x:x, y:y, vx:(Math.random()*2-1)*1.6, vy:(Math.random()*-1.5-0.4), life:1 });
+      particles.push({
+        x: Math.random()*CW, y:-10,
+        vx:-0.3, vy: 5+Math.random()*2,
+        life:1, size:1.5, color:"#bcd4e6", type:"rain"
+      });
     }
   }
   var fxRunning = false;
@@ -1088,12 +1266,24 @@
     fxCtx.clearRect(0,0,CW,CH);
     for(var i=particles.length-1;i>=0;i--){
       var p = particles[i];
-      p.x += p.vx; p.y += p.vy; p.vy += 0.09; p.life -= 0.035;
+      p.x += p.vx; p.y += p.vy;
+      if(p.type==="rain"){
+        if(p.y>CH+10){ particles.splice(i,1); continue; }
+        fxCtx.globalAlpha = 0.55;
+        fxCtx.strokeStyle = p.color;
+        fxCtx.lineWidth = p.size;
+        fxCtx.beginPath();
+        fxCtx.moveTo(p.x,p.y);
+        fxCtx.lineTo(p.x - p.vx*4, p.y - p.vy*4);
+        fxCtx.stroke();
+        continue;
+      }
+      p.vy += 0.09; p.life -= 0.035;
       if(p.life<=0){ particles.splice(i,1); continue; }
       fxCtx.globalAlpha = clamp(p.life,0,1);
-      fxCtx.fillStyle = "#eaf9ff";
+      fxCtx.fillStyle = p.color || "#eaf9ff";
       fxCtx.beginPath();
-      fxCtx.arc(p.x,p.y,3.2,0,Math.PI*2);
+      fxCtx.arc(p.x,p.y,p.size||3.2,0,Math.PI*2);
       fxCtx.fill();
     }
     fxCtx.globalAlpha = 1;
@@ -1110,7 +1300,23 @@
 
   var lastPt = null, refilling = false;
   var canvasWrap = $("canvas-wrap");
+  function shakeCanvas(){
+    canvasWrap.classList.remove("shake");
+    void canvasWrap.offsetWidth;
+    canvasWrap.classList.add("shake");
+  }
+  var rainTimer = null;
+  function startRainLoop(){
+    if(rainTimer){ clearInterval(rainTimer); rainTimer=null; }
+    if(!job || !job.weather || !job.weather.rain) return;
+    rainTimer = setInterval(function(){
+      if(!job || job.ended){ clearInterval(rainTimer); rainTimer=null; return; }
+      spawnRain();
+      ensureFx();
+    }, 150);
+  }
 
+  var pendingWeather = null;
   function startJob(){
     showScreen("screen-job");
     playIntroThenBegin();
@@ -1119,6 +1325,8 @@
   function playIntroThenBegin(){
     var intro = $("jobIntro");
     var truckEl = $("introTruck");
+    pendingWeather = WEATHER_TYPES[Math.floor(Math.random()*WEATHER_TYPES.length)];
+    intro.style.background = pendingWeather.sky;
     truckEl.innerHTML = buildTruckSVG();
     intro.classList.remove("hidden");
     truckEl.classList.remove("drive-in");
@@ -1133,11 +1341,13 @@
   function beginJobRound(){
     var def = pickJob();
     var grime = GRIME_TIERS[rigTierIndex()];
+    var weather = pendingWeather || WEATHER_TYPES[0];
     var m = def.margin;
     var rect = { ix:m.left, iy:m.top, iw:CW-m.left-m.right, ih:CH-m.top-m.bottom };
     job = {
       def: def,
       grime: grime,
+      weather: weather,
       rect: rect,
       startTime: Date.now(),
       duration: jobDuration(),
@@ -1146,7 +1356,8 @@
       ended: false
     };
     $("jobName").textContent = def.name;
-    $("jobGrimeLabel").textContent = grime.name + (grime.payMult>1 ? " · pays +"+Math.round((grime.payMult-1)*100)+"%" : "");
+    $("jobGrimeLabel").textContent = grime.name + (grime.payMult>1 ? " · pays +"+Math.round((grime.payMult-1)*100)+"%" : "") + " · " + weather.name;
+    $("weatherTint").style.background = weather.tint;
     drawCleanLayer(def);
     drawDirtyLayer(grime, rect.ix, rect.iy, rect.iw, rect.ih);
     fxCtx.clearRect(0,0,CW,CH);
@@ -1160,6 +1371,7 @@
     startCleanlinessLoop();
     startFoamLoop();
     startTimerLoop();
+    startRainLoop();
   }
 
   function updateTankUI(){
@@ -1215,7 +1427,7 @@
       var r = job.rect;
       var x = r.ix+20+Math.random()*(r.iw-40), y = r.iy+20+Math.random()*(r.ih-40);
       sprayAt(x,y, 34+foamAutoLevel()*12, job.grime.toughness*toughnessFactor());
-      spawnParticles(x,y); ensureFx();
+      spawnParticles(x,y, job.grime.splash); ensureFx();
     }, interval);
   }
   function startTimerLoop(){
@@ -1262,13 +1474,17 @@
     job.tank -= 1.1/powerEff();
     if(job.tank<0) job.tank=0;
     updateTankUI();
-    if(Math.random()<0.6){ spawnParticles(x,y); ensureFx(); }
+    if(Math.random()<0.6){
+      spawnParticles(x,y, Math.random()<0.5 ? job.grime.splash : "#eaf9ff");
+      ensureFx();
+    }
     if(job.tank<=0){ startAutoRefill(); }
   }
 
   function startAutoRefill(){
     if(refilling || !job || job.ended) return;
     refilling = true;
+    shakeCanvas();
     $("refillPrompt").classList.remove("hidden");
     var dur = refillTime();
     var startTank = job.tank;
@@ -1294,12 +1510,32 @@
 
   function calcPay(mode, elapsed){
     var basePay = 68 + state.jobsCompleted*4;
-    var pay = basePay * job.cleanliness * payMultiplier() * job.grime.payMult;
+    var pay = basePay * job.cleanliness * payMultiplier() * job.grime.payMult * streakBonusMult();
     if(mode==="complete"){
       var remainingFrac = Math.max(0, (job.duration-elapsed)/job.duration);
       pay *= 1 + Math.min(0.35, remainingFrac*0.35);
     }
     return Math.max(1, Math.round(pay));
+  }
+  function starsForJob(mode, elapsed, pctClean){
+    if(mode==="complete"){
+      var remainingFrac = Math.max(0, (job.duration-elapsed)/job.duration);
+      if(remainingFrac >= 0.4) return 3;
+      if(remainingFrac >= 0.15) return 2;
+      return 1;
+    }
+    if(pctClean >= 90) return 2;
+    if(pctClean >= 60) return 1;
+    return 0;
+  }
+  function starsHTML(count){
+    var s = '<div class="stars">';
+    for(var i=0;i<3;i++){
+      if(i<count){ s += '<span class="filled" style="animation-delay:'+(i*0.12)+'s;">★</span>'; }
+      else { s += '<span>☆</span>'; }
+    }
+    s += '</div>';
+    return s;
   }
 
   function endJob(mode){
@@ -1312,29 +1548,73 @@
     var tip = 0;
     if(Math.random() < tipChance()){ tip = 8 + Math.floor(Math.random()*13); }
     var totalPay = pay + tip;
+    var pctClean = Math.round(job.cleanliness*100);
+    var stars = starsForJob(mode, elapsed, pctClean);
+
     state.cash += totalPay;
     state.cashSinceRepo += totalPay;
+    state.lifetimeEarnings += totalPay;
     state.jobsCompleted += 1;
     state.jobsSinceBill += 1;
+    if(mode==="complete"){ state.streak += 1; } else { state.streak = 0; }
+    if(pctClean > state.stats.bestCleanliness) state.stats.bestCleanliness = pctClean;
+    if(state.streak > state.stats.longestStreak) state.stats.longestStreak = state.streak;
     saveState();
     renderTop();
 
-    var pctClean = Math.round(job.cleanliness*100);
-    var emoji = mode==="timeout" ? "⏰" : "✨";
-    var heading = mode==="timeout" ? "Time's Up!" : "Job Complete!";
+    if(mode==="complete" && stars===3){
+      spawnBurst(CW/2, CH/2, "#ffe27a");
+      ensureFx();
+      shakeCanvas();
+    }
+
+    var headings = mode==="timeout"
+      ? ["Time's Up!","Time's Up!","Time's Up! (Close!)"]
+      : ["Job Complete!","Nice Work!","Perfect Job!"];
+    var emojis = mode==="timeout" ? ["⏰","⏰","⏰"] : ["✨","✨","🌟"];
+    var heading = headings[stars] || headings[0];
+    var emoji = emojis[stars] || emojis[0];
     var tipLine = tip>0 ? '<div class="stat-line"><span>Tip 🫙</span><span>+$'+tip+'</span></div>' : '';
+    var streakLine = "";
+    if(mode==="complete" && state.streak>1){
+      streakLine = '<div class="stat-line"><span>Streak 🔥</span><span>x'+state.streak+'</span></div>';
+    } else if(mode==="timeout" && state.streak===0){
+      streakLine = '<p style="margin-top:4px;color:#8a7f6a;font-weight:700;">Streak broken — back to zero.</p>';
+    }
     showModal(
       '<div class="big-emoji">'+emoji+'</div>' +
       '<h2>'+heading+'</h2>' +
+      starsHTML(stars) +
       '<div class="stat-line"><span>Cleanliness</span><span>'+pctClean+'%</span></div>' +
       '<div class="stat-line"><span>Cash earned</span><span>+$'+pay+'</span></div>' +
-      tipLine,
+      tipLine + streakLine,
       [{ label:"Nice — Continue", cls:"primary", action: afterJobContinue }]
     );
   }
 
   function afterJobContinue(){
+    if(!state.ownedOutright && state.lifetimeEarnings >= BUYOUT_TARGET){
+      triggerBuyoutModal();
+      return;
+    }
     if(state.jobsSinceBill >= billInterval()){ triggerBill(); } else { showScreen("screen-menu"); }
+  }
+
+  function triggerBuyoutModal(){
+    state.ownedOutright = true;
+    state.rep += 15;
+    saveState();
+    renderTop();
+    showModal(
+      '<div class="big-emoji">🏆</div>' +
+      '<h2>You Own It — Outright!</h2>' +
+      '<p>Every dollar Uncle Lenny’s business ever owed is paid off. Power Wash Co. is yours, free and clear.</p>' +
+      '<div class="stat-line"><span>Legacy earned</span><span>+15 ⭐</span></div>' +
+      '<p style="margin-top:8px;">Overhead is just pocket change from here on — keep washing, it’s all profit now.</p>',
+      [{ label:"Keep Washing", cls:"primary", action: function(){
+          if(state.jobsSinceBill >= billInterval()){ triggerBill(); } else { showScreen("screen-menu"); }
+        } }]
+    );
   }
 
   function triggerBill(){
@@ -1363,6 +1643,9 @@
     var repGain = Math.max(1, Math.floor(state.cashSinceRepo/40));
     state.rep += repGain;
     state.cashSinceRepo = 0;
+    state.streak = 0;
+    state.stats.repoCount += 1;
+    state.billNumber = Math.max(1, Math.round(state.billNumber*0.6));
     var fresh = defaultState().gear;
     if(state.perks.headstart) fresh.nozzle = 1;
     state.gear = fresh;
@@ -1403,6 +1686,8 @@
   $("btnStartJob").addEventListener("click", startJob);
   $("btnEquip").addEventListener("click", function(){ showScreen("screen-equip"); });
   $("btnPerks").addEventListener("click", function(){ showScreen("screen-perks"); });
+  $("btnStats").addEventListener("click", function(){ showScreen("screen-stats"); });
+  $("btnBackFromStats").addEventListener("click", function(){ showScreen("screen-menu"); });
   $("btnBackFromEquip").addEventListener("click", function(){ showScreen("screen-menu"); });
   $("btnBackFromPerks").addEventListener("click", function(){
     state.legacyAvailable = false;

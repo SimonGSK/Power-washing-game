@@ -6,1707 +6,2565 @@
 <title>Power Wash Co.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#3a2f28;
-    --cream:#f6ecd2;
-    --cream-2:#e9dcb8;
-    --orange:#c1683f;
-    --orange-dark:#8f4726;
-    --teal:#4f8fa6;
-    --teal-dark:#356273;
-    --yellow:#e0a83e;
-    --yellow-dark:#a97a22;
-    --green:#7a9c5e;
-    --green-dark:#52713d;
-    --red:#a4485f;
-    --red-dark:#7a3143;
-    --sky-a:#a9d8c9;
-    --sky-b:#f3e3ad;
-    --panel-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.2), 5px 5px 0 var(--ink);
-    --page-bg: linear-gradient(180deg, var(--sky-a) 0%, var(--sky-b) 100%);
-    --text-body: #3a2f28;
-    --pixel-font: 'Pixelify Sans', 'Courier New', monospace;
+    --ink:#4a3526;
+    --ink-soft:#8a7261;
+    --parchment:#fdf4de;
+    --parchment-2:#f3e4c0;
+    --parchment-3:#e6d2a8;
+    --wood:#b5834f;
+    --wood-dark:#8a5f36;
+    --leaf:#6faa4a;
+    --leaf-dark:#4d7f33;
+    --sky-a:#a6dcef;
+    --sky-b:#e4f2d8;
+    --sun:#f5c451;
+    --sun-dark:#cc9721;
+    --coral:#e8794a;
+    --coral-dark:#bb5527;
+    --ocean:#4a9cc4;
+    --ocean-dark:#2d7096;
+    --berry:#c9557a;
+    --berry-dark:#9a3557;
+    --r:16px;
+    --r-sm:11px;
+    --font:'Baloo 2','Trebuchet MS',sans-serif;
+    --panel-shadow:0 5px 0 rgba(74,53,38,.20), inset 0 2px 0 rgba(255,255,255,.65);
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;min-height:100%;}
   body{
-    background:var(--page-bg);
-    font-family:var(--pixel-font);
-    color:var(--text-body);
-    min-height:100vh;
+    background:
+      radial-gradient(900px 420px at 50% -8%, rgba(255,255,255,.55), rgba(255,255,255,0) 70%),
+      linear-gradient(180deg, var(--sky-a) 0%, #cfe9df 46%, var(--sky-b) 100%);
+    background-attachment:fixed;
+    font-family:var(--font);
+    font-weight:600;
+    color:var(--ink);
     display:flex;
     justify-content:center;
     overflow-x:hidden;
   }
-  h1,h2,h3,.display{font-family:var(--pixel-font);color:var(--ink);letter-spacing:.3px;}
-  canvas{image-rendering:pixelated;image-rendering:crisp-edges;}
+  canvas{image-rendering:auto;}
+  h1,h2,h3{font-family:var(--font);font-weight:800;color:var(--ink);margin:0;letter-spacing:.2px;}
+  p{margin:0;}
   #app{
-    width:100%;
-    max-width:720px;
-    min-height:100vh;
-    padding:14px 14px 34px;
-    display:flex;
-    flex-direction:column;
-    gap:14px;
+    width:100%;max-width:980px;min-height:100vh;
+    padding:12px 14px 40px;
+    display:flex;flex-direction:column;gap:12px;
   }
   .hidden{display:none !important;}
+  .screen{display:flex;flex-direction:column;gap:12px;}
 
-  #topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  /* ---------------- TOP BAR ---------------- */
+  #topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .badge{
-    background:var(--cream);border:3px solid var(--ink);border-radius:0;box-shadow:var(--panel-shadow);
-    padding:6px 10px;display:flex;align-items:center;gap:6px;
-    font-family:var(--pixel-font);font-weight:600;font-size:15px;white-space:nowrap;
+    background:var(--parchment);border:3px solid var(--ink);border-radius:999px;
+    box-shadow:0 3px 0 rgba(74,53,38,.20), inset 0 2px 0 rgba(255,255,255,.6);
+    padding:5px 13px;display:flex;align-items:center;gap:6px;
+    font-weight:800;font-size:15px;white-space:nowrap;line-height:1.5;
   }
-  .badge .emoji{font-size:18px;}
+  .badge .emoji{font-size:16px;}
+  .badge.cash{background:#fdf0c9;}
+  .badge.rep{background:#ecdff5;}
+  .badge.streak{background:#ffdfc7;}
+  .badge.crew{background:#d9eed2;}
+  .spacer{flex:1;}
 
+  /* ---------------- PANELS ---------------- */
   .panel{
-    background:var(--cream);border:3px solid var(--ink);border-radius:0;box-shadow:var(--panel-shadow);padding:16px;
+    background:var(--parchment);border:3px solid var(--ink);border-radius:var(--r);
+    box-shadow:var(--panel-shadow);padding:15px;
   }
-  .btn{
-    font-family:var(--pixel-font);font-weight:600;font-size:15px;color:var(--ink);
-    background:var(--yellow);border:3px solid var(--ink);border-radius:0;
-    box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--yellow-dark);
-    padding:11px 16px;cursor:pointer;text-align:center;
-  }
-  .btn:active{transform:translate(4px,4px);box-shadow: inset 2px 2px 0 rgba(255,255,255,.15), inset -2px -2px 0 rgba(0,0,0,.25);}
-  .btn:disabled{opacity:.45;cursor:not-allowed;}
-  .btn:disabled:active{transform:none;box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--yellow-dark);}
-  .btn.primary{background:var(--orange);color:#fdf3e2;box-shadow: inset 2px 2px 0 rgba(255,255,255,.3), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--orange-dark);}
-  .btn.primary:active{box-shadow: inset 2px 2px 0 rgba(255,255,255,.12), inset -2px -2px 0 rgba(0,0,0,.28);}
-  .btn.teal{background:var(--teal);color:#f2f9fb;box-shadow: inset 2px 2px 0 rgba(255,255,255,.3), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--teal-dark);}
-  .btn.teal:active{box-shadow: inset 2px 2px 0 rgba(255,255,255,.12), inset -2px -2px 0 rgba(0,0,0,.28);}
-  .btn.green{background:var(--green);color:#f5f9ef;box-shadow: inset 2px 2px 0 rgba(255,255,255,.3), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--green-dark);}
-  .btn.green:active{box-shadow: inset 2px 2px 0 rgba(255,255,255,.12), inset -2px -2px 0 rgba(0,0,0,.28);}
-  .btn.ghost{background:var(--cream-2);color:var(--ink);box-shadow: inset 2px 2px 0 rgba(255,255,255,.3), inset -2px -2px 0 rgba(0,0,0,.15), 4px 4px 0 #b7a679;}
-  .btn.ghost:active{box-shadow: inset 2px 2px 0 rgba(255,255,255,.1), inset -2px -2px 0 rgba(0,0,0,.2);}
-  .btn.block{width:100%;}
-  .btn.small{padding:6px 10px;font-size:12.5px;box-shadow: inset 1.5px 1.5px 0 rgba(255,255,255,.3), inset -1.5px -1.5px 0 rgba(0,0,0,.2), 3px 3px 0 var(--yellow-dark);}
-  .btn.small:active{transform:translate(3px,3px);box-shadow: inset 1.5px 1.5px 0 rgba(255,255,255,.12), inset -1.5px -1.5px 0 rgba(0,0,0,.25);}
+  .panel.tight{padding:11px 13px;}
+  .panel.flat{box-shadow:inset 0 2px 0 rgba(255,255,255,.6);}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+  .subtle{color:var(--ink-soft);font-size:13px;font-weight:600;}
+  .divider{border:none;border-top:3px dotted var(--parchment-3);margin:12px 0;}
 
+  /* ---------------- BUTTONS ---------------- */
+  .btn{
+    font-family:var(--font);font-weight:800;font-size:15px;color:var(--ink);
+    background:var(--sun);border:3px solid var(--ink);border-radius:var(--r-sm);
+    box-shadow:0 4px 0 var(--sun-dark), inset 0 2px 0 rgba(255,255,255,.45);
+    padding:10px 16px;cursor:pointer;text-align:center;line-height:1.35;
+    transition:transform .05s ease, box-shadow .05s ease;
+  }
+  .btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 var(--sun-dark), inset 0 2px 0 rgba(255,255,255,.25);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .btn.primary{background:var(--coral);color:#fff6ef;box-shadow:0 4px 0 var(--coral-dark), inset 0 2px 0 rgba(255,255,255,.3);}
+  .btn.primary:active:not(:disabled){box-shadow:0 0 0 var(--coral-dark), inset 0 2px 0 rgba(255,255,255,.2);}
+  .btn.teal{background:var(--ocean);color:#f2fbff;box-shadow:0 4px 0 var(--ocean-dark), inset 0 2px 0 rgba(255,255,255,.3);}
+  .btn.teal:active:not(:disabled){box-shadow:0 0 0 var(--ocean-dark), inset 0 2px 0 rgba(255,255,255,.2);}
+  .btn.green{background:var(--leaf);color:#f6fbf1;box-shadow:0 4px 0 var(--leaf-dark), inset 0 2px 0 rgba(255,255,255,.3);}
+  .btn.green:active:not(:disabled){box-shadow:0 0 0 var(--leaf-dark), inset 0 2px 0 rgba(255,255,255,.2);}
+  .btn.ghost{background:var(--parchment-2);box-shadow:0 4px 0 var(--parchment-3), inset 0 2px 0 rgba(255,255,255,.6);}
+  .btn.ghost:active:not(:disabled){box-shadow:0 0 0 var(--parchment-3), inset 0 2px 0 rgba(255,255,255,.3);}
+  .btn.block{width:100%;display:block;}
+  .btn.small{padding:6px 12px;font-size:13px;box-shadow:0 3px 0 var(--sun-dark), inset 0 2px 0 rgba(255,255,255,.45);}
+  .btn.small:active:not(:disabled){transform:translateY(3px);box-shadow:0 0 0 var(--sun-dark);}
+  .btn.small.ghost{box-shadow:0 3px 0 var(--parchment-3), inset 0 2px 0 rgba(255,255,255,.6);}
+  .btn.small.ghost:active:not(:disabled){box-shadow:0 0 0 var(--parchment-3);}
+  .btn.big{padding:16px;font-size:20px;}
   .row{display:flex;gap:10px;}
+  .row.wrap{flex-wrap:wrap;}
   .col{display:flex;flex-direction:column;gap:10px;}
   .center{align-items:center;justify-content:center;}
   .spread{justify-content:space-between;}
 
-  /* ---------- MENU ---------- */
-  #hero{display:flex;align-items:center;justify-content:center;gap:12px;padding:4px 0 2px;}
-  #mascot{width:56px;height:56px;flex-shrink:0;}
-  .title-wrap{text-align:left;}
-  .title-wrap h1{font-size:22px;margin:2px 0 2px;}
-  .title-wrap p{margin:0;font-weight:600;color:#6b5a3f;font-size:12.5px;}
-
-  #truckHero{text-align:center;padding-bottom:14px;}
-  #vanScene{width:100%;max-width:300px;margin:0 auto;}
-  .tier-name{font-family:var(--pixel-font);font-weight:600;font-size:17px;margin:10px 0 2px;}
-  .tier-sub{margin:0;font-size:12.5px;color:#6b5a3f;}
-
-  #loanPanel{display:flex;flex-direction:column;gap:8px;}
-  #loanPanel .loan-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;font-weight:700;}
-  #loanPanel .loan-note{font-size:11.5px;color:#6b5a3f;margin:0;}
-
-  .bill-meter{margin-top:8px;}
-  .bill-meter .label-row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#6b5a3f;margin-bottom:4px;}
-  .meter-track{height:12px;background:var(--cream-2);border:2px solid var(--ink);border-radius:0;overflow:hidden;}
-  .meter-fill{height:100%;background:var(--red);transition:width .3s ease;}
-
-  /* ---------- JOB SCREEN ---------- */
-  #job-header{display:flex;justify-content:space-between;align-items:center;}
-  #job-header .job-name{font-size:18px;margin:0;}
-  .timer-wrap .label-row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#6b5a3f;margin-bottom:4px;}
-  #timerFill{background:var(--orange);}
-  #canvas-wrap{
-    position:relative;width:100%;aspect-ratio: 8/5;border-radius:0;overflow:hidden;
-    border:3px solid var(--ink);box-shadow:var(--panel-shadow);touch-action:none;background:#000;
+  /* ---------------- METERS ---------------- */
+  .meter{margin-top:2px;}
+  .meter .label-row{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:4px;}
+  .track{
+    height:14px;background:var(--parchment-3);border:3px solid var(--ink);border-radius:999px;
+    overflow:hidden;box-shadow:inset 0 2px 3px rgba(74,53,38,.28);
   }
-  #canvas-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
-  #cleanCanvas{z-index:1;} #dirtyCanvas{z-index:2;} #fxCanvas{z-index:3;pointer-events:none;}
-  #jobIntro{
-    position:absolute;inset:0;z-index:6;overflow:hidden;
-    background:linear-gradient(180deg, var(--sky-a) 0%, #cfe6b8 70%, #b7d494 100%);
-  }
-  #introTruck{
-    position:absolute;left:8%;bottom:14%;width:34%;
-    transform:translateX(-260%);
-  }
-  #introTruck.drive-in{animation:driveIn 0.95s steps(14) forwards;}
-  @keyframes driveIn{ from{transform:translateX(-260%);} to{transform:translateX(0);} }
-  #refillPrompt{
-    position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;
-    background:rgba(35,30,20,.5);
-  }
-  #job-controls{display:flex;gap:10px;align-items:center;}
-  .tank-wrap,.clean-wrap{flex:1;}
-  .tank-wrap .label-row,.clean-wrap .label-row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#6b5a3f;margin-bottom:4px;}
-  .tank-fill{height:100%;background:var(--teal);transition:width .12s linear;}
-  .clean-fill{height:100%;background:var(--green);transition:width .2s ease;}
+  .track .fill{height:100%;border-radius:999px;background:var(--coral);box-shadow:inset 0 2px 0 rgba(255,255,255,.35);}
+  .track .fill.smooth{transition:width .25s ease;}
+  .fill.water{background:linear-gradient(180deg,#7fd0ea,#3f9dc4);}
+  .fill.clean{background:linear-gradient(180deg,#9ad86f,#54a038);}
+  .fill.gold{background:linear-gradient(180deg,#ffd873,#e0a92b);}
+  .fill.bill{background:linear-gradient(180deg,#f4907a,#cc5442);}
 
-  /* ---------- RADIAL SKILL TREE ---------- */
-  .tree-wrap{position:relative;width:100%;max-width:440px;aspect-ratio:1/1;margin:6px auto 10px;}
+  /* ---------------- HOME ---------------- */
+  #hero{display:flex;align-items:center;gap:12px;}
+  #heroMascot{width:62px;height:62px;flex-shrink:0;}
+  .title-wrap h1{font-size:25px;line-height:1.15;}
+  .title-wrap p{color:var(--ink-soft);font-size:13px;font-weight:600;}
+  #truckStage{
+    text-align:center;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,#cfeaf6 0%, #e9f3dd 62%, #cfe3b4 100%);
+  }
+  #truckArt{width:100%;max-width:420px;margin:0 auto;display:block;}
+  .tier-name{font-size:19px;font-weight:800;margin-top:6px;}
+  .tier-sub{color:var(--ink-soft);font-size:13px;}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:560px){.stat-grid{grid-template-columns:1fr;}}
+  .region-chip{
+    display:inline-flex;align-items:center;gap:7px;background:var(--parchment-2);
+    border:3px solid var(--ink);border-radius:999px;padding:4px 13px;font-weight:800;font-size:14px;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.6);
+  }
+  .nav-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+  @media (max-width:560px){.nav-grid{grid-template-columns:repeat(2,1fr);}}
+  .link-row{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;}
+  a.link{color:var(--ink-soft);font-size:13px;font-weight:700;text-decoration:underline;cursor:pointer;}
+  a.link:hover{color:var(--ink);}
+
+  /* ---------------- JOB SCREEN ---------------- */
+  #jobHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  #jobHead h2{font-size:21px;line-height:1.1;}
+  #jobSub{color:var(--ink-soft);font-size:13px;font-weight:700;}
+  #stage{
+    position:relative;width:100%;aspect-ratio:8/5;border-radius:var(--r);overflow:hidden;
+    border:3px solid var(--ink);box-shadow:var(--panel-shadow);touch-action:none;background:#8fd0e0;
+    cursor:crosshair;
+  }
+  #stage canvas{position:absolute;inset:0;width:100%;height:100%;}
+  #bgCanvas{z-index:1;} #grimeCanvas{z-index:2;} #fxCanvas{z-index:3;pointer-events:none;}
+  #stageTint{position:absolute;inset:0;z-index:4;pointer-events:none;transition:background .4s ease;}
+  #stageOverlay{
+    position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;
+    background:rgba(52,38,28,.42);backdrop-filter:blur(1px);
+  }
+  .overlay-card{background:var(--parchment);border:3px solid var(--ink);border-radius:var(--r);padding:14px 22px;text-align:center;box-shadow:var(--panel-shadow);}
+  #stage.shake{animation:shakeStage .32s ease;}
+  @keyframes shakeStage{0%{transform:translate(0,0)}20%{transform:translate(-5px,3px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,2px)}80%{transform:translate(4px,-1px)}100%{transform:translate(0,0)}}
+  .job-meters{display:flex;gap:12px;}
+  .job-meters > div{flex:1;}
+
+  /* ---------------- SKILL TREE ---------------- */
+  .tree-wrap{position:relative;width:100%;max-width:460px;aspect-ratio:1/1;margin:4px auto 6px;}
   .tree-lines{position:absolute;inset:0;width:100%;height:100%;}
   .thub{
-    position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;
-    border-radius:0;background:var(--yellow);border:3px solid var(--ink);
-    box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--yellow-dark);
-    display:flex;align-items:center;justify-content:center;font-size:24px;z-index:2;
+    position:absolute;left:50%;top:50%;width:68px;height:68px;margin:-34px 0 0 -34px;border-radius:50%;
+    background:var(--sun);border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;
+    font-size:26px;z-index:2;box-shadow:0 4px 0 var(--sun-dark), inset 0 2px 0 rgba(255,255,255,.5);
   }
   .tnode{
-    position:absolute;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:0;
-    border:3px solid var(--ink);background:var(--cream-2);display:flex;align-items:center;justify-content:center;
-    font-size:18px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);z-index:2;
+    position:absolute;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;
+    border:3px solid var(--ink);background:var(--parchment-2);display:flex;align-items:center;justify-content:center;
+    font-size:19px;cursor:pointer;z-index:2;box-shadow:0 3px 0 rgba(74,53,38,.3), inset 0 2px 0 rgba(255,255,255,.5);
   }
-  .tnode.owned{background:var(--green);}
-  .tnode.next{background:var(--orange);}
-  .tnode.locked{opacity:.4;cursor:default;box-shadow:2px 2px 0 #a89d80;}
-  .tnode .lvl-badge{
-    position:absolute;bottom:-7px;right:-7px;background:var(--cream);border:2px solid var(--ink);
-    border-radius:0;font-size:10px;padding:0 4px;font-weight:800;font-family:var(--pixel-font);
+  .tnode.owned{background:var(--leaf);}
+  .tnode.next{background:var(--coral);}
+  .tnode.locked{opacity:.42;cursor:default;}
+  .tnode .lvl{
+    position:absolute;bottom:-6px;right:-6px;background:var(--parchment);border:2px solid var(--ink);
+    border-radius:999px;font-size:10px;padding:0 5px;font-weight:800;
   }
   .branch-label{
-    position:absolute;font-family:var(--pixel-font);font-weight:600;font-size:10.5px;text-align:center;
-    width:76px;margin-left:-38px;margin-top:-8px;color:#6b5a3f;z-index:2;pointer-events:none;
+    position:absolute;font-size:11px;font-weight:800;text-align:center;width:88px;margin-left:-44px;margin-top:-7px;
+    color:var(--ink-soft);z-index:2;pointer-events:none;
   }
 
-  /* ---------- ITEM / PERK GRID ---------- */
-  .perk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  @media (max-width:420px){.perk-grid{grid-template-columns:1fr;}}
-  .perk-card{background:var(--cream-2);border:3px solid var(--ink);border-radius:0;padding:10px;display:flex;flex-direction:column;gap:6px;box-shadow:3px 3px 0 var(--ink);}
-  .perk-card h3{font-size:13.5px;margin:0;}
-  .perk-card p{font-size:11.5px;margin:0;color:#6b5a3f;flex:1;}
-  .perk-card.owned{background:var(--green);}
+  /* ---------------- CARDS ---------------- */
+  .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:560px){.card-grid{grid-template-columns:1fr;}}
+  .card{
+    background:var(--parchment-2);border:3px solid var(--ink);border-radius:var(--r-sm);padding:11px;
+    display:flex;flex-direction:column;gap:6px;box-shadow:0 3px 0 rgba(74,53,38,.18), inset 0 2px 0 rgba(255,255,255,.55);
+  }
+  .card h3{font-size:14.5px;}
+  .card p{font-size:12px;color:var(--ink-soft);flex:1;font-weight:600;line-height:1.35;}
+  .card.owned{background:#d8ecc9;}
+  .card.locked{opacity:.55;}
+  .card .tag{font-size:12.5px;font-weight:800;color:var(--leaf-dark);}
+  .card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .stat-line{display:flex;justify-content:space-between;font-weight:700;font-size:13.5px;padding:5px 0;border-bottom:2px dotted var(--parchment-3);}
+  .stat-line:last-child{border-bottom:none;}
 
-  /* ---------- MODAL ---------- */
-  #modal-overlay{position:fixed;inset:0;background:rgba(35,30,20,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;}
-  #modal-content{max-width:420px;width:100%;text-align:center;}
-  #modal-content .big-emoji{font-size:40px;margin-bottom:4px;}
-  #modal-content h2{margin:0 0 4px;font-size:20px;}
-  #modal-content p{margin:2px 0;font-size:14px;}
-  .stat-line{display:flex;justify-content:space-between;font-weight:700;font-size:13.5px;padding:3px 0;border-bottom:2px dashed #cbb98a;}
-  .stat-line:last-of-type{border-bottom:none;}
+  /* ---------------- MAP ---------------- */
+  #mapArt{width:100%;display:block;border-radius:var(--r-sm);border:3px solid var(--ink);box-shadow:inset 0 2px 0 rgba(255,255,255,.4);}
+  .region-card{cursor:pointer;}
+  .region-card.active{background:#ffeec2;box-shadow:0 0 0 3px var(--sun) inset, 0 3px 0 rgba(74,53,38,.18);}
 
-  a.link-muted{color:#6b5a3f;font-size:12px;text-decoration:underline;cursor:pointer;}
-  .section-title{font-size:19px;margin:0 0 2px;}
-  .subtle{color:#6b5a3f;font-size:12.5px;margin:0 0 6px;}
-  .divider{border:none;border-top:3px dashed #cbb98a;margin:8px 0;}
+  /* ---------------- MODALS ---------------- */
+  #modalWrap{position:fixed;inset:0;background:rgba(52,38,28,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px;}
+  #modalCard{max-width:440px;width:100%;text-align:center;animation:pop .2s ease;}
+  @keyframes pop{from{transform:scale(.9) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+  #modalCard .big-emoji{font-size:42px;line-height:1.1;}
+  #modalCard h2{font-size:22px;margin:2px 0 4px;}
+  #modalCard p{font-size:14px;line-height:1.45;}
+  .stars{font-size:34px;letter-spacing:7px;margin:4px 0 6px;}
+  .stars span{display:inline-block;color:var(--parchment-3);}
+  .stars span.on{color:var(--sun-dark);animation:starPop .45s ease backwards;}
+  @keyframes starPop{0%{transform:scale(0) rotate(-30deg);opacity:0}60%{transform:scale(1.35) rotate(10deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 
-  /* ---------- JUICE: stars, modal pop, shake, weather ---------- */
-  .stars{font-size:32px;letter-spacing:6px;margin:6px 0 2px;}
-  .stars span{display:inline-block;color:#cbb98a;}
-  .stars span.filled{color:var(--yellow-dark);animation:starPop .4s ease backwards;}
-  @keyframes starPop{0%{transform:scale(0) rotate(-25deg);opacity:0;}60%{transform:scale(1.35) rotate(10deg);opacity:1;}100%{transform:scale(1) rotate(0);}}
-  @keyframes modalPop{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
-  #modal-content{animation:modalPop .18s ease;}
-  @keyframes shakeWrap{0%{transform:translate(0,0);}20%{transform:translate(-4px,2px);}40%{transform:translate(4px,-2px);}60%{transform:translate(-3px,1px);}80%{transform:translate(3px,-1px);}100%{transform:translate(0,0);}}
-  #canvas-wrap.shake{animation:shakeWrap .3s ease;}
-  #weatherTint{position:absolute;inset:0;z-index:3;pointer-events:none;transition:background .3s ease;}
+  /* ---------------- DIALOGUE ---------------- */
+  #dlgWrap{position:fixed;inset:0;background:rgba(52,38,28,.55);display:flex;align-items:flex-end;justify-content:center;z-index:70;padding:16px;}
+  #dlgCard{max-width:620px;width:100%;display:flex;gap:12px;align-items:flex-end;animation:slideUp .25s ease;}
+  @keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+  #dlgPortrait{
+    width:104px;height:104px;flex-shrink:0;border:3px solid var(--ink);border-radius:var(--r-sm);
+    background:var(--parchment-2);overflow:hidden;box-shadow:0 4px 0 rgba(74,53,38,.25);
+  }
+  #dlgPortrait svg{width:100%;height:100%;display:block;}
+  #dlgBox{flex:1;min-width:0;}
+  #dlgName{font-size:15px;font-weight:800;color:var(--coral-dark);margin-bottom:2px;}
+  #dlgText{font-size:15px;line-height:1.45;min-height:64px;font-weight:600;}
+  #dlgNext{margin-top:8px;}
+  @media (max-width:520px){
+    #dlgPortrait{width:76px;height:76px;}
+    #dlgText{font-size:14px;}
+  }
 </style>
 </head>
 <body>
 <div id="app">
 
   <div id="topbar">
-    <div class="badge"><span class="emoji">💵</span><span id="cashBadge">$0</span></div>
-    <div class="badge"><span class="emoji">⭐</span><span id="repBadge">0</span></div>
-    <div class="badge hidden" id="streakBadge"><span class="emoji">🔥</span><span id="streakVal">0</span></div>
+    <div class="badge cash"><span class="emoji">💵</span><span id="cashBadge">$0</span></div>
+    <div class="badge rep"><span class="emoji">⭐</span><span id="repBadge">0</span></div>
+    <div class="badge streak hidden" id="streakBadge"><span class="emoji">🔥</span><span id="streakVal">0</span></div>
+    <div class="badge crew hidden" id="crewBadge"><span class="emoji">👷</span><span id="crewVal">0</span></div>
   </div>
 
-  <!-- MENU -->
-  <div id="screen-menu" class="screen col">
+  <!-- ============ HOME ============ -->
+  <div id="screen-home" class="screen">
     <div id="hero">
-      <svg id="mascot" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
-        <rect x="24" y="120" width="80" height="6" fill="#3a2f28" opacity="0.15"/>
-        <rect x="32" y="48" width="64" height="6" fill="#3a2f28"/>
-        <rect x="32" y="52" width="6" height="20" fill="#3a2f28"/>
-        <rect x="90" y="52" width="6" height="20" fill="#3a2f28"/>
-        <rect x="24" y="60" width="16" height="16" fill="#f6ecd2"/>
-        <rect x="40" y="52" width="20" height="24" fill="#f6ecd2"/>
-        <rect x="64" y="56" width="20" height="20" fill="#f6ecd2"/>
-        <rect x="84" y="64" width="16" height="16" fill="#f6ecd2"/>
-        <rect x="28" y="68" width="72" height="52" fill="#3a2f28"/>
-        <rect x="32" y="72" width="64" height="44" fill="#4f8fa6"/>
-        <rect x="32" y="92" width="64" height="6" fill="#3a2f28"/>
-        <rect x="46" y="70" width="6" height="6" fill="#e39a8a"/>
-        <rect x="76" y="70" width="6" height="6" fill="#e39a8a"/>
-        <rect x="54" y="66" width="6" height="6" fill="#3a2f28"/>
-        <rect x="70" y="66" width="6" height="6" fill="#3a2f28"/>
-        <rect x="56" y="78" width="16" height="4" fill="#3a2f28"/>
-        <rect x="104" y="42" width="8" height="8" fill="#4f8fa6"/>
-        <rect x="98" y="50" width="18" height="8" fill="#4f8fa6"/>
-      </svg>
+      <div id="heroMascot"></div>
       <div class="title-wrap">
         <h1>Power Wash Co.</h1>
         <p>Grab the wand. Make it shine. Repeat.</p>
       </div>
     </div>
 
-    <div class="panel" id="truckHero">
-      <div id="vanScene"></div>
-      <p class="tier-name" id="rigTierName">Rookie Rig</p>
-      <p class="tier-sub" id="rigTierSub">A hose, a dream, and a little elbow grease.</p>
+    <div class="panel" id="truckStage">
+      <div id="truckArt"></div>
+      <p class="tier-name" id="tierName">Rookie Rig</p>
+      <p class="tier-sub" id="tierSub">A hose, a dream, and a little elbow grease.</p>
     </div>
 
-    <div class="panel" id="loanPanel"></div>
-
-    <div class="panel" id="buyoutPanel"></div>
-
-    <div class="panel">
-      <div class="bill-meter">
-        <div class="label-row"><span>Next overhead bill</span><span id="billDueLabel">$0 in 3 jobs</span></div>
-        <div class="meter-track"><div class="meter-fill" id="billMeterFill" style="width:0%"></div></div>
-      </div>
+    <div class="panel tight row spread center" id="regionBar">
+      <div class="region-chip"><span id="regionEmoji">🏡</span><span id="regionName">Maple Grove</span></div>
+      <button class="btn small ghost" id="btnMapQuick">🗺️ Change route</button>
     </div>
 
-    <button class="btn primary block" id="btnStartJob" style="padding:16px;font-size:19px;">💦 Start Next Job</button>
-    <div class="row">
-      <button class="btn teal block" id="btnEquip">🔧 Skill Tree</button>
-      <button class="btn green block" id="btnPerks">⭐ Legacy</button>
+    <button class="btn primary block big" id="btnStartJob">💦 Start Next Job</button>
+
+    <div class="stat-grid">
+      <div class="panel tight" id="billPanel"></div>
+      <div class="panel tight" id="crewPanel"></div>
     </div>
-    <div class="row center" style="gap:16px;">
-      <a class="link-muted" id="btnStory">📖 Our Story</a>
-      <a class="link-muted" id="btnStats">📊 Stats</a>
-      <a class="link-muted" id="btnReset">Reset save</a>
+
+    <div class="panel tight" id="buyoutPanel"></div>
+    <div class="panel tight" id="loanPanel"></div>
+
+    <div class="nav-grid">
+      <button class="btn teal" id="btnUpgrades">🔧 Upgrades</button>
+      <button class="btn green" id="btnCrew">👷 Crew</button>
+      <button class="btn" id="btnLegacy">⭐ Legacy</button>
+      <button class="btn ghost" id="btnMap">🗺️ Map</button>
+    </div>
+
+    <div class="link-row">
+      <a class="link" id="btnStory">📖 Our Story</a>
+      <a class="link" id="btnStats">📊 Stats</a>
+      <a class="link" id="btnReset">Reset save</a>
     </div>
   </div>
 
-  <!-- JOB -->
-  <div id="screen-job" class="screen col hidden">
-    <div id="job-header">
+  <!-- ============ MAP ============ -->
+  <div id="screen-map" class="screen hidden">
+    <div class="row spread center">
+      <h2>The Route</h2>
+      <button class="btn small ghost" id="btnBackMap">Back</button>
+    </div>
+    <p class="subtle">Work your way from the quiet suburbs, through downtown, out to the coast. Tap a spot to set your next job.</p>
+    <div id="mapArt"></div>
+    <div class="card-grid" id="regionGrid"></div>
+  </div>
+
+  <!-- ============ JOB ============ -->
+  <div id="screen-job" class="screen hidden">
+    <div id="jobHead">
       <div>
-        <h2 class="job-name" id="jobName">Driveway</h2>
-        <p id="jobGrimeLabel" style="margin:0;font-size:12.5px;font-weight:700;color:#6b6050;">Everyday Dirt</p>
+        <h2 id="jobName">Driveway</h2>
+        <p id="jobSub">Everyday Dirt · Maple Grove</p>
       </div>
-      <button class="btn ghost small" id="btnQuitJob">Pack up</button>
+      <button class="btn small ghost" id="btnQuitJob">Pack up</button>
     </div>
-    <div class="timer-wrap">
-      <div class="label-row"><span>Customer's patience</span><span id="timeLeftLabel">0:24</span></div>
-      <div class="meter-track"><div class="meter-fill" id="timerFill" style="width:100%"></div></div>
+
+    <div class="meter">
+      <div class="label-row"><span>Customer's patience</span><span id="timeLabel">0:40</span></div>
+      <div class="track"><div class="fill" id="timerFill" style="width:100%"></div></div>
     </div>
-    <div id="canvas-wrap">
-      <canvas id="cleanCanvas" width="800" height="500"></canvas>
-      <canvas id="dirtyCanvas" width="800" height="500"></canvas>
-      <canvas id="fxCanvas" width="800" height="500"></canvas>
-      <div id="weatherTint"></div>
-      <div id="jobIntro" class="hidden">
-        <div id="introTruck"></div>
-      </div>
-      <div id="refillPrompt" class="hidden">
-        <div class="panel" style="text-align:center;padding:16px 22px;">
-          <div style="font-size:30px;">🚰</div>
-          <div style="font-family:var(--pixel-font);font-weight:600;">Refilling tank…</div>
+
+    <div id="stage">
+      <canvas id="bgCanvas" width="960" height="600"></canvas>
+      <canvas id="grimeCanvas" width="960" height="600"></canvas>
+      <canvas id="fxCanvas" width="960" height="600"></canvas>
+      <div id="stageTint"></div>
+      <div id="stageOverlay" class="hidden">
+        <div class="overlay-card">
+          <div style="font-size:34px;">🚰</div>
+          <div id="overlayText" style="font-weight:800;">Refilling tank…</div>
         </div>
       </div>
     </div>
-    <div id="job-controls">
-      <div class="tank-wrap">
-        <div class="label-row"><span>Tank</span><span id="tankPct">100%</span></div>
-        <div class="meter-track"><div class="tank-fill" id="tankFill" style="width:100%"></div></div>
+
+    <div class="job-meters">
+      <div class="meter">
+        <div class="label-row"><span>💧 Tank</span><span id="tankLabel">100%</span></div>
+        <div class="track"><div class="fill water" id="tankFill" style="width:100%"></div></div>
       </div>
-      <div class="clean-wrap">
-        <div class="label-row"><span>Clean</span><span id="cleanPct">0%</span></div>
-        <div class="meter-track"><div class="clean-fill" id="cleanFill" style="width:0%"></div></div>
+      <div class="meter">
+        <div class="label-row"><span>✨ Clean</span><span id="cleanLabel">0%</span></div>
+        <div class="track"><div class="fill clean smooth" id="cleanFill" style="width:0%"></div></div>
       </div>
     </div>
+    <p class="subtle" style="text-align:center;" id="jobHint">Hold and drag across the grime. Thick patches need a few passes.</p>
   </div>
 
-  <!-- EQUIPMENT / SKILL TREE + SHOP -->
-  <div id="screen-equip" class="screen col hidden">
+  <!-- ============ UPGRADES ============ -->
+  <div id="screen-upgrades" class="screen hidden">
     <div class="row spread center">
-      <h2 class="section-title">Skill Tree</h2>
-      <button class="btn ghost small" id="btnBackFromEquip">Back</button>
+      <h2>Upgrades</h2>
+      <button class="btn small ghost" id="btnBackUpgrades">Back</button>
     </div>
-    <p class="subtle">Tap a node to upgrade. Lost if you get repossessed.</p>
-    <div class="tree-wrap" id="treeWrap">
-      <svg class="tree-lines" id="treeLines" viewBox="0 0 100 100"></svg>
-      <div class="thub">🚐</div>
+    <p class="subtle">Tap a node to upgrade the rig. Gear is lost if the van gets repossessed.</p>
+    <div class="panel">
+      <div class="tree-wrap" id="treeWrap">
+        <svg class="tree-lines" id="treeLines" viewBox="0 0 100 100"></svg>
+        <div class="thub">🚚</div>
+      </div>
     </div>
-    <hr class="divider">
-    <h3 style="margin:0;">Shop</h3>
-    <p class="subtle">One-off gear for the rig.</p>
-    <div class="perk-grid" id="itemGrid"></div>
+    <h3>Shop</h3>
+    <p class="subtle">One-off gear bolted onto the rig.</p>
+    <div class="card-grid" id="shopGrid"></div>
   </div>
 
-  <!-- PERKS -->
-  <div id="screen-perks" class="screen col hidden">
+  <!-- ============ CREW ============ -->
+  <div id="screen-crew" class="screen hidden">
     <div class="row spread center">
-      <h2 class="section-title">Legacy</h2>
-      <button class="btn ghost small" id="btnBackFromPerks">Back</button>
+      <h2>The Crew</h2>
+      <button class="btn small ghost" id="btnBackCrew">Back</button>
     </div>
-    <p class="subtle" id="legacyStatus">Spent with ⭐ reputation. Permanent — survives every repossession.</p>
-    <div class="perk-grid" id="perkGrid"></div>
-    <hr class="divider">
-    <h3 style="margin:0;">New Routes</h3>
-    <p class="subtle">Permanently add new job scenery to the rotation.</p>
-    <div class="perk-grid" id="unlockGrid"></div>
+    <p class="subtle">Every job you finish, your crew finishes one too — and the money lands in your pocket.</p>
+    <div class="panel tight" id="crewSummary"></div>
+    <div class="card-grid" id="crewGrid"></div>
   </div>
 
-  <!-- STATS -->
-  <div id="screen-stats" class="screen col hidden">
+  <!-- ============ LEGACY ============ -->
+  <div id="screen-legacy" class="screen hidden">
     <div class="row spread center">
-      <h2 class="section-title">Stats &amp; Achievements</h2>
-      <button class="btn ghost small" id="btnBackFromStats">Back</button>
+      <h2>Legacy</h2>
+      <button class="btn small ghost" id="btnBackLegacy">Back</button>
+    </div>
+    <p class="subtle" id="legacyStatus">Bought with ⭐ reputation. Permanent — survives every repossession.</p>
+    <div class="card-grid" id="perkGrid"></div>
+  </div>
+
+  <!-- ============ STATS ============ -->
+  <div id="screen-stats" class="screen hidden">
+    <div class="row spread center">
+      <h2>Stats &amp; Achievements</h2>
+      <button class="btn small ghost" id="btnBackStats">Back</button>
     </div>
     <div class="panel" id="statsPanel"></div>
-    <hr class="divider">
-    <h3 style="margin:0;">Achievements</h3>
-    <div class="perk-grid" id="achieveGrid"></div>
+    <h3>Achievements</h3>
+    <div class="card-grid" id="achieveGrid"></div>
   </div>
 
-  <div id="modal-overlay" class="hidden">
-    <div class="panel" id="modal-content"></div>
+  <div id="modalWrap" class="hidden">
+    <div class="panel" id="modalCard"></div>
+  </div>
+
+  <div id="dlgWrap" class="hidden">
+    <div id="dlgCard">
+      <div id="dlgPortrait"></div>
+      <div class="panel" id="dlgBox">
+        <div id="dlgName">Uncle Lenny</div>
+        <div id="dlgText"></div>
+        <button class="btn small block" id="dlgNext">Next ▸</button>
+      </div>
+    </div>
   </div>
 
 </div>
-
 <script>
 (function(){
   "use strict";
-  var SVG_NS = "http://www.w3.org/2000/svg";
 
-  /* ---------------- STATE ---------------- */
-  var STORAGE_KEY = "pwco_save_v2";
-  var defaultState = function(){
+  /* =========================================================
+     SAVE / STATE
+     ========================================================= */
+  var SAVE_KEY = "pwco_save_v3";
+
+  function defaultState(){
     return {
-      cash: 90,
+      cash: 120,
       rep: 0,
       loan: 0,
       jobsCompleted: 0,
       jobsSinceBill: 0,
       billNumber: 1,
       cashSinceRepo: 0,
-      seenIntro: false,
-      legacyAvailable: false,
       streak: 0,
       lifetimeEarnings: 0,
       ownedOutright: false,
-      gear: { nozzle:0, pressure:0, refill:0, rent:0, pay:0, patience:0, tipjar:0, watertank:0, prowasher:0, foamcannon:0, degreaser:0, permit:0 },
-      perks: { headstart:false, discount:false, lowoverhead:false, basepay:false, wordofmouth:false },
-      unlocks: { dock:false, pool:false, fence:false, roof:false },
-      stats: { bestCleanliness:0, longestStreak:0, repoCount:0 }
+      legacyAvailable: false,
+      region: "grove",
+      gear: { pressure:0, nozzle:0, tank:0, refill:0, pay:0, patience:0,
+              tipjar:0, prowasher:0, foamcannon:0, degreaser:0, permit:0, lease:0 },
+      perks: { headstart:false, discount:false, lowoverhead:false, basepay:false, wordofmouth:false, severance:false },
+      crew: {},
+      stats: { bestClean:0, longestStreak:0, repoCount:0, crewEarnings:0, grove:0, city:0, harbor:0 },
+      story: {}
     };
-  };
+  }
+
   var state = loadState();
 
   function loadState(){
     try{
-      var raw = localStorage.getItem(STORAGE_KEY);
+      var raw = localStorage.getItem(SAVE_KEY);
       if(!raw) return defaultState();
       var parsed = JSON.parse(raw);
       var d = defaultState();
-      parsed.gear = Object.assign(d.gear, parsed.gear||{});
-      parsed.perks = Object.assign(d.perks, parsed.perks||{});
-      parsed.unlocks = Object.assign(d.unlocks, parsed.unlocks||{});
-      parsed.stats = Object.assign(d.stats, parsed.stats||{});
+      parsed.gear   = Object.assign(d.gear,   parsed.gear   || {});
+      parsed.perks  = Object.assign(d.perks,  parsed.perks  || {});
+      parsed.stats  = Object.assign(d.stats,  parsed.stats  || {});
+      parsed.crew   = Object.assign(d.crew,   parsed.crew   || {});
+      parsed.story  = Object.assign(d.story,  parsed.story  || {});
       return Object.assign(d, parsed);
     }catch(e){ return defaultState(); }
   }
-  function saveState(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  function save(){
+    try{ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }catch(e){}
   }
 
-  /* ---------------- CONFIG ---------------- */
-  var BRANCH_ORDER = ["nozzle","pressure","refill","rent","pay","patience"];
-  var EQUIP_DEFS = {
-    nozzle:   { title:"Nozzle Width", icon:"🌊", costs:[70,190,420], desc:["Wider spray arc","Even wider arc","Full-width soak"] },
-    pressure: { title:"Water Pressure", icon:"⚡", costs:[90,240,500], desc:["Sips less water per spray","Sips even less","Barely sips at all"] },
-    refill:   { title:"Refill Speed", icon:"⏱️", costs:[80,210,440], desc:["Faster tank refills","Even faster","Near-instant refill"] },
-    rent:     { title:"Lower Rent", icon:"📋", costs:[100,260,540], desc:["Overhead bills 8% cheaper","16% cheaper total","24% cheaper total"] },
-    pay:      { title:"Money per Job", icon:"💵", costs:[90,230,480], desc:["+10% cash per job","+20% total","+30% total"] },
-    patience: { title:"Patience", icon:"⏳", costs:[70,190,420], desc:["+7s per job timer","+14s total","+21s total"] }
+  /* =========================================================
+     CONFIG
+     ========================================================= */
+  var BUYOUT_TARGET = 40000;
+  var OVERHEAD_CAP = 14;
+
+  var REGIONS = {
+    grove: {
+      id:"grove", name:"Maple Grove", emoji:"🏡",
+      tag:"Quiet suburb. Driveways, patios, decks — where every washer starts.",
+      pay:1.00, unlock:0,
+      jobs:["driveway","patio","deck","fence"],
+      grimes:["dust","mud","moss","grease","grease"],
+      sky:["#a8dcef","#e9f4da"]
+    },
+    city: {
+      id:"city", name:"Downtown", emoji:"🏙️",
+      tag:"Glass towers and greasy loading bays. Pays well, notices streaks.",
+      pay:1.55, unlock:12,
+      jobs:["windows","storefront","garage"],
+      grimes:["dust","soot","grease","soot","grease"],
+      sky:["#9dc6e6","#f1e2ca"]
+    },
+    harbor: {
+      id:"harbor", name:"Saltwick Harbor", emoji:"⚓",
+      tag:"Salt, barnacles and boat owners with deep pockets.",
+      pay:2.30, unlock:30,
+      jobs:["hull","dock","shack"],
+      grimes:["moss","salt","salt","grease","salt"],
+      sky:["#8fd2e2","#fce8bf"]
+    }
   };
-  var ITEM_DEFS = {
-    tipjar:      { title:"Tip Jar", icon:"🫙", costs:[130], desc:["Bolt one on: 30% chance of a bonus tip each job"] },
-    watertank:   { title:"Water Tank", icon:"🛢️", costs:[60,180,420], desc:["+50 tank capacity","+100 total capacity","+150 total capacity"] },
-    prowasher:   { title:"Pro Pressure Washer", icon:"🚿", costs:[650], desc:["A serious unit — bonus spray radius and efficiency"] },
-    foamcannon:  { title:"Foam Cannon", icon:"🫧", costs:[150,320], desc:["Auto-cleans a little on its own","Auto-cleans faster"] },
-    degreaser:   { title:"Chemical Degreaser", icon:"🧪", costs:[140,300], desc:["Cuts grime toughness by 12%","Cuts grime toughness by 24% total"] },
-    permit:      { title:"Business Permit", icon:"📜", costs:[220], desc:["+1 job before every overhead bill comes due"] }
+  var REGION_ORDER = ["grove","city","harbor"];
+
+  /* Grime types: shades go [thin film, mid, deep crust] */
+  var GRIME_TYPES = {
+    dust:   { name:"Dust & Pollen",     layers:2, pay:1.00, shades:["#b09a6b","#8b7449","#665430"], splash:"#e6d8b4" },
+    mud:    { name:"Caked Mud",         layers:3, pay:1.14, shades:["#9c7a52","#70522f","#4a351d"], splash:"#dcc5a2" },
+    moss:   { name:"Moss & Algae",      layers:3, pay:1.24, shades:["#93b166","#61883b","#3d6425"], splash:"#c9e4a6" },
+    grease: { name:"Grease & Grime",    layers:3, pay:1.36, shades:["#7f776a","#524c43","#2d2a24"], splash:"#d2ccbe" },
+    soot:   { name:"City Soot",         layers:3, pay:1.42, shades:["#8c8c93","#5d5d65","#34343b"], splash:"#d6d6de" },
+    salt:   { name:"Salt & Barnacles",  layers:4, pay:1.58, shades:["#c0cdc5","#93a79d","#657a70"], splash:"#eaf3ed" }
   };
 
-  var PERK_DEFS = {
-    headstart:    { title:"Loyal Client", icon:"🤝", cost:4, desc:"Every new rig starts with Nozzle lvl.1 already installed." },
-    discount:     { title:"Bulk Soap Deal", icon:"🧴", cost:5, desc:"All skill tree & shop purchases cost 15% less." },
-    lowoverhead:  { title:"Tax Write-off", icon:"📃", cost:6, desc:"Overhead bills are an extra 15% cheaper." },
-    basepay:      { title:"Regulars", icon:"📞", cost:5, desc:"Earn an extra 20% cash on every job." },
-    wordofmouth:  { title:"Word of Mouth", icon:"📣", cost:7, desc:"Earn +1 bonus reputation every time you pay a bill." }
-  };
-
-  var JOB_TYPES = [
-    { type:"driveway", name:"Driveway", clean:"#cdc6ba", margin:{top:44,bottom:0,left:30,right:30} },
-    { type:"patio", name:"Brick Patio", clean:"#cf8464", margin:{top:34,bottom:0,left:26,right:26} },
-    { type:"deck", name:"Wood Deck", clean:"#d1a468", margin:{top:34,bottom:0,left:0,right:0} },
-    { type:"wall", name:"Garden Wall", clean:"#ece5d2", margin:{top:50,bottom:34,left:0,right:0} }
-  ];
-  var DOCK_TYPE = { type:"dock", name:"Boat Dock", clean:"#a9a099", margin:{top:0,bottom:64,left:0,right:0} };
-  var POOL_TYPE = { type:"pool", name:"Pool Deck", clean:"#d9d2c2", margin:{top:0,bottom:54,left:0,right:0} };
-  var FENCE_TYPE = { type:"fence", name:"Garden Fence", clean:"#c9b184", margin:{top:38,bottom:36,left:0,right:0} };
-  var ROOF_TYPE = { type:"roof", name:"Rooftop", clean:"#8fa3ad", margin:{top:0,bottom:48,left:18,right:18} };
-
-  var UNLOCK_DEFS = {
-    dock: { title:"Boat Dock Route", icon:"🛥️", cost:6, desc:"Unlocks Boat Dock jobs — new scenery in the rotation for good." },
-    pool: { title:"Pool Deck Route", icon:"🏊", cost:8, desc:"Unlocks Pool Deck jobs — new scenery in the rotation for good." },
-    fence: { title:"Garden Fence Route", icon:"🌿", cost:5, desc:"Unlocks Garden Fence jobs — new scenery in the rotation for good." },
-    roof: { title:"Rooftop Route", icon:"🏠", cost:9, desc:"Unlocks Rooftop jobs — new scenery in the rotation for good." }
-  };
-  function pickJob(){
-    var pool = JOB_TYPES.slice();
-    if(state.unlocks.dock) pool.push(DOCK_TYPE);
-    if(state.unlocks.pool) pool.push(POOL_TYPE);
-    if(state.unlocks.fence) pool.push(FENCE_TYPE);
-    if(state.unlocks.roof) pool.push(ROOF_TYPE);
-    return pool[state.jobsCompleted % pool.length];
-  }
-
-  /* Difficulty scales with your rig tier: better gear unlocks tougher (better-paying) grime */
-  var GRIME_TIERS = [
-    { name:"Everyday Dirt", a:"#5b4327", b:"#463319", payMult:1.00, toughness:1.00, splash:"#d8c9a3" },
-    { name:"Moss & Algae", a:"#4a5d23", b:"#374717", payMult:1.15, toughness:1.25, splash:"#bfe0a0" },
-    { name:"Grease & Grime", a:"#2b2620", b:"#1c1812", payMult:1.30, toughness:1.50, splash:"#cfd0c8" },
-    { name:"Rust Stains", a:"#8a4a1f", b:"#6b3714", payMult:1.45, toughness:1.75, splash:"#e3b98a" },
-    { name:"Old Paint & Graffiti", a:"#5e3d7a", b:"#7a2e5e", payMult:1.60, toughness:2.00, splash:"#e0b3d6" }
+  var WEATHERS = [
+    { name:"Sunny",    tint:"transparent",           sun:true  },
+    { name:"Overcast", tint:"rgba(92,102,112,0.12)", sun:false },
+    { name:"Golden",   tint:"rgba(240,150,70,0.14)", sun:true  },
+    { name:"Drizzle",  tint:"rgba(70,92,104,0.18)",  sun:false, rain:true }
   ];
 
-  /* Weather variety for job backdrops */
-  var WEATHER_TYPES = [
-    { name:"Sunny", sky:"linear-gradient(180deg, #a9d8c9 0%, #f3e3ad 100%)", tint:"transparent", rain:false },
-    { name:"Overcast", sky:"linear-gradient(180deg, #b7c2c9 0%, #d9dfd6 100%)", tint:"rgba(90,100,110,0.10)", rain:false },
-    { name:"Sunset", sky:"linear-gradient(180deg, #e6a97a 0%, #f6d69a 100%)", tint:"rgba(230,140,90,0.10)", rain:false },
-    { name:"Drizzle", sky:"linear-gradient(180deg, #8fa3ad 0%, #c7d3d6 100%)", tint:"rgba(70,90,100,0.16)", rain:true }
+  /* Skill tree — pressure is the headline stat now */
+  var BRANCHES = ["pressure","nozzle","tank","refill","pay","patience"];
+  var GEAR = {
+    pressure:{ title:"Water Pressure", icon:"⚡", costs:[110,290,640],
+      desc:["Strips grime noticeably faster","Cuts through the mid layer","Blasts deep crust in one pass"] },
+    nozzle:  { title:"Nozzle Width",   icon:"🌊", costs:[90,240,520],
+      desc:["A wider spray arc","Wider still","Full-width soak"] },
+    tank:    { title:"Tank Capacity",  icon:"🛢️", costs:[80,210,480],
+      desc:["+110 litres in the tank","+240 total","+400 total — refill far less often"] },
+    refill:  { title:"Refill Speed",   icon:"⏱️", costs:[90,230,470],
+      desc:["Faster tank refills","Even faster","Near-instant refill"] },
+    pay:     { title:"Money per Job",  icon:"💵", costs:[100,260,560],
+      desc:["+12% cash per job","+24% total","+36% total"] },
+    patience:{ title:"Patience",       icon:"⏳", costs:[80,210,460],
+      desc:["+10s on every job","+20s total","+30s total"] }
+  };
+  var SHOP = {
+    prowasher: { title:"Pro Pressure Washer", icon:"🚿", costs:[900],
+      desc:["A serious unit — big bonus to spray power and reach"] },
+    degreaser: { title:"Chemical Degreaser", icon:"🧪", costs:[220,460],
+      desc:["Grime gives way 18% easier","32% easier in total"] },
+    foamcannon:{ title:"Foam Cannon", icon:"🫧", costs:[260,540],
+      desc:["Slowly eats grime on its own","Eats it noticeably faster"] },
+    tipjar:    { title:"Tip Jar", icon:"🫙", costs:[190],
+      desc:["Bolt one on: 35% chance of a tip after every job"] },
+    permit:    { title:"Business Permit", icon:"📜", costs:[340],
+      desc:["+1 job before every overhead bill comes due"] },
+    lease:     { title:"Cheaper Lease", icon:"📋", costs:[300,700,1500],
+      desc:["Overhead bills 10% cheaper","20% cheaper","30% cheaper"] }
+  };
+  var PERKS = {
+    headstart:   { title:"Loyal Client", icon:"🤝", cost:4,  desc:"Every new rig starts with Water Pressure lvl.1 installed." },
+    discount:    { title:"Bulk Soap Deal", icon:"🧴", cost:5, desc:"All upgrades and shop gear cost 15% less." },
+    basepay:     { title:"Regulars", icon:"📞", cost:5,      desc:"Earn an extra 20% cash on every job." },
+    lowoverhead: { title:"Tax Write-off", icon:"📃", cost:6, desc:"Overhead bills are an extra 15% cheaper." },
+    severance:   { title:"Severance Pay", icon:"🤝", cost:8, desc:"Your first crew member stays on through a repossession." },
+    wordofmouth: { title:"Word of Mouth", icon:"📣", cost:7, desc:"Earn +1 bonus reputation every time you pay a bill." }
+  };
+  var CREW = [
+    { id:"jordan", name:"Jordan", emoji:"🧢", hire:520,  rate:30,  ups:[420,1000,2400],   blurb:"Your cousin. Shows up. Mostly." },
+    { id:"mimi",   name:"Mimi",   emoji:"🎧", hire:2100, rate:85,  ups:[1400,3200,7000],  blurb:"Fast, thorough, headphones always in." },
+    { id:"rex",    name:"Rex",    emoji:"🧔", hire:6400, rate:230, ups:[4200,9500,19000], blurb:"Ex-ferry mechanic. Fears no barnacle." }
   ];
 
-  /* Lifetime buyout goal -- pays off Uncle Lenny's debt for good */
-  var BUYOUT_TARGET = 25000;
-  var OVERHEAD_EXP_CAP = 14;
+  var ACHIEVEMENTS = [
+    { icon:"💦", title:"First Splash",   desc:"Finish your first job.",            cond:function(s){ return s.jobsCompleted>=1; } },
+    { icon:"🧽", title:"Regular Route",  desc:"Finish 15 jobs.",                   cond:function(s){ return s.jobsCompleted>=15; } },
+    { icon:"🏙️", title:"Big Leagues",    desc:"Take a job downtown.",              cond:function(s){ return s.stats.city>=1; } },
+    { icon:"⚓", title:"Sea Legs",       desc:"Take a job at the harbor.",         cond:function(s){ return s.stats.harbor>=1; } },
+    { icon:"✨", title:"Spotless",       desc:"Finish a job at 99% clean.",        cond:function(s){ return s.stats.bestClean>=99; } },
+    { icon:"🔥", title:"On a Roll",      desc:"Reach a 10-job streak.",            cond:function(s){ return s.stats.longestStreak>=10; } },
+    { icon:"👷", title:"Boss Energy",    desc:"Hire your first crew member.",      cond:function(s){ return Object.keys(s.crew).length>=1; } },
+    { icon:"🏢", title:"Whole Operation",desc:"Have all three crew on payroll.",   cond:function(s){ return Object.keys(s.crew).length>=3; } },
+    { icon:"🚨", title:"Rock Bottom",    desc:"Get the van repossessed once.",     cond:function(s){ return s.stats.repoCount>=1; } },
+    { icon:"💰", title:"Debt Free",      desc:"Own Power Wash Co. outright.",      cond:function(s){ return !!s.ownedOutright; } }
+  ];
 
-  /* ---------------- HELPERS ---------------- */
+  /* =========================================================
+     SMALL HELPERS
+     ========================================================= */
   function $(id){ return document.getElementById(id); }
-  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-  function shade(hex, pct){
-    var f = parseInt(hex.slice(1),16), t = pct<0?0:255, p = Math.abs(pct)/100;
-    var R = f>>16, G = f>>8&0x00FF, B = f&0x0000FF;
-    var nr = Math.round((t-R)*p)+R, ng = Math.round((t-G)*p)+G, nb = Math.round((t-B)*p)+B;
-    return "#"+(0x1000000+nr*0x10000+ng*0x100+nb).toString(16).slice(1);
+  function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+  function money(n){ return "$" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function pick(arr,i){ return arr[((i % arr.length)+arr.length) % arr.length]; }
+  function polar(cx,cy,r,deg){ var a=deg*Math.PI/180; return {x:cx+r*Math.cos(a), y:cy+r*Math.sin(a)}; }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function rnd(a,b){ return a + Math.random()*(b-a); }
+
+  /* Deterministic RNG so a job's scenery stays put while you wash it */
+  function makeRng(seed){
+    var s = seed >>> 0 || 1;
+    return function(){
+      s ^= s << 13; s >>>= 0;
+      s ^= s >> 17;
+      s ^= s << 5;  s >>>= 0;
+      return (s >>> 0) / 4294967296;
+    };
   }
-  function polar(cx,cy,r,angleDeg){
-    var rad = angleDeg*Math.PI/180;
-    return { x: cx + r*Math.cos(rad), y: cy + r*Math.sin(rad) };
+
+  /* Rounded rect path (works without ctx.roundRect) */
+  function rr(ctx,x,y,w,h,r){
+    r = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
   }
-  function getDef(key){ return EQUIP_DEFS[key] || ITEM_DEFS[key]; }
-  function gearLevel(k){ return state.gear[k]||0; }
-  function gearCost(k, level){
-    var def = getDef(k);
-    if(level >= def.costs.length) return null;
-    var base = def.costs[level];
-    return Math.round(base * (state.perks.discount ? 0.85 : 1));
+  function fillRR(ctx,x,y,w,h,r,fill){ rr(ctx,x,y,w,h,r); ctx.fillStyle=fill; ctx.fill(); }
+
+  /* =========================================================
+     DERIVED STATS
+     ========================================================= */
+  function lvl(k){ return state.gear[k] || 0; }
+  function gearDef(k){ return GEAR[k] || SHOP[k]; }
+  function costOf(k, level){
+    var d = gearDef(k);
+    if(!d || level >= d.costs.length) return null;
+    return Math.round(d.costs[level] * (state.perks.discount ? 0.85 : 1));
   }
-  function tankMax(){ return 100 + gearLevel("watertank")*50; }
-  function brushRadius(){ return 24 + gearLevel("nozzle")*11 + (gearLevel("prowasher")>0?18:0); }
-  function powerEff(){ return 1 + gearLevel("pressure")*0.4 + (gearLevel("prowasher")>0?0.5:0); }
-  function refillTime(){ return Math.max(700, 2600 - gearLevel("refill")*650); }
-  function foamAutoLevel(){ return gearLevel("foamcannon"); }
-  function jobDuration(){ return 22000 + gearLevel("patience")*7000; }
-  function tipChance(){ return gearLevel("tipjar")>0 ? 0.3 : 0; }
-  function billInterval(){ return 3 + (gearLevel("permit")>0 ? 1 : 0); }
-  function toughnessFactor(){ return Math.max(0.55, 1 - gearLevel("degreaser")*0.12); }
-  function rentMultiplier(){
-    return Math.max(0.5, 1 - gearLevel("rent")*0.08) * (state.perks.lowoverhead ? 0.85 : 1);
+
+  function tankMax(){ return 260 + [0,110,240,400][Math.min(3, lvl("tank"))]; }
+  function sprayPower(){
+    return 0.50 + lvl("pressure")*0.30 + (lvl("prowasher")>0 ? 0.42 : 0);
   }
-  function payMultiplier(){
-    return (1 + gearLevel("pay")*0.1) * (state.perks.basepay ? 1.2 : 1);
-  }
-  function streakBonusMult(){
-    return 1 + Math.min(0.25, state.streak*0.01);
-  }
+  function sprayRadius(){ return 34 + lvl("nozzle")*9 + (lvl("prowasher")>0 ? 12 : 0); }
+  function waterPerTick(){ return 0.85; }
+  function refillMs(){ return Math.max(550, 1700 - lvl("refill")*400); }
+  function jobMs(){ return 40000 + lvl("patience")*10000; }
+  function degreaserMult(){ return [1, 1.18, 1.32][Math.min(2, lvl("degreaser"))]; }
+  function foamLevel(){ return lvl("foamcannon"); }
+  function tipChance(){ return lvl("tipjar")>0 ? 0.35 : 0; }
+  function billEvery(){ return 3 + (lvl("permit")>0 ? 1 : 0); }
+  function leaseMult(){ return [1, 0.90, 0.80, 0.70][Math.min(3, lvl("lease"))]; }
+  function overheadMult(){ return leaseMult() * (state.perks.lowoverhead ? 0.85 : 1); }
+  function payMult(){ return (1 + lvl("pay")*0.12) * (state.perks.basepay ? 1.2 : 1); }
+  function streakMult(){ return 1 + Math.min(0.30, state.streak*0.012); }
+  function regionDef(){ return REGIONS[state.region] || REGIONS.grove; }
+
   function overheadAmount(n){
-    if(state.ownedOutright) return 20;
-    var cappedN = Math.min(n, OVERHEAD_EXP_CAP);
-    var amt = 85 * Math.pow(1.15, cappedN-1);
-    if(n > OVERHEAD_EXP_CAP){ amt += (n-OVERHEAD_EXP_CAP)*40; }
-    return Math.round(amt * rentMultiplier());
+    if(state.ownedOutright) return 25;
+    var capped = Math.min(n, OVERHEAD_CAP);
+    var amt = 95 * Math.pow(1.15, capped-1);
+    if(n > OVERHEAD_CAP) amt += (n - OVERHEAD_CAP) * 45;
+    return Math.round(amt * overheadMult());
   }
-  function totalGearScore(){
-    var s = 0;
-    Object.keys(state.gear).forEach(function(k){ s += state.gear[k]||0; });
-    return s;
+
+  function gearScore(){
+    var s=0; for(var k in state.gear){ s += state.gear[k]||0; } return s;
   }
-  function rigTierIndex(){
-    var sum = totalGearScore();
-    if(sum===0) return 0;
-    if(sum<=6) return 1;
-    if(sum<=13) return 2;
-    if(sum<=20) return 3;
+  function rigTier(){
+    var s = gearScore();
+    if(s===0) return 0;
+    if(s<=5) return 1;
+    if(s<=12) return 2;
+    if(s<=19) return 3;
     return 4;
   }
-  var TIER_NAMES = [
-    ["Rookie Rig","A hose, a dream, and a little elbow grease."],
+  var TIERS = [
+    ["Rookie Rig","A hose, a dream and a little elbow grease."],
     ["Starter Rig","Getting the hang of this."],
-    ["Solid Rig","Neighbors are starting to notice."],
+    ["Solid Rig","The neighbours are starting to notice."],
     ["Pro Rig","This thing hums."],
     ["Elite Rig","People book you weeks in advance."]
   ];
-  var TIER_BODY = ["#cfc7b3","#7fb8c9","#4f8fa6","#c1683f","#e0a83e"];
-  var TIER_STRIPE = ["#a89d80","#4f8fa6","#356273","#8f4726","#a97a22"];
 
-  /* ---------------- TRUCK ART (shared by menu + job intro) ---------------- */
-  function buildTruckSVG(){
-    var tier = rigTierIndex();
-    var body = TIER_BODY[tier], stripe = TIER_STRIPE[tier];
-    var tankLvl = gearLevel("watertank");
-    var tankH = 16 + tankLvl*6;
-    var hasTip = gearLevel("tipjar")>0;
-    var hasPro = gearLevel("prowasher")>0;
-    var s = '<svg viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" style="width:100%;height:auto;display:block;">';
-    s += '<rect x="10" y="98" width="200" height="8" fill="#3a2f28" opacity="0.15"/>';
-    s += '<rect x="20" y="48" width="118" height="42" fill="'+body+'" stroke="#3a2f28" stroke-width="4"/>';
-    s += '<rect x="138" y="48" width="34" height="42" fill="'+body+'" stroke="#3a2f28" stroke-width="4"/>';
-    s += '<rect x="146" y="54" width="18" height="16" fill="#bdeaf6" stroke="#3a2f28" stroke-width="3"/>';
-    s += '<rect x="20" y="62" width="118" height="8" fill="'+stripe+'"/>';
-    s += '<rect x="36" y="86" width="22" height="22" fill="#3a2f28"/><rect x="42" y="92" width="10" height="10" fill="#c9c2b0"/>';
-    s += '<rect x="140" y="86" width="22" height="22" fill="#3a2f28"/><rect x="146" y="92" width="10" height="10" fill="#c9c2b0"/>';
-    s += '<rect x="4" y="'+(70-tankH)+'" width="20" height="'+tankH+'" fill="#4f8fa6" stroke="#3a2f28" stroke-width="3"/>';
-    if(hasTip){ s += '<rect x="26" y="34" width="16" height="14" fill="#e0a83e" stroke="#3a2f28" stroke-width="3"/><rect x="30" y="38" width="8" height="6" fill="#3a2f28"/>'; }
-    if(tier>=4){ s += '<rect x="180" y="20" width="6" height="6" fill="#e0a83e"/><rect x="192" y="30" width="4" height="4" fill="#e0a83e"/>'; }
-    s += '<rect x="178" y="66" width="28" height="20" fill="'+(hasPro?"#d8d8d8":"#e0a83e")+'" stroke="#3a2f28" stroke-width="3"/>';
-    s += '<rect x="188" y="72" width="10" height="8" fill="'+(hasPro?"#a4485f":"#c1683f")+'"/>';
-    s += '<rect x="182" y="86" width="6" height="14" fill="#4f8fa6"/>';
+  function crewHired(id){ return state.crew[id] != null; }
+  function crewLevel(id){ return state.crew[id] || 0; }
+  function crewIncome(){
+    var total = 0;
+    CREW.forEach(function(c){
+      if(!crewHired(c.id)) return;
+      total += c.rate * (1 + crewLevel(c.id)*0.6);
+    });
+    return Math.round(total * regionDef().pay);
+  }
+  function regionUnlocked(id){
+    return state.jobsCompleted >= REGIONS[id].unlock;
+  }
+
+  /* =========================================================
+     SVG ART — mascot, truck, portraits, map
+     ========================================================= */
+  function mascotSVG(){
+    return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">' +
+      '<ellipse cx="32" cy="58" rx="17" ry="4" fill="#4a3526" opacity=".18"/>' +
+      '<path d="M32 8 C42 24 50 32 50 41 a18 18 0 0 1-36 0 C14 32 22 24 32 8 Z" fill="#6fc4e8" stroke="#4a3526" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M32 14 C38 25 44 32 44 40" stroke="#bfeaf8" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+      '<circle cx="25" cy="40" r="3.4" fill="#4a3526"/><circle cx="39" cy="40" r="3.4" fill="#4a3526"/>' +
+      '<circle cx="26.3" cy="38.8" r="1.1" fill="#fff"/><circle cx="40.3" cy="38.8" r="1.1" fill="#fff"/>' +
+      '<path d="M27 47 q5 4 10 0" stroke="#4a3526" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+      '<ellipse cx="19" cy="45" rx="3" ry="2" fill="#f19b8a" opacity=".65"/>' +
+      '<ellipse cx="45" cy="45" rx="3" ry="2" fill="#f19b8a" opacity=".65"/>' +
+      '<path d="M16 26 q16-10 32 0" stroke="#e8794a" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+      '</svg>';
+  }
+
+  var TIER_PAINT = [
+    { body:"#d8d2c4", trim:"#a89d80" },
+    { body:"#8fc4d8", trim:"#4a9cc4" },
+    { body:"#4a9cc4", trim:"#2d7096" },
+    { body:"#e8794a", trim:"#bb5527" },
+    { body:"#f5c451", trim:"#cc9721" }
+  ];
+
+  function truckSVG(){
+    var t = rigTier();
+    var p = TIER_PAINT[t];
+    var tankLvl = lvl("tank");
+    var tankW = 104 + tankLvl*8;
+    var hasPro = lvl("prowasher")>0;
+    var hasTip = lvl("tipjar")>0;
+    var s = '<svg viewBox="0 0 280 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">';
+    s += '<ellipse cx="140" cy="132" rx="116" ry="9" fill="#4a3526" opacity=".16"/>';
+    /* chassis */
+    s += '<rect x="26" y="96" width="228" height="12" rx="5" fill="#5c4634"/>';
+    /* rear water tank (cylinder) */
+    s += '<rect x="34" y="'+(96-tankW*0.44)+'" width="'+tankW+'" height="'+(tankW*0.44)+'" rx="'+(tankW*0.20)+'" fill="'+p.body+'" stroke="#4a3526" stroke-width="4"/>';
+    s += '<rect x="'+(34+tankW*0.30)+'" y="'+(96-tankW*0.44)+'" width="5" height="'+(tankW*0.44)+'" fill="#4a3526" opacity=".35"/>';
+    s += '<rect x="'+(34+tankW*0.62)+'" y="'+(96-tankW*0.44)+'" width="5" height="'+(tankW*0.44)+'" fill="#4a3526" opacity=".35"/>';
+    /* water gauge window */
+    s += '<rect x="'+(34+tankW*0.40)+'" y="'+(96-tankW*0.34)+'" width="18" height="'+(tankW*0.24)+'" rx="5" fill="#bfeaf8" stroke="#4a3526" stroke-width="3"/>';
+    s += '<rect x="'+(34+tankW*0.40)+'" y="'+(96-tankW*0.20)+'" width="18" height="'+(tankW*0.10)+'" rx="3" fill="#4a9cc4"/>';
+    /* filler cap on top */
+    s += '<rect x="'+(34+tankW*0.12)+'" y="'+(96-tankW*0.50)+'" width="16" height="9" rx="3" fill="#8a5f36" stroke="#4a3526" stroke-width="3"/>';
+    /* pressure washer unit */
+    s += '<rect x="'+(38+tankW)+'" y="70" width="34" height="28" rx="6" fill="'+(hasPro?"#e6e6e6":"#d8b26a")+'" stroke="#4a3526" stroke-width="3.5"/>';
+    s += '<circle cx="'+(38+tankW+17)+'" cy="84" r="6" fill="'+(hasPro?"#c9557a":"#b5834f")+'" stroke="#4a3526" stroke-width="2.5"/>';
+    /* hose reel */
+    s += '<circle cx="'+(38+tankW+17)+'" cy="62" r="14" fill="#f3e4c0" stroke="#4a3526" stroke-width="3.5"/>';
+    s += '<circle cx="'+(38+tankW+17)+'" cy="62" r="6" fill="#6fc4e8" stroke="#4a3526" stroke-width="2.5"/>';
+    s += '<path d="M'+(38+tankW+17)+' 76 q-6 14 -18 18" stroke="#3e5c4a" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    /* cab */
+    s += '<path d="M'+(76+tankW)+' 96 L'+(76+tankW)+' 58 q0-8 8-8 h30 q7 0 11 6 l14 22 h9 q6 0 6 6 v12 z" fill="'+p.body+'" stroke="#4a3526" stroke-width="4" stroke-linejoin="round"/>';
+    /* windshield */
+    s += '<path d="M'+(118+tankW)+' 56 l12 20 h-22 v-20 z" fill="#bfeaf8" stroke="#4a3526" stroke-width="3" stroke-linejoin="round"/>';
+    s += '<rect x="'+(84+tankW)+'" y="56" width="20" height="20" rx="4" fill="#bfeaf8" stroke="#4a3526" stroke-width="3"/>';
+    /* door line + handle */
+    s += '<rect x="'+(84+tankW)+'" y="80" width="22" height="3" rx="1.5" fill="#4a3526" opacity=".4"/>';
+    /* stripe */
+    s += '<rect x="34" y="88" width="'+(tankW+108)+'" height="8" rx="4" fill="'+p.trim+'"/>';
+    /* wheels */
+    [66, 178+ (tankW-104)].forEach(function(wx){
+      s += '<circle cx="'+wx+'" cy="110" r="21" fill="#3c2f26" stroke="#4a3526" stroke-width="3"/>';
+      s += '<circle cx="'+wx+'" cy="110" r="9" fill="#e6d2a8" stroke="#4a3526" stroke-width="2.5"/>';
+    });
+    /* roof light bar at high tiers */
+    if(t>=3){ s += '<rect x="'+(92+tankW)+'" y="44" width="26" height="8" rx="4" fill="#f5c451" stroke="#4a3526" stroke-width="3"/>'; }
+    /* tip jar */
+    if(hasTip){ s += '<rect x="46" y="'+(96-tankW*0.44-18)+'" width="15" height="14" rx="3" fill="#f5c451" stroke="#4a3526" stroke-width="3"/>'; }
+    /* ladder */
+    s += '<rect x="'+(34+tankW*0.72)+'" y="'+(96-tankW*0.40)+'" width="4" height="'+(tankW*0.36)+'" rx="2" fill="#8a5f36"/>';
+    return s + '</svg>';
+  }
+
+  function portraitSVG(who){
+    if(who==="lenny"){
+      return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="100" height="100" fill="#ffe2b8"/>' +
+        '<circle cx="50" cy="104" r="42" fill="#3fa8c4"/>' +           /* hawaiian shirt */
+        '<path d="M30 102 q8-16 20-16 t20 16" fill="#65c7dd"/>' +
+        '<circle cx="50" cy="52" r="27" fill="#f2c79c"/>' +             /* face */
+        '<path d="M23 46 q27-22 54 0 l2-8 q-29-22-58 0 z" fill="#e8e4df"/>' + /* grey hair */
+        '<path d="M20 44 q30-26 60 0 q2-22-30-22 t-30 22z" fill="#f5f2ee"/>' +
+        '<rect x="30" y="50" width="16" height="11" rx="5" fill="#3b3b42" opacity=".85"/>' +
+        '<rect x="54" y="50" width="16" height="11" rx="5" fill="#3b3b42" opacity=".85"/>' +
+        '<rect x="45" y="54" width="10" height="3" fill="#3b3b42" opacity=".85"/>' +
+        '<path d="M38 70 q12 7 24 0" stroke="#b08159" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+        '<path d="M36 66 q14-6 28 0 q-14 5-28 0z" fill="#e8e4df"/>' +   /* moustache */
+        '</svg>';
+    }
+    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="100" height="100" fill="#d9eef8"/>' +
+      '<circle cx="50" cy="104" r="42" fill="#4a9cc4"/>' +
+      '<rect x="36" y="86" width="28" height="20" rx="6" fill="#e8794a"/>' +
+      '<circle cx="50" cy="54" r="26" fill="#f6ceac"/>' +
+      '<path d="M24 48 q26-26 52 0 v-4 q-26-24-52 0z" fill="#8a5f36"/>' +
+      '<path d="M22 46 q28-30 56 0 q4-26-28-26 t-28 26z" fill="#e8794a"/>' + /* cap */
+      '<path d="M18 46 q10 6 22 5 l-2 6 q-14 0-22-6z" fill="#bb5527"/>' +
+      '<circle cx="41" cy="56" r="3.2" fill="#4a3526"/><circle cx="59" cy="56" r="3.2" fill="#4a3526"/>' +
+      '<circle cx="42" cy="55" r="1" fill="#fff"/><circle cx="60" cy="55" r="1" fill="#fff"/>' +
+      '<path d="M43 68 q7 6 14 0" stroke="#4a3526" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '<ellipse cx="33" cy="63" rx="4" ry="3" fill="#f19b8a" opacity=".6"/>' +
+      '<ellipse cx="67" cy="63" rx="4" ry="3" fill="#f19b8a" opacity=".6"/>' +
+      '</svg>';
+  }
+
+  function mapSVG(){
+    var cur = state.region;
+    function marker(x,y,id,label,emoji){
+      var open = regionUnlocked(id);
+      var active = cur===id && open;
+      var s = '<g>';
+      s += '<circle cx="'+x+'" cy="'+y+'" r="'+(active?23:19)+'" fill="'+(open?"#fdf4de":"#c9bfae")+'" stroke="#4a3526" stroke-width="3.5"/>';
+      if(active) s += '<circle cx="'+x+'" cy="'+y+'" r="28" fill="none" stroke="#e8794a" stroke-width="3.5" stroke-dasharray="5 5"/>';
+      s += '<text x="'+x+'" y="'+(y+7)+'" text-anchor="middle" font-size="20">'+(open?emoji:"🔒")+'</text>';
+      s += '<text x="'+x+'" y="'+(y+44)+'" text-anchor="middle" font-size="13" font-weight="800" fill="#4a3526" font-family="Baloo 2, sans-serif">'+label+'</text>';
+      s += '</g>';
+      return s;
+    }
+    var s = '<svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">';
+    s += '<defs><linearGradient id="mapsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe6f4"/><stop offset="1" stop-color="#e9f4da"/></linearGradient></defs>';
+    s += '<rect width="600" height="200" fill="url(#mapsky)"/>';
+    /* land */
+    s += '<path d="M0 118 q90-16 170 2 q80 18 150-4 q70-22 140 4 q70 26 140 6 v74 H0 z" fill="#8fc46a"/>';
+    s += '<path d="M392 200 q22-44 74-56 q60-14 134 4 v52 z" fill="#4a9cc4"/>';
+    s += '<path d="M392 200 q22-44 74-56 q60-14 134 4 l0 9 q-74-20-132-5 q-50 13-70 52z" fill="#bfeaf8" opacity=".85"/>';
+    /* suburb houses */
+    s += '<g stroke="#4a3526" stroke-width="2.5">';
+    s += '<rect x="58" y="96" width="30" height="24" rx="3" fill="#fdf4de"/><path d="M53 96 l20-14 l20 14z" fill="#e8794a"/>';
+    s += '<rect x="104" y="102" width="24" height="18" rx="3" fill="#f3e4c0"/><path d="M100 102 l16-11 l16 11z" fill="#c9557a"/>';
+    s += '</g>';
+    s += '<g fill="#4d7f33"><circle cx="30" cy="112" r="13"/><circle cx="142" cy="110" r="11"/><circle cx="92" cy="140" r="12"/></g>';
+    /* city towers */
+    s += '<g stroke="#4a3526" stroke-width="2.5">';
+    s += '<rect x="250" y="52" width="30" height="72" rx="3" fill="#cfd8de"/>';
+    s += '<rect x="286" y="70" width="26" height="54" rx="3" fill="#e2e8ec"/>';
+    s += '<rect x="316" y="40" width="24" height="84" rx="3" fill="#bcc7d0"/>';
+    s += '</g>';
+    s += '<g fill="#8fd0e8" opacity=".9">';
+    for(var i=0;i<4;i++){ for(var j=0;j<3;j++){ s += '<rect x="'+(255+j*9)+'" y="'+(60+i*15)+'" width="6" height="9" rx="1"/>'; } }
+    for(var i2=0;i2<4;i2++){ for(var j2=0;j2<2;j2++){ s += '<rect x="'+(321+j2*9)+'" y="'+(48+i2*16)+'" width="6" height="10" rx="1"/>'; } }
+    s += '</g>';
+    /* harbor */
+    s += '<g stroke="#4a3526" stroke-width="2.5">';
+    s += '<rect x="470" y="104" width="54" height="9" rx="3" fill="#b5834f"/>';
+    s += '<rect x="478" y="112" width="5" height="16" fill="#8a5f36"/><rect x="510" y="112" width="5" height="16" fill="#8a5f36"/>';
+    s += '<path d="M534 118 h46 l-8 14 h-32z" fill="#fdf4de"/><rect x="552" y="96" width="4" height="22" fill="#4a3526"/>';
+    s += '<path d="M556 98 l18 10 l-18 8z" fill="#e8794a"/>';
+    s += '</g>';
+    /* road */
+    s += '<path d="M20 160 q140-30 280 0 q140 30 280 0" stroke="#c9bfae" stroke-width="9" fill="none" stroke-linecap="round"/>';
+    s += '<path d="M20 160 q140-30 280 0 q140 30 280 0" stroke="#fdf4de" stroke-width="2.5" fill="none" stroke-dasharray="10 12"/>';
+    s += marker(95, 150, "grove", "Maple Grove", "🏡");
+    s += marker(300, 152, "city", "Downtown", "🏙️");
+    s += marker(520, 150, "harbor", "Saltwick", "⚓");
     s += '</svg>';
     return s;
   }
-  function renderVanScene(){
-    $("vanScene").innerHTML = buildTruckSVG();
-  }
 
-  /* ---------------- RENDER: TOP + MENU ---------------- */
-  function renderTop(){
-    $("cashBadge").textContent = "$"+state.cash;
-    $("repBadge").textContent = state.rep;
-    var sb = $("streakBadge");
-    if(state.streak > 1){
-      sb.classList.remove("hidden");
-      $("streakVal").textContent = state.streak;
-    } else {
-      sb.classList.add("hidden");
+  /* =========================================================
+     CANVAS SETUP
+     ========================================================= */
+  var CW = 960, CH = 600, CELL = 7;
+  var bgCanvas = $("bgCanvas"), grimeCanvas = $("grimeCanvas"), fxCanvas = $("fxCanvas");
+  var bx = bgCanvas.getContext("2d");
+  var gx = grimeCanvas.getContext("2d");
+  var fx = fxCanvas.getContext("2d");
+  var stage = $("stage");
+
+  /* =========================================================
+     PROP LIBRARY (drawn on the background layer)
+     ========================================================= */
+  function grassField(x,y,w,h,rng,base,tuft){
+    bx.fillStyle = base || "#7fb45c";
+    bx.fillRect(x,y,w,h);
+    bx.fillStyle = tuft || "#6da24c";
+    for(var i=0;i<Math.round(w*h/1400);i++){
+      var tx = x + rng()*w, ty = y + rng()*h;
+      bx.fillRect(tx, ty, 6, 3);
+      bx.fillRect(tx+3, ty-3, 3, 3);
     }
   }
-  function renderMenu(){
-    var t = TIER_NAMES[rigTierIndex()];
-    $("rigTierName").textContent = t[0];
-    $("rigTierSub").textContent = t[1];
-    renderVanScene();
-    var interval = billInterval();
-    var due = overheadAmount(state.billNumber);
-    var remaining = Math.max(0, interval - state.jobsSinceBill);
-    $("billDueLabel").textContent = "$"+due+" in "+remaining+" job"+(remaining===1?"":"s");
-    $("billMeterFill").style.width = clamp(state.jobsSinceBill/interval*100,0,100)+"%";
-    renderLoanPanel();
-    renderBuyoutPanel();
+  function pavement(x,y,w,h,rng,base){
+    bx.fillStyle = base || "#b9b3a6";
+    bx.fillRect(x,y,w,h);
+    bx.strokeStyle = "rgba(74,53,38,.10)";
+    bx.lineWidth = 2;
+    for(var gy=y+24; gy<y+h; gy+=26){
+      bx.beginPath(); bx.moveTo(x,gy); bx.lineTo(x+w,gy); bx.stroke();
+    }
   }
+  function waterField(x,y,w,h,rng,a,b){
+    var grad = bx.createLinearGradient(0,y,0,y+h);
+    grad.addColorStop(0, a || "#4a9cc4");
+    grad.addColorStop(1, b || "#2d7096");
+    bx.fillStyle = grad; bx.fillRect(x,y,w,h);
+    bx.strokeStyle = "rgba(255,255,255,.35)"; bx.lineWidth = 3; bx.lineCap = "round";
+    for(var i=0;i<Math.round(h/16);i++){
+      var wy = y + 10 + i*16 + rng()*6;
+      var wx = x + rng()*w*0.8;
+      bx.beginPath();
+      bx.moveTo(wx, wy);
+      bx.quadraticCurveTo(wx+16, wy-5, wx+32, wy);
+      bx.stroke();
+    }
+  }
+  function shadow(cx,cy,rx,ry){
+    bx.fillStyle = "rgba(74,53,38,.18)";
+    bx.beginPath(); bx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); bx.fill();
+  }
+  function outline(w){ bx.strokeStyle = "#4a3526"; bx.lineWidth = w||3.5; bx.stroke(); }
 
-  /* ---------------- BUYOUT PROGRESS ---------------- */
-  function renderBuyoutPanel(){
-    var panel = $("buyoutPanel");
-    if(state.ownedOutright){
-      panel.innerHTML =
-        '<div class="loan-row"><span>🏆 Owned outright!</span><span></span></div>' +
-        '<p class="loan-note">Every dollar Uncle Lenny owed is paid off. Overhead is just pocket change now.</p>';
-    } else {
-      var shown = Math.min(state.lifetimeEarnings, BUYOUT_TARGET);
-      var pct = clamp(shown/BUYOUT_TARGET*100,0,100);
-      panel.innerHTML =
-        '<div class="bill-meter" style="margin-top:0;">' +
-        '<div class="label-row"><span>🏆 Own it outright</span><span>$'+Math.round(shown)+' / $'+BUYOUT_TARGET+'</span></div>' +
-        '<div class="meter-track"><div class="meter-fill" style="width:'+pct+'%;background:var(--green);"></div></div>' +
-        '</div>';
+  function tree(cx,cy,s){
+    shadow(cx, cy+6*s, 34*s, 11*s);
+    fillRR(bx, cx-7*s, cy-26*s, 14*s, 34*s, 5*s, "#8a5f36"); outline(3);
+    var blobs = [[0,-52,30],[-22,-38,22],[22,-38,22],[-12,-64,20],[14,-62,19]];
+    blobs.forEach(function(b){
+      bx.beginPath(); bx.arc(cx+b[0]*s, cy+b[1]*s, b[2]*s, 0, Math.PI*2);
+      bx.fillStyle = "#4d7f33"; bx.fill(); outline(3.5);
+    });
+    blobs.slice(0,3).forEach(function(b){
+      bx.beginPath(); bx.arc(cx+b[0]*s-5*s, cy+b[1]*s-6*s, b[2]*s*0.55, 0, Math.PI*2);
+      bx.fillStyle = "#6faa4a"; bx.fill();
+    });
+  }
+  function bush(cx,cy,s){
+    shadow(cx, cy+4*s, 20*s, 7*s);
+    [[-11,0,13],[11,0,13],[0,-7,16]].forEach(function(b){
+      bx.beginPath(); bx.arc(cx+b[0]*s, cy+b[1]*s, b[2]*s, 0, Math.PI*2);
+      bx.fillStyle="#4d7f33"; bx.fill(); outline(3);
+    });
+    bx.beginPath(); bx.arc(cx-3*s, cy-11*s, 7*s, 0, Math.PI*2);
+    bx.fillStyle="#6faa4a"; bx.fill();
+  }
+  function flowerBed(x,y,w,h,rng){
+    fillRR(bx,x,y,w,h,10,"#6b4a30"); outline(3.5);
+    var cols = ["#e8794a","#f5c451","#c9557a","#f0f0f0","#a97fd0"];
+    for(var i=0;i<Math.round(w*h/420);i++){
+      var fxp = x+8+rng()*(w-16), fyp = y+8+rng()*(h-16);
+      bx.fillStyle = "#4d7f33"; bx.fillRect(fxp-1, fyp, 3, 7);
+      bx.beginPath(); bx.arc(fxp, fyp, 4.5, 0, Math.PI*2);
+      bx.fillStyle = cols[Math.floor(rng()*cols.length)]; bx.fill();
+      bx.strokeStyle="rgba(74,53,38,.5)"; bx.lineWidth=1.5; bx.stroke();
+    }
+  }
+  function pot(x,y,s){
+    s = s||1;
+    shadow(x, y+26*s, 18*s, 6*s);
+    bx.beginPath();
+    bx.moveTo(x-15*s,y+2*s); bx.lineTo(x+15*s,y+2*s); bx.lineTo(x+11*s,y+26*s); bx.lineTo(x-11*s,y+26*s);
+    bx.closePath(); bx.fillStyle="#c07a4e"; bx.fill(); outline(3.2);
+    fillRR(bx,x-17*s,y-4*s,34*s,9*s,4*s,"#d68a5c"); outline(3);
+    [[-8,-14,11],[8,-14,11],[0,-24,12]].forEach(function(b){
+      bx.beginPath(); bx.arc(x+b[0]*s, y+b[1]*s, b[2]*s, 0, Math.PI*2);
+      bx.fillStyle="#4d7f33"; bx.fill(); outline(2.8);
+    });
+  }
+  function bench(x,y,s){
+    s=s||1; shadow(x, y+18*s, 44*s, 8*s);
+    fillRR(bx,x-44*s,y-2*s,88*s,12*s,4*s,"#b5834f"); outline(3.2);
+    fillRR(bx,x-44*s,y-26*s,88*s,10*s,4*s,"#c9975c"); outline(3.2);
+    [[-36,0],[36,0]].forEach(function(p){
+      fillRR(bx,x+p[0]*s-4*s,y+8*s,8*s,12*s,3,"#8a5f36"); outline(2.6);
+    });
+  }
+  function grill(x,y,s){
+    s=s||1; shadow(x,y+22*s,22*s,7*s);
+    fillRR(bx,x-22*s,y-16*s,44*s,20*s,9*s,"#3b3b42"); outline(3.2);
+    fillRR(bx,x-24*s,y-20*s,48*s,7*s,4*s,"#5a5a63"); outline(3);
+    bx.fillStyle="#3b3b42";
+    [[-14,20],[14,20]].forEach(function(p){ bx.fillRect(x+p[0]*s, y+4*s, 4*s, 18*s); });
+    bx.beginPath(); bx.arc(x+22*s, y-26*s, 5*s, 0, Math.PI*2); bx.fillStyle="#e8794a"; bx.fill(); outline(2.4);
+  }
+  function mailbox(x,y,s){
+    s=s||1; shadow(x,y+28*s,13*s,5*s);
+    bx.fillStyle="#8a5f36"; bx.fillRect(x-4*s,y,8*s,28*s);
+    bx.strokeStyle="#4a3526"; bx.lineWidth=2.5; bx.strokeRect(x-4*s,y,8*s,28*s);
+    fillRR(bx,x-16*s,y-20*s,32*s,20*s,9*s,"#4a9cc4"); outline(3.2);
+    bx.fillStyle="#e8794a"; bx.fillRect(x+13*s,y-18*s,4*s,12*s);
+  }
+  function gnome(x,y,s){
+    s=s||1; shadow(x,y+12*s,11*s,4*s);
+    bx.beginPath(); bx.moveTo(x-10*s,y-6*s); bx.lineTo(x,y-26*s); bx.lineTo(x+10*s,y-6*s); bx.closePath();
+    bx.fillStyle="#e8794a"; bx.fill(); outline(2.8);
+    bx.beginPath(); bx.arc(x,y-2*s,8*s,0,Math.PI*2); bx.fillStyle="#f6ceac"; bx.fill(); outline(2.8);
+    bx.beginPath(); bx.moveTo(x-7*s,y+1*s); bx.lineTo(x,y+14*s); bx.lineTo(x+7*s,y+1*s); bx.closePath();
+    bx.fillStyle="#f5f2ee"; bx.fill(); outline(2.6);
+    bx.fillStyle="#4a3526";
+    bx.beginPath(); bx.arc(x-3*s,y-4*s,1.6*s,0,Math.PI*2); bx.arc(x+3*s,y-4*s,1.6*s,0,Math.PI*2); bx.fill();
+  }
+  function picketFence(x,y,w,s){
+    s=s||1;
+    for(var px=x; px<x+w; px+=17*s){
+      bx.beginPath();
+      bx.moveTo(px, y+6*s); bx.lineTo(px, y-22*s); bx.lineTo(px+6*s, y-30*s); bx.lineTo(px+12*s, y-22*s); bx.lineTo(px+12*s, y+6*s);
+      bx.closePath(); bx.fillStyle="#fdf4de"; bx.fill(); outline(2.6);
+    }
+    bx.fillStyle="#f3e4c0";
+    bx.fillRect(x, y-16*s, w, 5*s); bx.fillRect(x, y-4*s, w, 5*s);
+    bx.strokeStyle="#4a3526"; bx.lineWidth=2;
+    bx.strokeRect(x, y-16*s, w, 5*s); bx.strokeRect(x, y-4*s, w, 5*s);
+  }
+  function hedgeRow(x,y,w,h){
+    fillRR(bx,x,y,w,h,Math.min(18,h/2),"#4d7f33"); outline(3.5);
+    bx.fillStyle="#6faa4a";
+    for(var i=0;i<w/26;i++){
+      bx.beginPath(); bx.arc(x+16+i*26, y+h*0.32, h*0.26, 0, Math.PI*2); bx.fill();
+    }
+  }
+  function houseFacade(x,y,w,h,wall,roof){
+    shadow(x+w/2, y+h+4, w*0.5, 10);
+    fillRR(bx,x,y+h*0.34,w,h*0.66,8,wall||"#fdf4de"); outline(4);
+    bx.beginPath();
+    bx.moveTo(x-14, y+h*0.36); bx.lineTo(x+w*0.5, y-4); bx.lineTo(x+w+14, y+h*0.36);
+    bx.closePath(); bx.fillStyle = roof||"#c9557a"; bx.fill(); outline(4);
+    bx.strokeStyle="rgba(74,53,38,.22)"; bx.lineWidth=2.5;
+    for(var i=1;i<5;i++){
+      var t=i/5;
+      bx.beginPath();
+      bx.moveTo(lerp(x-14, x+w*0.5, t), lerp(y+h*0.36, y-4, t));
+      bx.lineTo(lerp(x+w+14, x+w*0.5, t), lerp(y+h*0.36, y-4, t));
+      bx.stroke();
+    }
+  }
+  function winPane(x,y,w,h,frame){
+    fillRR(bx,x,y,w,h,5,"#bfeaf8"); outline(3.2);
+    bx.strokeStyle="rgba(255,255,255,.75)"; bx.lineWidth=4;
+    bx.beginPath(); bx.moveTo(x+w*0.18,y+h*0.82); bx.lineTo(x+w*0.72,y+h*0.16); bx.stroke();
+    if(frame!==false){
+      bx.strokeStyle="#4a3526"; bx.lineWidth=3;
+      bx.beginPath(); bx.moveTo(x+w/2,y); bx.lineTo(x+w/2,y+h);
+      bx.moveTo(x,y+h/2); bx.lineTo(x+w,y+h/2); bx.stroke();
+    }
+  }
+  function doorway(x,y,w,h,col){
+    fillRR(bx,x,y,w,h,6,col||"#8a5f36"); outline(3.5);
+    bx.beginPath(); bx.arc(x+w-11, y+h*0.55, 3.4, 0, Math.PI*2); bx.fillStyle="#f5c451"; bx.fill();
+  }
+  function porchLight(x,y){
+    bx.fillStyle="#4a3526"; bx.fillRect(x-2,y,4,9);
+    bx.beginPath(); bx.moveTo(x-8,y+9); bx.lineTo(x+8,y+9); bx.lineTo(x+5,y+22); bx.lineTo(x-5,y+22);
+    bx.closePath(); bx.fillStyle="#f5c451"; bx.fill(); outline(2.6);
+  }
+  function car(x,y,s,col){
+    s=s||1; shadow(x,y+30*s,54*s,11*s);
+    fillRR(bx,x-54*s,y-12*s,108*s,42*s,16*s,col||"#e8794a"); outline(4);
+    fillRR(bx,x-32*s,y-30*s,64*s,24*s,10*s,col||"#e8794a"); outline(3.6);
+    fillRR(bx,x-27*s,y-26*s,25*s,16*s,5*s,"#bfeaf8"); outline(2.6);
+    fillRR(bx,x+3*s,y-26*s,25*s,16*s,5*s,"#bfeaf8"); outline(2.6);
+    bx.fillStyle="#3b3b42";
+    [[-34,28],[34,28]].forEach(function(p){
+      fillRR(bx, x+p[0]*s-11*s, y+18*s, 22*s, 16*s, 7*s, "#3b3b42"); outline(2.6);
+    });
+    bx.fillStyle="#f5c451";
+    bx.beginPath(); bx.arc(x-48*s,y+2*s,5*s,0,Math.PI*2); bx.arc(x+48*s,y+2*s,5*s,0,Math.PI*2); bx.fill();
+  }
+  function towerSlab(x,y,w,h,col,winCol){
+    fillRR(bx,x,y,w,h,6,col||"#cfd8de"); outline(4);
+    bx.fillStyle = winCol || "#8fd0e8";
+    for(var wy=y+18; wy<y+h-16; wy+=34){
+      for(var wx=x+14; wx<x+w-18; wx+=26){
+        fillRR(bx,wx,wy,17,22,4, winCol||"#8fd0e8");
+        bx.strokeStyle="rgba(74,53,38,.35)"; bx.lineWidth=2; bx.stroke();
+      }
+    }
+  }
+  function streetLamp(x,y,s){
+    s=s||1;
+    bx.fillStyle="#3b3b42"; bx.fillRect(x-4*s,y-90*s,8*s,90*s);
+    bx.strokeStyle="#4a3526"; bx.lineWidth=2.5; bx.strokeRect(x-4*s,y-90*s,8*s,90*s);
+    fillRR(bx,x-16*s,y-104*s,32*s,16*s,7*s,"#f5c451"); outline(3);
+    shadow(x, y+3*s, 14*s, 5*s);
+  }
+  function hydrant(x,y,s){
+    s=s||1; shadow(x,y+4*s,13*s,5*s);
+    fillRR(bx,x-11*s,y-26*s,22*s,30*s,8*s,"#cc4438"); outline(3.2);
+    fillRR(bx,x-15*s,y-16*s,30*s,8*s,4*s,"#e05548"); outline(2.8);
+    bx.beginPath(); bx.arc(x,y-28*s,7*s,Math.PI,0); bx.fillStyle="#e05548"; bx.fill(); outline(2.8);
+  }
+  function bin(x,y,s){
+    s=s||1; shadow(x,y+6*s,18*s,6*s);
+    bx.beginPath();
+    bx.moveTo(x-15*s,y-30*s); bx.lineTo(x+15*s,y-30*s); bx.lineTo(x+12*s,y+4*s); bx.lineTo(x-12*s,y+4*s);
+    bx.closePath(); bx.fillStyle="#4d7f6f"; bx.fill(); outline(3.2);
+    fillRR(bx,x-18*s,y-36*s,36*s,8*s,4*s,"#3c6a5c"); outline(2.8);
+  }
+  function awning(x,y,w,h,a,b){
+    var n = Math.max(3, Math.round(w/34));
+    for(var i=0;i<n;i++){
+      var sw = w/n;
+      bx.fillStyle = (i%2===0) ? (a||"#e8794a") : (b||"#fdf4de");
+      bx.beginPath();
+      bx.moveTo(x+i*sw, y); bx.lineTo(x+(i+1)*sw, y);
+      bx.lineTo(x+(i+1)*sw+6, y+h); bx.lineTo(x+i*sw+6, y+h);
+      bx.closePath(); bx.fill();
+    }
+    bx.strokeStyle="#4a3526"; bx.lineWidth=3.5;
+    bx.beginPath(); bx.moveTo(x,y); bx.lineTo(x+w,y); bx.lineTo(x+w+6,y+h); bx.lineTo(x+6,y+h); bx.closePath(); bx.stroke();
+  }
+  function crate(x,y,s){
+    s=s||1; shadow(x,y+22*s,22*s,6*s);
+    fillRR(bx,x-22*s,y-22*s,44*s,44*s,5*s,"#c08f52"); outline(3.4);
+    bx.strokeStyle="#8a5f36"; bx.lineWidth=3;
+    bx.beginPath(); bx.moveTo(x-22*s,y-22*s); bx.lineTo(x+22*s,y+22*s);
+    bx.moveTo(x+22*s,y-22*s); bx.lineTo(x-22*s,y+22*s); bx.stroke();
+  }
+  function barrel(x,y,s){
+    s=s||1; shadow(x,y+22*s,17*s,6*s);
+    fillRR(bx,x-16*s,y-24*s,32*s,46*s,10*s,"#4d7f6f"); outline(3.4);
+    bx.fillStyle="#f3e4c0";
+    bx.fillRect(x-16*s,y-12*s,32*s,5*s); bx.fillRect(x-16*s,y+6*s,32*s,5*s);
+  }
+  function buoy(x,y,s){
+    s=s||1; shadow(x,y+16*s,12*s,4*s);
+    bx.beginPath(); bx.arc(x,y,15*s,0,Math.PI*2); bx.fillStyle="#e8794a"; bx.fill(); outline(3.2);
+    bx.fillStyle="#fdf4de"; bx.fillRect(x-15*s,y-4*s,30*s,8*s);
+    bx.strokeStyle="#4a3526"; bx.lineWidth=2; bx.strokeRect(x-15*s,y-4*s,30*s,8*s);
+  }
+  function ropeCoil(x,y,s){
+    s=s||1;
+    bx.strokeStyle="#c9a86a"; bx.lineWidth=5*s;
+    [16,11,6].forEach(function(r){
+      bx.beginPath(); bx.ellipse(x,y,r*s,r*0.55*s,0,0,Math.PI*2); bx.stroke();
+    });
+  }
+  function seagull(x,y,s){
+    s=s||1;
+    bx.strokeStyle="#4a3526"; bx.lineWidth=3*s; bx.lineCap="round";
+    bx.beginPath();
+    bx.moveTo(x-13*s,y); bx.quadraticCurveTo(x-6*s,y-8*s,x,y);
+    bx.quadraticCurveTo(x+6*s,y-8*s,x+13*s,y);
+    bx.stroke();
+  }
+  function boatSide(x,y,s,col){
+    s=s||1; shadow(x,y+18*s,60*s,9*s);
+    bx.beginPath();
+    bx.moveTo(x-62*s,y-14*s); bx.lineTo(x+62*s,y-14*s);
+    bx.quadraticCurveTo(x+40*s,y+20*s,x-30*s,y+16*s);
+    bx.quadraticCurveTo(x-56*s,y+12*s,x-62*s,y-14*s);
+    bx.closePath(); bx.fillStyle=col||"#e8794a"; bx.fill(); outline(3.8);
+    fillRR(bx,x-62*s,y-20*s,124*s,9*s,4*s,"#fdf4de"); outline(3);
+    fillRR(bx,x-18*s,y-44*s,44*s,26*s,6*s,"#fdf4de"); outline(3.2);
+    fillRR(bx,x-10*s,y-38*s,14*s,12*s,3*s,"#bfeaf8"); outline(2.4);
+  }
+  function lobsterTrap(x,y,s){
+    s=s||1; shadow(x,y+14*s,22*s,5*s);
+    fillRR(bx,x-22*s,y-16*s,44*s,30*s,9*s,"#b5834f"); outline(3.2);
+    bx.strokeStyle="#8a5f36"; bx.lineWidth=2.5;
+    for(var i=-2;i<=2;i++){ bx.beginPath(); bx.moveTo(x+i*9*s,y-16*s); bx.lineTo(x+i*9*s,y+14*s); bx.stroke(); }
+  }
+  function pillar(x,y,w,h){
+    fillRR(bx,x,y,w,h,4,"#a8a49c"); outline(3.5);
+    bx.fillStyle="#f5c451"; bx.fillRect(x, y+h-26, w, 9);
+    bx.fillStyle="#3b3b42"; bx.fillRect(x, y+h-17, w, 5);
+  }
+  function pipes(x,y,w){
+    bx.strokeStyle="#8a8a93"; bx.lineWidth=9; bx.lineCap="round";
+    bx.beginPath(); bx.moveTo(x,y); bx.lineTo(x+w,y); bx.stroke();
+    bx.strokeStyle="#4a3526"; bx.lineWidth=2;
+    for(var i=0;i<w;i+=60){ bx.strokeRect(x+i, y-7, 8, 14); }
+  }
+  function netHang(x,y,w,h){
+    bx.strokeStyle="rgba(74,53,38,.55)"; bx.lineWidth=2;
+    for(var i=0;i<=w;i+=14){
+      bx.beginPath(); bx.moveTo(x+i,y); bx.quadraticCurveTo(x+i+7,y+h*0.6,x+i,y+h); bx.stroke();
+    }
+    for(var j=0;j<=h;j+=14){
+      bx.beginPath(); bx.moveTo(x,y+j); bx.quadraticCurveTo(x+w/2,y+j+9,x+w,y+j); bx.stroke();
     }
   }
 
-  /* ---------------- LOAN ---------------- */
-  var LOAN_OPTIONS = [
-    { amount:150, owe:205 },
-    { amount:350, owe:480 },
-    { amount:700, owe:965 }
-  ];
-  function renderLoanPanel(){
-    var panel = $("loanPanel");
-    if(state.loan > 0){
-      panel.innerHTML =
-        '<div class="loan-row"><span>💳 Outstanding loan</span><span>$'+state.loan+'</span></div>' +
-        '<p class="loan-note">Grows with interest at every bill. Doesn\u2019t go away if the van gets repossessed.</p>' +
-        '<button class="btn small block" id="btnPayLoan">Pay it off ($'+state.loan+')</button>';
-      var payBtn = $("btnPayLoan");
-      payBtn.disabled = state.cash < state.loan;
-      payBtn.addEventListener("click", function(){
-        if(state.cash < state.loan) return;
-        state.cash -= state.loan;
-        state.loan = 0;
-        saveState(); renderTop(); renderMenu();
-      });
-    } else {
-      panel.innerHTML =
-        '<div class="loan-row"><span>💳 Need cash fast?</span><span></span></div>' +
-        '<p class="loan-note">Take a loan now, pay it back with high interest later.</p>' +
-        '<button class="btn small block" id="btnTakeLoan">Take a loan</button>';
-      $("btnTakeLoan").addEventListener("click", openLoanModal);
+  /* =========================================================
+     SCENES — each draws the world, leaving the wash area bare
+     ========================================================= */
+  function paintArea(a, col){
+    bx.fillStyle = col; bx.fillRect(a.x, a.y, a.w, a.h);
+  }
+
+  function sceneDriveway(a, rng){
+    grassField(0,0,CW,CH,rng);
+    houseFacade(214, 6, 540, 190, "#fdf4de", "#c9557a");
+    /* garage the driveway actually leads to */
+    fillRR(bx, a.x+18, 96, a.w-36, 104, 8, "#e6d8bc"); outline(4);
+    bx.strokeStyle="rgba(74,53,38,.28)"; bx.lineWidth=3;
+    for(var gy=118; gy<196; gy+=20){ bx.beginPath(); bx.moveTo(a.x+18,gy); bx.lineTo(a.x+a.w-18,gy); bx.stroke(); }
+    winPane(250, 104, 58, 48); winPane(672, 104, 58, 48);
+    porchLight(a.x-4, 92); porchLight(a.x+a.w+4, 92);
+    paintArea(a, "#d5d0c6");
+    bx.strokeStyle="rgba(74,53,38,.14)"; bx.lineWidth=3;
+    for(var i=1;i<4;i++){ var yy=a.y+a.h*i/4; bx.beginPath(); bx.moveTo(a.x,yy); bx.lineTo(a.x+a.w,yy); bx.stroke(); }
+    /* apron continuing off-frame toward the street */
+    bx.fillStyle="#d5d0c6"; bx.fillRect(a.x, a.y+a.h, a.w, CH-(a.y+a.h));
+    bx.strokeStyle="#4a3526"; bx.lineWidth=4;
+    bx.beginPath(); bx.moveTo(a.x,a.y); bx.lineTo(a.x,CH); bx.moveTo(a.x+a.w,a.y); bx.lineTo(a.x+a.w,CH); bx.stroke();
+    bx.beginPath(); bx.moveTo(a.x,a.y); bx.lineTo(a.x+a.w,a.y); bx.stroke();
+    tree(96, 196, 1.15); bush(150, 300, 1);
+    flowerBed(56, 330, 150, 74, rng);
+    gnome(226, 336, 1);
+    picketFence(742, 300, 210, 1);
+    bush(796, 214, 1.1); tree(892, 176, 0.9);
+    mailbox(760, 470, 1.1);
+    flowerBed(744, 380, 190, 60, rng);
+  }
+
+  function scenePatio(a, rng){
+    grassField(0,0,CW,CH,rng,"#78ae55","#69a047");
+    hedgeRow(0, 0, CW, 96);
+    houseFacade(292, -60, 390, 240, "#f3e4c0", "#8a5f36");
+    winPane(352, 92, 90, 62);
+    doorway(520, 70, 76, 108, "#4a9cc4");
+    paintArea(a, "#c58a68");
+    var bw=56, bh=30;
+    bx.strokeStyle="rgba(74,53,38,.28)"; bx.lineWidth=2.5;
+    for(var y=a.y; y<a.y+a.h; y+=bh){
+      var off = (Math.floor((y-a.y)/bh)%2)*(bw/2);
+      for(var x=a.x-bw; x<a.x+a.w+bw; x+=bw){
+        var rx0=Math.max(a.x,x+off), rx1=Math.min(a.x+a.w,x+off+bw);
+        if(rx1>rx0) bx.strokeRect(rx0, y, rx1-rx0, Math.min(bh, a.y+a.h-y));
+      }
     }
-  }
-  function openLoanModal(){
-    var body = '<div class="big-emoji">💳</div><h2>Take a Loan</h2><p>High interest — this isn\u2019t free money.</p>';
-    var buttons = LOAN_OPTIONS.map(function(opt){
-      return { label:"Borrow $"+opt.amount+" (owe $"+opt.owe+")", cls:"ghost", action:function(){ takeLoan(opt); } };
-    });
-    buttons.push({ label:"Never mind", cls:"ghost" });
-    showModal(body, buttons);
-  }
-  function takeLoan(opt){
-    state.cash += opt.amount;
-    state.loan += opt.owe;
-    saveState(); renderTop(); renderMenu();
+    bx.strokeStyle="#4a3526"; bx.lineWidth=4; bx.strokeRect(a.x,a.y,a.w,a.h);
+    pot(120, 250, 1.1); pot(190, 400, 0.9);
+    bench(140, 520, 1);
+    grill(824, 260, 1.1);
+    pot(860, 420, 1.15);
+    tree(60, 150, 0.85);
+    flowerBed(766, 470, 170, 70, rng);
+    bush(700, 118, 0.9);
   }
 
-  /* ---------------- SCREEN SWITCH ---------------- */
-  function showScreen(id){
-    ["screen-menu","screen-job","screen-equip","screen-perks","screen-stats"].forEach(function(s){
-      $(s).classList.toggle("hidden", s!==id);
-    });
-    if(id==="screen-menu") renderMenu();
-    if(id==="screen-equip"){ renderTree(); renderItems(); }
-    if(id==="screen-perks") renderPerks();
-    if(id==="screen-stats") renderStats();
-  }
-
-  /* ---------------- MODAL ---------------- */
-  function showModal(html, buttons){
-    $("modal-content").innerHTML = html + '<div class="col" style="margin-top:14px;" id="modalBtns"></div>';
-    var wrap = $("modalBtns");
-    buttons.forEach(function(b){
-      var btn = document.createElement("button");
-      btn.className = "btn block "+(b.cls||"primary");
-      btn.textContent = b.label;
-      if(b.action){
-        btn.onclick = function(){ hideModal(); b.action(); };
-      } else {
-        btn.onclick = function(){ hideModal(); };
-      }
-      wrap.appendChild(btn);
-    });
-    $("modal-overlay").classList.remove("hidden");
-  }
-  function hideModal(){ $("modal-overlay").classList.add("hidden"); }
-
-  /* ---------------- RADIAL SKILL TREE ---------------- */
-  function purchaseGear(key, cost){
-    if(state.cash < cost) return;
-    state.cash -= cost;
-    state.gear[key] = (state.gear[key]||0) + 1;
-    saveState();
-    renderTop(); renderTree(); renderItems();
-  }
-
-  function openTreeNodeModal(key, level, def){
-    var owned = gearLevel(key) > level;
-    var isNext = gearLevel(key) === level;
-    var body = '<div class="big-emoji">'+def.icon+'</div><h2>'+def.title+' — Lv.'+(level+1)+'</h2><p>'+def.desc[level]+'</p>';
-    if(owned){
-      showModal(body+'<p style="font-weight:800;color:#173322;">Already installed ✓</p>', [{label:"Close",cls:"ghost"}]);
-    } else if(isNext){
-      var cost = gearCost(key, level);
-      var afford = state.cash >= cost;
-      showModal(body+'<div class="stat-line"><span>Cost</span><span>$'+cost+'</span></div>',
-        [{ label: afford ? "Buy for $"+cost : "Not enough cash", cls: afford?"primary":"ghost", action: afford ? function(){ purchaseGear(key,cost); } : null }]);
-    } else {
-      showModal(body+'<p style="color:#8a7f6a;font-weight:700;">Upgrade Level '+level+' first.</p>', [{label:"Close",cls:"ghost"}]);
+  function sceneDeck(a, rng){
+    grassField(0,0,CW,CH,rng,"#74a851","#66964a");
+    houseFacade(200, -80, 560, 250, "#fdf4de", "#4d7f6f");
+    winPane(300, 76, 80, 58); winPane(580, 76, 80, 58);
+    doorway(438, 54, 78, 112, "#8a5f36");
+    paintArea(a, "#cb9a62");
+    bx.strokeStyle="rgba(74,53,38,.26)"; bx.lineWidth=3;
+    for(var py=a.y+26; py<a.y+a.h; py+=30){ bx.beginPath(); bx.moveTo(a.x,py); bx.lineTo(a.x+a.w,py); bx.stroke(); }
+    bx.strokeStyle="#4a3526"; bx.lineWidth=4; bx.strokeRect(a.x,a.y,a.w,a.h);
+    /* railing along the bottom of the deck */
+    bx.fillStyle="#b5834f"; bx.fillRect(a.x-16, a.y+a.h, a.w+32, 14);
+    bx.strokeStyle="#4a3526"; bx.lineWidth=3; bx.strokeRect(a.x-16, a.y+a.h, a.w+32, 14);
+    for(var rxp=a.x-6; rxp<a.x+a.w+14; rxp+=42){
+      bx.fillStyle="#c9975c"; bx.fillRect(rxp, a.y+a.h+14, 9, 34);
+      bx.strokeRect(rxp, a.y+a.h+14, 9, 34);
     }
+    pot(126, 300, 1.1); grill(120, 470, 1);
+    bench(830, 330, 0.85);
+    pot(860, 500, 1);
+    tree(70, 120, 0.8); bush(880, 160, 1);
   }
 
-  function renderTree(){
-    var wrap = $("treeWrap");
-    wrap.querySelectorAll(".tnode,.branch-label").forEach(function(el){ el.remove(); });
-    var svg = $("treeLines");
-    svg.innerHTML = "";
-    var angleStep = 360/BRANCH_ORDER.length;
-    var radii = [17,30,42];
-    BRANCH_ORDER.forEach(function(key, i){
-      var angle = -90 + i*angleStep;
-      var def = EQUIP_DEFS[key];
-      var prev = { x:50, y:50 };
-      for(var lvl=0; lvl<def.costs.length; lvl++){
-        var pos = polar(50,50,radii[lvl],angle);
-        var owned = gearLevel(key) > lvl;
-        var isNext = gearLevel(key) === lvl;
+  function sceneFence(a, rng){
+    grassField(0,0,CW,CH,rng);
+    hedgeRow(0, 40, CW, 150);
+    tree(140, 150, 1.1); tree(800, 140, 0.95);
+    paintArea(a, "#d7b784");
+    bx.strokeStyle="rgba(74,53,38,.3)"; bx.lineWidth=3;
+    for(var px=a.x+20; px<a.x+a.w; px+=26){ bx.beginPath(); bx.moveTo(px,a.y); bx.lineTo(px,a.y+a.h); bx.stroke(); }
+    bx.fillStyle="rgba(74,53,38,.16)";
+    bx.fillRect(a.x, a.y+a.h*0.22, a.w, 9); bx.fillRect(a.x, a.y+a.h*0.72, a.w, 9);
+    bx.strokeStyle="#4a3526"; bx.lineWidth=4; bx.strokeRect(a.x,a.y,a.w,a.h);
+    flowerBed(60, 470, 250, 78, rng);
+    flowerBed(660, 470, 250, 78, rng);
+    bush(420, 520, 1.1); gnome(520, 520, 1.1);
+    pot(120, 400, 0.85);
+  }
 
-        var line = document.createElementNS(SVG_NS,"line");
-        line.setAttribute("x1",prev.x); line.setAttribute("y1",prev.y);
-        line.setAttribute("x2",pos.x); line.setAttribute("y2",pos.y);
-        line.setAttribute("stroke", owned ? "#3a2f28" : "#cbb98a");
-        line.setAttribute("stroke-width","1.6");
-        line.setAttribute("stroke-linecap","round");
-        if(!owned) line.setAttribute("stroke-dasharray","2,2");
-        svg.appendChild(line);
-        prev = pos;
+  function sceneWindows(a, rng){
+    /* concrete facade with neighbouring towers */
+    bx.fillStyle="#9fb4c4"; bx.fillRect(0,0,CW,CH);
+    towerSlab(-30, 40, 150, 560, "#b9c6cf", "#7fc0da");
+    towerSlab(840, 10, 160, 590, "#b9c6cf", "#7fc0da");
+    bx.fillStyle="#c4ccd2"; bx.fillRect(130, 0, 700, CH);
+    bx.strokeStyle="rgba(74,53,38,.18)"; bx.lineWidth=3;
+    for(var cy=60; cy<CH; cy+=90){ bx.beginPath(); bx.moveTo(130,cy); bx.lineTo(830,cy); bx.stroke(); }
+    /* window wall */
+    fillRR(bx, a.x-16, a.y-16, a.w+32, a.h+32, 8, "#6d7b86"); outline(4);
+    paintArea(a, "#9fd6e8");
+    /* pane frames drawn over the glass */
+    bx.fillStyle="#6d7b86";
+    var pc=4, prow=3, fwid=14;
+    for(var i=1;i<pc;i++){ bx.fillRect(a.x + a.w*i/pc - fwid/2, a.y, fwid, a.h); }
+    for(var j=1;j<prow;j++){ bx.fillRect(a.x, a.y + a.h*j/prow - fwid/2, a.w, fwid); }
+    bx.strokeStyle="#4a3526"; bx.lineWidth=4; bx.strokeRect(a.x,a.y,a.w,a.h);
+    /* suspended platform the washer stands on */
+    var py = a.y + a.h + 46;
+    bx.strokeStyle="#4a3526"; bx.lineWidth=4;
+    bx.beginPath(); bx.moveTo(a.x+40, 0); bx.lineTo(a.x+40, py); bx.moveTo(a.x+a.w-40, 0); bx.lineTo(a.x+a.w-40, py); bx.stroke();
+    fillRR(bx, a.x+10, py, a.w-20, 20, 6, "#f5c451"); outline(4);
+    fillRR(bx, a.x+10, py-34, 10, 34, 4, "#c9bfae"); outline(3);
+    fillRR(bx, a.x+a.w-20, py-34, 10, 34, 4, "#c9bfae"); outline(3);
+    seagull(760, 120, 1.2); seagull(820, 90, 0.9);
+    bucketProp(a.x+a.w-78, py-16);
+  }
+  function bucketProp(x,y){
+    fillRR(bx,x-16,y-22,32,24,5,"#4a9cc4"); outline(3);
+    bx.strokeStyle="#4a3526"; bx.lineWidth=2.5;
+    bx.beginPath(); bx.arc(x,y-22,14,Math.PI,0); bx.stroke();
+  }
 
-        var node = document.createElement("div");
-        node.className = "tnode " + (owned?"owned":(isNext?"next":"locked"));
-        node.style.left = pos.x+"%";
-        node.style.top = pos.y+"%";
-        node.textContent = def.icon;
-        var badge = document.createElement("div");
-        badge.className = "lvl-badge";
-        badge.textContent = (lvl+1);
-        node.appendChild(badge);
-        (function(kk,ll,dd){
-          node.addEventListener("click", function(){ openTreeNodeModal(kk,ll,dd); });
-        })(key,lvl,def);
-        wrap.appendChild(node);
+  function sceneStorefront(a, rng){
+    bx.fillStyle="#b6bcc0"; bx.fillRect(0,0,CW,CH);
+    pavement(0, 430, CW, 170, rng, "#c9c4bb");
+    bx.fillStyle="#9aa2a8"; bx.fillRect(0, 0, CW, 60);
+    fillRR(bx, 110, 30, 740, 420, 10, "#e3d3b4"); outline(4);
+    paintArea(a, "#a9dcec");
+    bx.strokeStyle="#4a3526"; bx.lineWidth=5; bx.strokeRect(a.x,a.y,a.w,a.h);
+    bx.fillStyle="#7d6a52"; bx.fillRect(a.x, a.y+a.h*0.5-6, a.w, 12);
+    awning(120, 96, 720, 46);
+    doorway(690, 268, 76, 176, "#4d7f6f");
+    bx.fillStyle="#4a3526"; bx.font="800 34px 'Baloo 2', sans-serif"; bx.textAlign="center";
+    bx.fillText("CORNER CAFÉ", 480, 78);
+    bx.textAlign="start";
+    streetLamp(92, 470, 1); hydrant(880, 470, 1); bin(806, 480, 1);
+    /* sandwich board */
+    bx.beginPath(); bx.moveTo(180,520); bx.lineTo(206,452); bx.lineTo(232,520); bx.closePath();
+    bx.fillStyle="#b5834f"; bx.fill(); outline(3.2);
+    seagull(300, 120, 1);
+  }
+
+  function sceneGarage(a, rng){
+    bx.fillStyle="#8e8a84"; bx.fillRect(0,0,CW,CH);
+    bx.fillStyle="#a8a49c"; bx.fillRect(0,0,CW,160);
+    pipes(0, 44, CW);
+    pillar(60, 120, 64, 420); pillar(836, 120, 64, 420);
+    paintArea(a, "#b0aba3");
+    bx.strokeStyle="rgba(74,53,38,.18)"; bx.lineWidth=3;
+    bx.strokeRect(a.x+16, a.y+16, a.w-32, a.h-32);
+    bx.fillStyle="#f5c451";
+    bx.fillRect(a.x+8, a.y+a.h*0.5-4, a.w-16, 8);
+    bx.strokeStyle="#4a3526"; bx.lineWidth=4; bx.strokeRect(a.x,a.y,a.w,a.h);
+    car(722, 210, 0.78, "#4a9cc4");
+    bin(160, 520, 1);
+    bx.fillStyle="#3b3b42"; bx.font="800 26px 'Baloo 2', sans-serif";
+    bx.fillText("LEVEL 2", 150, 210);
+    fillRR(bx, 128, 232, 92, 34, 6, "#4d7f6f"); outline(3);
+    bx.fillStyle="#fdf4de"; bx.font="800 18px 'Baloo 2', sans-serif"; bx.fillText("EXIT →", 140, 256);
+  }
+
+  function hullPath(a){
+    bx.beginPath();
+    bx.moveTo(a.x, a.y);
+    bx.lineTo(a.x + a.w, a.y);
+    bx.lineTo(a.x + a.w, a.y + a.h*0.20);
+    bx.quadraticCurveTo(a.x + a.w*0.74, a.y + a.h*1.00, a.x + a.w*0.38, a.y + a.h*0.99);
+    bx.quadraticCurveTo(a.x + a.w*0.10, a.y + a.h*0.98, a.x, a.y + a.h*0.66);
+    bx.closePath();
+  }
+
+  function sceneHull(a, rng){
+    var sky = bx.createLinearGradient(0,0,0,CH);
+    sky.addColorStop(0,"#9fdcec"); sky.addColorStop(1,"#d9eddf");
+    bx.fillStyle=sky; bx.fillRect(0,0,CW,CH);
+    waterField(0, 486, CW, 114, rng);
+    pavement(0, 398, CW, 92, rng, "#c2b69c");
+
+    /* cradle blocks under the keel */
+    [a.x+96, a.x+a.w*0.55].forEach(function(sx){
+      fillRR(bx, sx, a.y+a.h-6, 30, 118, 5, "#8a5f36"); outline(3.2);
+    });
+
+    /* cabin + mast behind the hull */
+    fillRR(bx, a.x+a.w*0.30, a.y-104, a.w*0.30, 104, 12, "#fdf4de"); outline(4);
+    fillRR(bx, a.x+a.w*0.34, a.y-86, 58, 36, 7, "#bfeaf8"); outline(3);
+    fillRR(bx, a.x+a.w*0.46, a.y-86, 40, 36, 7, "#bfeaf8"); outline(3);
+    bx.fillStyle="#4a3526"; bx.fillRect(a.x+a.w*0.42, a.y-226, 8, 124);
+    bx.beginPath();
+    bx.moveTo(a.x+a.w*0.42+8, a.y-220);
+    bx.lineTo(a.x+a.w*0.42+92, a.y-176);
+    bx.lineTo(a.x+a.w*0.42+8, a.y-136);
+    bx.closePath(); bx.fillStyle="#e8794a"; bx.fill(); outline(3.4);
+
+    /* hull body — the wash surface */
+    hullPath(a);
+    bx.fillStyle = "#e9e4d6"; bx.fill(); outline(4.5);
+    /* deck rail + waterline stripe, clipped to the hull */
+    bx.save(); hullPath(a); bx.clip();
+    bx.fillStyle="#4a9cc4"; bx.fillRect(a.x, a.y+8, a.w, 18);
+    bx.fillStyle="#c9557a"; bx.fillRect(a.x, a.y+a.h*0.62, a.w, 10);
+    bx.restore();
+    /* rudder + prop at the stern */
+    fillRR(bx, a.x-16, a.y+a.h*0.55, 18, 54, 6, "#8a8a93"); outline(3);
+    bx.beginPath(); bx.arc(a.x+6, a.y+a.h*0.84, 15, 0, Math.PI*2);
+    bx.fillStyle="#c9a86a"; bx.fill(); outline(3);
+
+    crate(112, 470, 0.85); crate(158, 498, 0.7);
+    barrel(878, 452, 0.9); buoy(824, 404, 0.85);
+    ropeCoil(236, 520, 1.1);
+    seagull(190, 96, 1.2); seagull(258, 70, 0.9); seagull(770, 110, 1);
+  }
+
+  function sceneDock(a, rng){
+    waterField(0,0,CW,CH,rng,"#63b6d4","#2d7096");
+    paintArea(a, "#c8a06a");
+    bx.strokeStyle="rgba(74,53,38,.3)"; bx.lineWidth=3;
+    for(var py=a.y+28; py<a.y+a.h; py+=32){ bx.beginPath(); bx.moveTo(a.x,py); bx.lineTo(a.x+a.w,py); bx.stroke(); }
+    bx.strokeStyle="#4a3526"; bx.lineWidth=4; bx.strokeRect(a.x,a.y,a.w,a.h);
+    /* mooring posts */
+    [a.x-26, a.x+a.w+4].forEach(function(px){
+      fillRR(bx, px, a.y-30, 24, 60, 8, "#8a5f36"); outline(3.4);
+      fillRR(bx, px, a.y+a.h-30, 24, 60, 8, "#8a5f36"); outline(3.4);
+    });
+    boatSide(760, 150, 1.05, "#e8794a");
+    boatSide(180, 500, 0.85, "#4d7f6f");
+    crate(96, 180, 0.8); barrel(150, 240, 0.75);
+    ropeCoil(840, 470, 1.2); buoy(880, 360, 0.9);
+    seagull(420, 70, 1.2); seagull(500, 100, 0.9);
+  }
+
+  function sceneShack(a, rng){
+    var sky = bx.createLinearGradient(0,0,0,CH);
+    sky.addColorStop(0,"#9fdcec"); sky.addColorStop(1,"#e4f0dc");
+    bx.fillStyle=sky; bx.fillRect(0,0,CW,CH);
+    waterField(0, 500, CW, 100, rng);
+    pavement(0, 430, CW, 80, rng, "#c8bda4");
+    /* roof */
+    bx.beginPath();
+    bx.moveTo(a.x-70, a.y+6); bx.lineTo(a.x+a.w*0.5, a.y-110); bx.lineTo(a.x+a.w+70, a.y+6);
+    bx.closePath(); bx.fillStyle="#4d7f6f"; bx.fill(); outline(4.5);
+    paintArea(a, "#d8c7a4");
+    bx.strokeStyle="rgba(74,53,38,.24)"; bx.lineWidth=3;
+    for(var py=a.y+22; py<a.y+a.h; py+=26){ bx.beginPath(); bx.moveTo(a.x,py); bx.lineTo(a.x+a.w,py); bx.stroke(); }
+    bx.strokeStyle="#4a3526"; bx.lineWidth=4; bx.strokeRect(a.x,a.y,a.w,a.h);
+    netHang(a.x+30, a.y+40, 120, 150);
+    buoy(a.x+a.w-70, a.y+90, 0.8); buoy(a.x+a.w-120, a.y+140, 0.7);
+    lobsterTrap(130, 470, 1); lobsterTrap(210, 500, 0.85);
+    crate(870, 470, 0.85);
+    ropeCoil(760, 520, 1);
+    seagull(a.x+a.w*0.5, a.y-150, 1.4); seagull(240, 120, 1);
+  }
+
+  /* =========================================================
+     MASKS — which cells of the area actually hold grime
+     ========================================================= */
+  function maskWindows(px,py,a){
+    var fwid = 14, pc = 4, prow = 3;
+    for(var i=1;i<pc;i++){
+      var cx = a.x + a.w*i/pc;
+      if(Math.abs(px-cx) < fwid/2 + 2) return false;
+    }
+    for(var j=1;j<prow;j++){
+      var cy = a.y + a.h*j/prow;
+      if(Math.abs(py-cy) < fwid/2 + 2) return false;
+    }
+    return true;
+  }
+  function maskHull(px,py,a){
+    var u = (px-a.x)/a.w, v = (py-a.y)/a.h;
+    if(u<0||u>1||v<0||v>1) return false;
+    var bow   = Math.pow(clamp((u-0.60)/0.40,0,1), 1.5);
+    var stern = Math.pow(clamp((0.12-u)/0.12,0,1), 1.4);
+    return v <= 1 - bow*0.80 - stern*0.34;
+  }
+
+  /* =========================================================
+     JOB DEFINITIONS
+     ========================================================= */
+  var JOBS = {
+    driveway:  { name:"Driveway",        region:"grove",  scene:sceneDriveway,   area:{x:300,y:198,w:392,h:350}, hero:{x:170,y:470}, hose:{x:-30,y:560} },
+    patio:     { name:"Brick Patio",     region:"grove",  scene:scenePatio,      area:{x:300,y:208,w:376,h:330}, hero:{x:158,y:480}, hose:{x:-30,y:570} },
+    deck:      { name:"Back Deck",       region:"grove",  scene:sceneDeck,       area:{x:286,y:196,w:400,h:312}, hero:{x:150,y:400}, hose:{x:-30,y:520} },
+    fence:     { name:"Garden Fence",    region:"grove",  scene:sceneFence,      area:{x:120,y:212,w:730,h:200}, hero:{x:190,y:530}, hose:{x:-30,y:590} },
+    windows:   { name:"Tower Windows",   region:"city",   scene:sceneWindows,    area:{x:240,y:110,w:480,h:330}, hero:{x:300,y:470}, hose:{x:250,y:520}, mask:maskWindows },
+    storefront:{ name:"Storefront Glass",region:"city",   scene:sceneStorefront, area:{x:172,y:186,w:480,h:250}, hero:{x:790,y:520}, hose:{x:990,y:560} },
+    garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:236,y:250,w:470,h:290}, hero:{x:136,y:420}, hose:{x:-30,y:470} },
+    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:236,y:206,w:510,h:186}, hero:{x:146,y:446}, hose:{x:-30,y:490}, mask:maskHull },
+    dock:      { name:"Dock Planks",     region:"harbor", scene:sceneDock,       area:{x:300,y:216,w:360,h:310}, hero:{x:170,y:430}, hose:{x:-30,y:470} },
+    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:240,y:160,w:480,h:264}, hero:{x:154,y:470}, hose:{x:-30,y:520} }
+  };
+
+  /* =========================================================
+     GRIME ENGINE — layered, cell based
+     ========================================================= */
+  var grime = null, jitter = null, gCols = 0, gRows = 0;
+  var grimeTotal = 0, grimeLeft = 0;
+
+  function makeNoise(w,h,scale,rng){
+    var cw = Math.max(2, Math.ceil(w/scale)+1), ch = Math.max(2, Math.ceil(h/scale)+1);
+    var coarse = new Float32Array(cw*ch);
+    for(var i=0;i<coarse.length;i++) coarse[i] = rng();
+    var out = new Float32Array(w*h);
+    for(var y=0;y<h;y++){
+      var fy=y/scale, y0=Math.min(ch-1,Math.floor(fy)), y1=Math.min(ch-1,y0+1), ty=fy-y0;
+      for(var x=0;x<w;x++){
+        var fxv=x/scale, x0=Math.min(cw-1,Math.floor(fxv)), x1=Math.min(cw-1,x0+1), tx=fxv-x0;
+        var a=coarse[y0*cw+x0], b=coarse[y0*cw+x1], c=coarse[y1*cw+x0], d=coarse[y1*cw+x1];
+        out[y*w+x] = lerp(lerp(a,b,tx), lerp(c,d,tx), ty);
       }
-      var labelPos = polar(50,50, radii[radii.length-1]+10, angle);
-      var label = document.createElement("div");
-      label.className = "branch-label";
-      label.style.left = labelPos.x+"%";
-      label.style.top = labelPos.y+"%";
-      label.textContent = def.title;
-      wrap.appendChild(label);
-    });
+    }
+    return out;
   }
 
-  /* ---------------- SHOP ITEMS ---------------- */
-  function renderItems(){
-    var grid = $("itemGrid");
-    grid.innerHTML = "";
-    Object.keys(ITEM_DEFS).forEach(function(key){
-      var def = ITEM_DEFS[key];
-      var lvl = gearLevel(key);
-      var maxed = lvl >= def.costs.length;
-      var card = document.createElement("div");
-      card.className = "perk-card" + (maxed?" owned":"");
-      var desc = maxed ? def.desc[def.desc.length-1] : def.desc[lvl];
-      var lvlLine = def.costs.length>1 ? '<div style="font-size:11px;font-weight:800;color:#6b6050;">Level '+lvl+' / '+def.costs.length+'</div>' : '';
-      card.innerHTML = '<h3>'+def.icon+' '+def.title+'</h3><p>'+desc+'</p>'+lvlLine;
-      if(maxed){
-        var tag = document.createElement("div");
-        tag.style.cssText = "font-family:'Pixelify Sans',sans-serif;font-weight:600;font-size:13px;color:#173322;";
-        tag.textContent = "✓ " + (def.costs.length>1 ? "Maxed" : "Installed");
-        card.appendChild(tag);
-      } else {
-        var cost = gearCost(key, lvl);
-        var btn = document.createElement("button");
-        btn.className = "btn small";
-        btn.textContent = "$"+cost;
-        btn.disabled = state.cash < cost;
-        btn.onclick = (function(kk,cc){ return function(){ purchaseGear(kk,cc); renderMenu(); }; })(key,cost);
-        card.appendChild(btn);
+  function buildGrime(rng){
+    var a = job.area, def = job.def, type = job.grime;
+    gCols = Math.ceil(a.w/CELL); gRows = Math.ceil(a.h/CELL);
+    grime = new Float32Array(gCols*gRows);
+    jitter = new Float32Array(gCols*gRows);
+    var n1 = makeNoise(gCols,gRows, 8, rng);
+    var n2 = makeNoise(gCols,gRows, 2.6, rng);
+    var layers = type.layers;
+    grimeTotal = 0;
+    for(var cy=0; cy<gRows; cy++){
+      for(var cx=0; cx<gCols; cx++){
+        var i = cy*gCols+cx;
+        jitter[i] = 0.80 + rng()*0.20;
+        var px = a.x + cx*CELL + CELL/2, py = a.y + cy*CELL + CELL/2;
+        if(def.mask && !def.mask(px,py,a)){ grime[i] = 0; continue; }
+        var v = n1[i]*0.74 + n2[i]*0.26;
+        var hp = 0.70 + v * (layers - 0.30);
+        hp = Math.min(layers, Math.max(0.40, hp));
+        grime[i] = hp;
+        grimeTotal += hp;
       }
-      grid.appendChild(card);
-    });
+    }
+    grimeLeft = grimeTotal;
   }
 
-  /* ---------------- LEGACY (PERKS + ROUTE UNLOCKS) SCREEN ---------------- */
-  function renderPerks(){
-    var canSpend = !!state.legacyAvailable;
-    $("legacyStatus").textContent = canSpend
-      ? "Spend your stars now — this window closes once you head back to work."
-      : "Stars are locked in until your next repossession. Keep hustling.";
-
-    var grid = $("perkGrid");
-    grid.innerHTML = "";
-    Object.keys(PERK_DEFS).forEach(function(k){
-      var def = PERK_DEFS[k];
-      var owned = !!state.perks[k];
-      var card = document.createElement("div");
-      card.className = "perk-card"+(owned?" owned":"");
-      card.innerHTML = '<h3>'+def.icon+' '+def.title+'</h3><p>'+def.desc+'</p>';
-      if(owned){
-        var tag = document.createElement("div");
-        tag.style.cssText="font-family:'Pixelify Sans',sans-serif;font-weight:600;font-size:13px;color:#173322;";
-        tag.textContent = "✓ Owned";
-        card.appendChild(tag);
-      } else {
-        var btn = document.createElement("button");
-        btn.className = "btn small";
-        btn.textContent = "⭐ "+def.cost;
-        btn.disabled = !canSpend || state.rep < def.cost;
-        btn.onclick = (function(kk,dd){
-          return function(){
-            if(!state.legacyAvailable || state.rep < dd.cost) return;
-            state.rep -= dd.cost;
-            state.perks[kk] = true;
-            saveState();
-            renderTop(); renderPerks();
-          };
-        })(k, def);
-        card.appendChild(btn);
-      }
-      grid.appendChild(card);
-    });
-
-    var ugrid = $("unlockGrid");
-    ugrid.innerHTML = "";
-    Object.keys(UNLOCK_DEFS).forEach(function(k){
-      var def = UNLOCK_DEFS[k];
-      var owned = !!state.unlocks[k];
-      var card = document.createElement("div");
-      card.className = "perk-card"+(owned?" owned":"");
-      card.innerHTML = '<h3>'+def.icon+' '+def.title+'</h3><p>'+def.desc+'</p>';
-      if(owned){
-        var tag = document.createElement("div");
-        tag.style.cssText="font-family:'Pixelify Sans',sans-serif;font-weight:600;font-size:13px;color:#173322;";
-        tag.textContent = "✓ Unlocked";
-        card.appendChild(tag);
-      } else {
-        var btn = document.createElement("button");
-        btn.className = "btn small";
-        btn.textContent = "⭐ "+def.cost;
-        btn.disabled = !canSpend || state.rep < def.cost;
-        btn.onclick = (function(kk,dd){
-          return function(){
-            if(!state.legacyAvailable || state.rep < dd.cost) return;
-            state.rep -= dd.cost;
-            state.unlocks[kk] = true;
-            saveState();
-            renderTop(); renderPerks();
-          };
-        })(k, def);
-        card.appendChild(btn);
-      }
-      ugrid.appendChild(card);
-    });
-  }
-
-  /* ---------------- STATS & ACHIEVEMENTS ---------------- */
-  var ACHIEVEMENT_DEFS = [
-    { icon:"💦", title:"First Splash", desc:"Complete your first job.", cond:function(s){ return s.jobsCompleted>=1; } },
-    { icon:"🧽", title:"Regular Route", desc:"Complete 10 jobs.", cond:function(s){ return s.jobsCompleted>=10; } },
-    { icon:"🚿", title:"Old Hand", desc:"Complete 50 jobs.", cond:function(s){ return s.jobsCompleted>=50; } },
-    { icon:"🏆", title:"Town Legend", desc:"Complete 100 jobs.", cond:function(s){ return s.jobsCompleted>=100; } },
-    { icon:"✨", title:"Spotless", desc:"Hit 99%+ cleanliness on a job.", cond:function(s){ return s.stats.bestCleanliness>=99; } },
-    { icon:"🔥", title:"On a Roll", desc:"Reach a 10-job streak.", cond:function(s){ return s.stats.longestStreak>=10; } },
-    { icon:"🚀", title:"Unstoppable", desc:"Reach a 25-job streak.", cond:function(s){ return s.stats.longestStreak>=25; } },
-    { icon:"🚨", title:"Rock Bottom", desc:"Get repossessed for the first time.", cond:function(s){ return s.stats.repoCount>=1; } },
-    { icon:"🗺️", title:"City-Wide", desc:"Unlock every job route.", cond:function(s){ return s.unlocks.dock && s.unlocks.pool && s.unlocks.fence && s.unlocks.roof; } },
-    { icon:"💰", title:"Debt Free", desc:"Own Power Wash Co. outright.", cond:function(s){ return !!s.ownedOutright; } }
-  ];
-  function renderStats(){
-    var panel = $("statsPanel");
-    panel.innerHTML =
-      '<div class="stat-line"><span>Lifetime earned</span><span>$'+Math.round(state.lifetimeEarnings)+'</span></div>' +
-      '<div class="stat-line"><span>Jobs completed</span><span>'+state.jobsCompleted+'</span></div>' +
-      '<div class="stat-line"><span>Best cleanliness</span><span>'+Math.round(state.stats.bestCleanliness)+'%</span></div>' +
-      '<div class="stat-line"><span>Current streak</span><span>🔥 '+state.streak+'</span></div>' +
-      '<div class="stat-line"><span>Longest streak</span><span>🔥 '+state.stats.longestStreak+'</span></div>' +
-      '<div class="stat-line"><span>Times repossessed</span><span>'+state.stats.repoCount+'</span></div>' +
-      '<div class="stat-line"><span>Reputation</span><span>⭐ '+state.rep+'</span></div>';
-
-    var grid = $("achieveGrid");
-    grid.innerHTML = "";
-    ACHIEVEMENT_DEFS.forEach(function(a){
-      var unlocked = a.cond(state);
-      var card = document.createElement("div");
-      card.className = "perk-card"+(unlocked?" owned":"");
-      card.innerHTML = '<h3>'+(unlocked?a.icon:"🔒")+' '+a.title+'</h3><p>'+a.desc+'</p>';
-      grid.appendChild(card);
-    });
-  }
-
-  /* ---------------- JOB / CANVAS GAME ---------------- */
-  var cleanCanvas = $("cleanCanvas"), dirtyCanvas = $("dirtyCanvas"), fxCanvas = $("fxCanvas");
-  var cleanCtx = cleanCanvas.getContext("2d"), dirtyCtx = dirtyCanvas.getContext("2d"), fxCtx = fxCanvas.getContext("2d");
-  var CW = cleanCanvas.width, CH = cleanCanvas.height;
-
-  var job = null;
-
-
-
-  var PX = 8;
-  function pxs(v){ return Math.round(v/PX)*PX; }
-
-  function drawGrassBlock(x,y,w,h){
-    cleanCtx.fillStyle = "#7a9c5e";
-    cleanCtx.fillRect(x,y,w,h);
-  }
-  function drawGrassBand(x,y,w,h){
+  function paintCell(cx,cy){
+    var a = job.area, i = cy*gCols+cx, hp = grime[i];
+    var px = a.x + cx*CELL, py = a.y + cy*CELL;
+    var w = Math.min(CELL, a.x + a.w - px), h = Math.min(CELL, a.y + a.h - py);
     if(w<=0||h<=0) return;
-    cleanCtx.fillStyle = "#7a9c5e";
-    cleanCtx.fillRect(x,y,w,h);
-    cleanCtx.fillStyle = "#5f7d47";
-    for(var gx=pxs(x); gx<x+w; gx+=PX){
-      for(var gy=pxs(y); gy<y+h; gy+=PX){
-        if(((gx/PX + gy/PX*3) % 5) < 1.2){ cleanCtx.fillRect(gx,gy,PX,PX); }
-      }
+    gx.clearRect(px,py,w,h);
+    if(hp <= 0.03) return;
+    var shades = job.grime.shades;
+    var band = hp > 2 ? 2 : (hp > 1 ? 1 : 0);
+    gx.globalAlpha = clamp((band===0 ? 0.30 + hp*0.68 : 1) * jitter[i], 0.10, 1);
+    gx.fillStyle = shades[band];
+    gx.fillRect(px, py, w+0.5, h+0.5);
+    gx.globalAlpha = 1;
+  }
+
+  function drawAllGrime(){
+    gx.clearRect(0,0,CW,CH);
+    for(var cy=0; cy<gRows; cy++){
+      for(var cx=0; cx<gCols; cx++) paintCell(cx,cy);
     }
   }
-  function drawGarageBand(x,y,w,h){
-    cleanCtx.fillStyle = "#8a99a6";
-    cleanCtx.fillRect(x,y,w,h);
-    cleanCtx.fillStyle = "#5f6b75";
-    for(var gx=x; gx<x+w; gx+=PX*4){ cleanCtx.fillRect(gx,y,3,h); }
-    cleanCtx.fillStyle = "#4a5560";
-    cleanCtx.fillRect(x,y+h-PX,w,PX);
-  }
-  function drawHedgeBand(x,y,w,h){
-    cleanCtx.fillStyle = "#5f7d47";
-    cleanCtx.fillRect(x,y,w,h);
-    cleanCtx.fillStyle = "#4a6636";
-    for(var gx=x; gx<x+w; gx+=PX*2){ cleanCtx.fillRect(gx,y+h-PX,PX,PX); }
-  }
-  function drawWallBand(x,y,w,h){
-    cleanCtx.fillStyle = "#d8c9a3";
-    cleanCtx.fillRect(x,y,w,h);
-    cleanCtx.fillStyle = "#bfae82";
-    for(var gy=y; gy<y+h; gy+=12){ cleanCtx.fillRect(x,gy,w,2); }
-  }
-  function drawRoofBand(x,y,w,h){
-    cleanCtx.fillStyle = "#8f4726";
-    cleanCtx.fillRect(x,y,w,h);
-    cleanCtx.fillStyle = "#6b331a";
-    for(var rx=x; rx<x+w; rx+=PX*2){ cleanCtx.fillRect(rx,y,PX,h); }
-    cleanCtx.fillStyle = "#a9754a";
-    cleanCtx.fillRect(x,y+h-4,w,4);
-  }
-  function drawWaterBand(x,y,w,h,colorA,colorB){
-    cleanCtx.fillStyle = colorA;
-    cleanCtx.fillRect(x,y,w,h);
-    cleanCtx.fillStyle = colorB;
-    for(var wx=x; wx<x+w; wx+=PX*3){ cleanCtx.fillRect(wx, y+Math.round(h/2), PX, 3); }
-    for(var wx2=x+PX; wx2<x+w; wx2+=PX*3){ cleanCtx.fillRect(wx2, y+Math.round(h/3), PX, 3); }
-  }
 
-  function drawCleanLayer(def){
-    var m = def.margin;
-    var ix=m.left, iy=m.top, iw=CW-m.left-m.right, ih=CH-m.top-m.bottom;
-    cleanCtx.clearRect(0,0,CW,CH);
-    drawGrassBlock(0,0,CW,CH);
-
-    if(def.type==="driveway"){
-      drawGarageBand(0,0,CW,m.top);
-      drawGrassBand(0,m.top,m.left,ih);
-      drawGrassBand(CW-m.right,m.top,m.right,ih);
-    } else if(def.type==="patio"){
-      drawHedgeBand(0,0,CW,m.top);
-      drawGrassBand(0,m.top,m.left,ih);
-      drawGrassBand(CW-m.right,m.top,m.right,ih);
-    } else if(def.type==="deck"){
-      drawWallBand(0,0,CW,m.top);
-    } else if(def.type==="wall"){
-      drawRoofBand(0,0,CW,m.top);
-      drawGrassBand(0,CH-m.bottom,CW,m.bottom);
-    } else if(def.type==="dock"){
-      drawWaterBand(0,CH-m.bottom,CW,m.bottom,"#4f8fa6","#356273");
-    } else if(def.type==="pool"){
-      drawWaterBand(0,CH-m.bottom,CW,m.bottom,"#6fc3d1","#4a9aab");
-      cleanCtx.fillStyle = "#e9dcb8";
-      cleanCtx.fillRect(0,CH-m.bottom,CW,4);
-    } else if(def.type==="fence"){
-      drawHedgeBand(0,0,CW,m.top);
-      drawGrassBand(0,CH-m.bottom,CW,m.bottom);
-    } else if(def.type==="roof"){
-      drawGrassBand(0,CH-m.bottom,CW,m.bottom);
-    }
-
-    cleanCtx.fillStyle = def.clean;
-    cleanCtx.fillRect(ix,iy,iw,ih);
-    cleanCtx.strokeStyle = shade(def.clean,-20);
-    cleanCtx.lineWidth = 3;
-
-    if(def.type==="driveway"){
-      for(var i=0;i<8;i++){
-        cleanCtx.beginPath();
-        var sx = ix+Math.random()*iw, sy = iy+Math.random()*ih;
-        var ex = sx+(Math.random()*100-50), ey = sy+(Math.random()*100-50);
-        cleanCtx.moveTo(pxs(sx),pxs(sy)); cleanCtx.lineTo(pxs(ex),pxs(ey));
-        cleanCtx.stroke();
-      }
-      drawCar(ix+iw-184, iy+ih-100);
-    } else if(def.type==="patio"){
-      var bw=64, bh=32;
-      cleanCtx.save();
-      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
-      for(var y=iy;y<iy+ih+bh;y+=bh){
-        var offset = (Math.floor((y-iy)/bh)%2)*(bw/2);
-        for(var x=ix-bw;x<ix+iw+bw;x+=bw){ cleanCtx.strokeRect(x+offset,y,bw,bh); }
-      }
-      cleanCtx.restore();
-      drawPottedPlant(ix+26, iy+ih-92);
-    } else if(def.type==="deck"){
-      cleanCtx.save();
-      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
-      for(var yy=iy+40; yy<iy+ih; yy+=36){
-        cleanCtx.beginPath(); cleanCtx.moveTo(ix,yy); cleanCtx.lineTo(ix+iw,yy); cleanCtx.stroke();
-      }
-      cleanCtx.restore();
-      drawDeckRailing(ix,iy,iw);
-      drawPottedPlant(ix+iw-90, iy+ih-92);
-    } else if(def.type==="wall"){
-      cleanCtx.save();
-      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
-      for(var xx=ix+70; xx<ix+iw; xx+=88){
-        cleanCtx.beginPath(); cleanCtx.moveTo(xx,iy); cleanCtx.lineTo(xx,iy+ih); cleanCtx.stroke();
-      }
-      cleanCtx.restore();
-      drawWindow(ix+iw/2-64, iy+26);
-      drawWallLamp(ix+iw-96, iy+46);
-    } else if(def.type==="dock"){
-      cleanCtx.save();
-      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
-      for(var dy=iy+40; dy<iy+ih; dy+=32){
-        cleanCtx.beginPath(); cleanCtx.moveTo(ix,dy); cleanCtx.lineTo(ix+iw,dy); cleanCtx.stroke();
-      }
-      cleanCtx.restore();
-      drawBoat(ix+iw-210, iy+ih-40);
-    } else if(def.type==="pool"){
-      cleanCtx.save();
-      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
-      for(var px2=ix+50; px2<ix+iw; px2+=70){
-        cleanCtx.beginPath(); cleanCtx.moveTo(px2,iy); cleanCtx.lineTo(px2,iy+ih); cleanCtx.stroke();
-      }
-      cleanCtx.restore();
-      drawUmbrella(ix+50, iy+30);
-    } else if(def.type==="fence"){
-      cleanCtx.save();
-      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
-      for(var fx2=ix+14; fx2<ix+iw; fx2+=22){
-        cleanCtx.beginPath(); cleanCtx.moveTo(fx2,iy); cleanCtx.lineTo(fx2,iy+ih); cleanCtx.stroke();
-      }
-      cleanCtx.restore();
-      drawPottedPlant(ix+iw-90, iy+ih-92);
-    } else if(def.type==="roof"){
-      cleanCtx.save();
-      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
-      for(var ry=iy+18; ry<iy+ih; ry+=16){
-        cleanCtx.beginPath(); cleanCtx.moveTo(ix,ry); cleanCtx.lineTo(ix+iw,ry); cleanCtx.stroke();
-      }
-      cleanCtx.restore();
-      drawChimney(ix+iw*0.62, iy);
-    }
-
-    cleanCtx.strokeStyle = "#3a2f28";
-    cleanCtx.lineWidth = 6;
-    cleanCtx.strokeRect(3,3,CW-6,CH-6);
-  }
-
-  function drawCar(x,y){
-    cleanCtx.save();
-    cleanCtx.fillStyle = "#3a2f28";
-    cleanCtx.fillRect(x+6,y+82,168,8);
-    cleanCtx.fillRect(x-2,y+28,188,4);
-    cleanCtx.fillRect(x+22,y+6,126,4);
-    cleanCtx.fillStyle = "#c9543f";
-    cleanCtx.fillRect(x,y+30,184,44);
-    cleanCtx.fillRect(x+24,y+8,124,24);
-    cleanCtx.fillStyle = "#bde3ef";
-    cleanCtx.fillRect(x+34,y+12,44,16);
-    cleanCtx.fillRect(x+96,y+12,40,16);
-    cleanCtx.fillStyle = "#3a2f28";
-    cleanCtx.fillRect(x+14,y+64,30,30);
-    cleanCtx.fillRect(x+132,y+64,30,30);
-    cleanCtx.fillStyle = "#c9c2b0";
-    cleanCtx.fillRect(x+22,y+72,14,14);
-    cleanCtx.fillRect(x+140,y+72,14,14);
-    cleanCtx.restore();
-  }
-  function drawPottedPlant(x,y){
-    cleanCtx.save();
-    cleanCtx.fillStyle = "#a9663a";
-    cleanCtx.fillRect(x,y+52,60,30);
-    cleanCtx.fillStyle = "#c9814f";
-    cleanCtx.fillRect(x+4,y+58,52,20);
-    cleanCtx.fillStyle = "#4a6636";
-    cleanCtx.fillRect(x+8,y+14,44,42);
-    cleanCtx.fillStyle = "#5f7d47";
-    cleanCtx.fillRect(x+14,y+22,32,26);
-    cleanCtx.fillRect(x+18,y+8,24,12);
-    cleanCtx.restore();
-  }
-  function drawDeckRailing(x,y,w){
-    cleanCtx.save();
-    cleanCtx.fillStyle = "#3a2f28";
-    cleanCtx.fillRect(x,y,w,4);
-    for(var rx=x+10; rx<x+w; rx+=28){ cleanCtx.fillRect(rx,y,4,24); }
-    cleanCtx.restore();
-  }
-  function drawWindow(x,y){
-    cleanCtx.save();
-    cleanCtx.fillStyle = "#3a2f28";
-    cleanCtx.fillRect(x-6,y-6,140,112);
-    cleanCtx.fillStyle = "#bdeaf6";
-    cleanCtx.fillRect(x,y,128,100);
-    cleanCtx.fillStyle = "#3a2f28";
-    cleanCtx.fillRect(x+61,y,6,100);
-    cleanCtx.fillRect(x,y+47,128,6);
-    cleanCtx.fillStyle = "#a9754a";
-    cleanCtx.fillRect(x-14,y+100,156,14);
-    cleanCtx.restore();
-  }
-  function drawWallLamp(x,y){
-    cleanCtx.save();
-    cleanCtx.fillStyle = "#3a2f28";
-    cleanCtx.fillRect(x-3,y-3,26,40);
-    cleanCtx.fillStyle = "#e0a83e";
-    cleanCtx.fillRect(x,y,20,30);
-    cleanCtx.fillStyle = "#8f4726";
-    cleanCtx.fillRect(x-2,y+30,24,6);
-    cleanCtx.restore();
-  }
-  function drawBoat(x,y){
-    cleanCtx.save();
-    cleanCtx.fillStyle = "#3a2f28";
-    cleanCtx.fillRect(x,y+24,180,10);
-    cleanCtx.fillStyle = "#c1683f";
-    cleanCtx.fillRect(x+8,y+10,164,20);
-    cleanCtx.fillStyle = "#e9dcb8";
-    cleanCtx.fillRect(x+8,y+10,164,6);
-    cleanCtx.fillStyle = "#3a2f28";
-    cleanCtx.fillRect(x+70,y-30,6,42);
-    cleanCtx.fillStyle = "#f6ecd2";
-    cleanCtx.fillRect(x+76,y-26,40,30);
-    cleanCtx.restore();
-  }
-  function drawUmbrella(x,y){
-    cleanCtx.save();
-    cleanCtx.fillStyle = "#3a2f28";
-    cleanCtx.fillRect(x+30,y+20,6,60);
-    cleanCtx.fillStyle = "#a4485f";
-    cleanCtx.fillRect(x,y,72,10);
-    cleanCtx.fillRect(x+12,y-10,48,10);
-    cleanCtx.fillStyle = "#8a3247";
-    cleanCtx.fillRect(x,y+8,72,4);
-    cleanCtx.restore();
-  }
-  function drawChimney(x,y){
-    cleanCtx.save();
-    cleanCtx.fillStyle = "#6b5a4a";
-    cleanCtx.fillRect(x,y,34,56);
-    cleanCtx.fillStyle = "#4a3d31";
-    cleanCtx.fillRect(x,y,34,10);
-    cleanCtx.strokeStyle = "#3a2f28";
-    cleanCtx.lineWidth = 2;
-    cleanCtx.strokeRect(x,y,34,56);
-    cleanCtx.restore();
-  }
-
-  function drawDirtyLayer(grime, ix, iy, iw, ih){
-    dirtyCtx.clearRect(0,0,CW,CH);
-    dirtyCtx.save();
-    dirtyCtx.beginPath(); dirtyCtx.rect(ix,iy,iw,ih); dirtyCtx.clip();
-    dirtyCtx.fillStyle = grime.a;
-    dirtyCtx.fillRect(ix,iy,iw,ih);
-    var cols = Math.ceil(iw/PX), rows = Math.ceil(ih/PX);
-    for(var cy=0; cy<rows; cy++){
-      for(var cx=0; cx<cols; cx++){
-        if(Math.random()<0.55){
-          dirtyCtx.globalAlpha = 0.55 + Math.random()*0.4;
-          dirtyCtx.fillStyle = Math.random()<0.5 ? grime.a : grime.b;
-          dirtyCtx.fillRect(ix+cx*PX, iy+cy*PX, PX, PX);
-        }
+  function sprayGrime(x, y, radius, power){
+    if(!grime) return 0;
+    var a = job.area;
+    var c0 = Math.floor((x-radius-a.x)/CELL), c1 = Math.floor((x+radius-a.x)/CELL);
+    var r0 = Math.floor((y-radius-a.y)/CELL), r1 = Math.floor((y+radius-a.y)/CELL);
+    c0 = Math.max(0,c0); r0 = Math.max(0,r0);
+    c1 = Math.min(gCols-1,c1); r1 = Math.min(gRows-1,r1);
+    var removed = 0, rr2 = radius*radius;
+    for(var cy=r0; cy<=r1; cy++){
+      for(var cx=c0; cx<=c1; cx++){
+        var i = cy*gCols+cx, hp = grime[i];
+        if(hp <= 0) continue;
+        var px = a.x + cx*CELL + CELL/2, py = a.y + cy*CELL + CELL/2;
+        var dx = px-x, dy = py-y, d2 = dx*dx + dy*dy;
+        if(d2 > rr2) continue;
+        var fall = 1 - (Math.sqrt(d2)/radius)*0.5;
+        var take = Math.min(hp, power*fall);
+        grime[i] = hp - take;
+        removed += take;
+        paintCell(cx,cy);
       }
     }
-    dirtyCtx.globalAlpha = 1;
-    dirtyCtx.fillStyle = "#000";
-    var speckles = Math.round((iw*ih)/3200);
-    for(var s=0;s<speckles;s++){
-      dirtyCtx.globalAlpha = 0.3 + Math.random()*0.3;
-      var sxp = ix + Math.floor(Math.random()*cols)*PX;
-      var syp = iy + Math.floor(Math.random()*rows)*PX;
-      dirtyCtx.fillRect(sxp, syp, PX/2, PX/2);
-    }
-    dirtyCtx.globalAlpha = 1;
-    dirtyCtx.restore();
+    grimeLeft -= removed;
+    return removed;
   }
 
-  function sprayAt(x,y,radius,toughness){
-    var strength = clamp(1/(toughness||1), 0.32, 1);
-    dirtyCtx.globalCompositeOperation = "destination-out";
-    dirtyCtx.globalAlpha = strength;
-    var cx0 = pxs(x-radius), cx1 = pxs(x+radius);
-    var cy0 = pxs(y-radius), cy1 = pxs(y+radius);
-    var r2 = radius*radius;
-    for(var gx=cx0; gx<=cx1; gx+=PX){
-      for(var gy=cy0; gy<=cy1; gy+=PX){
-        var dx=(gx+PX/2)-x, dy=(gy+PX/2)-y;
-        if(dx*dx+dy*dy<=r2){ dirtyCtx.fillRect(gx,gy,PX,PX); }
-      }
-    }
-    dirtyCtx.globalAlpha = 1;
-    dirtyCtx.globalCompositeOperation = "source-over";
+  function cleanliness(){
+    if(!grimeTotal) return 1;
+    return clamp(1 - grimeLeft/grimeTotal, 0, 1);
   }
 
+  /* =========================================================
+     PARTICLES + CHARACTER FX
+     ========================================================= */
   var particles = [];
-  function spawnParticles(x,y,color){
-    var n = 3 + Math.floor(Math.random()*2);
+  function splash(x,y,color,n){
+    n = n || 4;
     for(var i=0;i<n;i++){
       particles.push({
         x:x, y:y,
-        vx:(Math.random()*2-1)*1.6,
-        vy:(Math.random()*-1.5-0.4),
-        life:1,
-        size: 2.2 + Math.random()*2.2,
-        color: color || "#eaf9ff"
+        vx:(Math.random()*2-1)*2.4, vy:-(0.8+Math.random()*2.4),
+        life:1, size:2 + Math.random()*3.2,
+        color: Math.random()<0.45 ? color : "#eaf9ff", type:"drop"
       });
     }
   }
-  function spawnBurst(x,y,color){
-    for(var i=0;i<18;i++){
-      var ang = Math.random()*Math.PI*2, spd = 1.5+Math.random()*3.2;
+  function burst(x,y,color){
+    for(var i=0;i<26;i++){
+      var a = Math.random()*Math.PI*2, sp = 1.8+Math.random()*4.2;
       particles.push({
-        x:x, y:y,
-        vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd-1.2,
-        life:1, size: 2.5+Math.random()*3, color: color || "#eaf9ff"
+        x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-1.4,
+        life:1, size:2.5+Math.random()*3.5, color:color, type:"drop"
       });
     }
   }
-  function spawnRain(){
-    for(var i=0;i<3;i++){
-      particles.push({
-        x: Math.random()*CW, y:-10,
-        vx:-0.3, vy: 5+Math.random()*2,
-        life:1, size:1.5, color:"#bcd4e6", type:"rain"
-      });
-    }
+  function rainDrop(){
+    particles.push({
+      x: Math.random()*CW, y:-12, vx:-0.6, vy:8+Math.random()*3,
+      life:1, size:1.6, color:"#cfe6f2", type:"rain"
+    });
   }
-  var fxRunning = false;
-  function fxLoop(){
-    fxCtx.clearRect(0,0,CW,CH);
+
+  function drawParticles(){
     for(var i=particles.length-1;i>=0;i--){
       var p = particles[i];
       p.x += p.vx; p.y += p.vy;
       if(p.type==="rain"){
-        if(p.y>CH+10){ particles.splice(i,1); continue; }
-        fxCtx.globalAlpha = 0.55;
-        fxCtx.strokeStyle = p.color;
-        fxCtx.lineWidth = p.size;
-        fxCtx.beginPath();
-        fxCtx.moveTo(p.x,p.y);
-        fxCtx.lineTo(p.x - p.vx*4, p.y - p.vy*4);
-        fxCtx.stroke();
+        if(p.y > CH+12){ particles.splice(i,1); continue; }
+        fx.globalAlpha = 0.5;
+        fx.strokeStyle = p.color; fx.lineWidth = p.size; fx.lineCap = "round";
+        fx.beginPath(); fx.moveTo(p.x,p.y); fx.lineTo(p.x - p.vx*3, p.y - p.vy*3); fx.stroke();
         continue;
       }
-      p.vy += 0.09; p.life -= 0.035;
-      if(p.life<=0){ particles.splice(i,1); continue; }
-      fxCtx.globalAlpha = clamp(p.life,0,1);
-      fxCtx.fillStyle = p.color || "#eaf9ff";
-      fxCtx.beginPath();
-      fxCtx.arc(p.x,p.y,p.size||3.2,0,Math.PI*2);
-      fxCtx.fill();
+      p.vy += 0.22; p.life -= 0.035;
+      if(p.life <= 0){ particles.splice(i,1); continue; }
+      fx.globalAlpha = clamp(p.life,0,1);
+      fx.fillStyle = p.color;
+      fx.beginPath(); fx.arc(p.x,p.y,p.size,0,Math.PI*2); fx.fill();
     }
-    fxCtx.globalAlpha = 1;
-    if(particles.length>0){ requestAnimationFrame(fxLoop); } else { fxRunning = false; }
-  }
-  function ensureFx(){ if(!fxRunning){ fxRunning = true; requestAnimationFrame(fxLoop); } }
-
-  function canvasPoint(evt){
-    var rect = canvasWrap.getBoundingClientRect();
-    var cx = (evt.clientX - rect.left) * (CW/rect.width);
-    var cy = (evt.clientY - rect.top) * (CH/rect.height);
-    return {x:cx, y:cy};
+    fx.globalAlpha = 1;
   }
 
-  var lastPt = null, refilling = false;
-  var canvasWrap = $("canvas-wrap");
-  function shakeCanvas(){
-    canvasWrap.classList.remove("shake");
-    void canvasWrap.offsetWidth;
-    canvasWrap.classList.add("shake");
-  }
-  var rainTimer = null;
-  function startRainLoop(){
-    if(rainTimer){ clearInterval(rainTimer); rainTimer=null; }
-    if(!job || !job.weather || !job.weather.rain) return;
-    rainTimer = setInterval(function(){
-      if(!job || job.ended){ clearInterval(rainTimer); rainTimer=null; return; }
-      spawnRain();
-      ensureFx();
-    }, 150);
+  /* The washer: little character in the corner, wand aimed at the cursor */
+  function drawWasher(){
+    var h = job.def.hero, ax = aim.x, ay = aim.y;
+    var ang = Math.atan2(ay - (h.y-26), ax - h.x);
+    var facing = ax >= h.x ? 1 : -1;
+    var handX = h.x + Math.cos(ang)*20, handY = (h.y-26) + Math.sin(ang)*20;
+
+    /* hose from the truck, off-stage, to the hands */
+    var hs = job.def.hose;
+    fx.strokeStyle = "#3e5c4a"; fx.lineWidth = 9; fx.lineCap="round";
+    fx.beginPath();
+    fx.moveTo(hs.x, hs.y);
+    fx.quadraticCurveTo((hs.x+handX)/2, Math.max(hs.y, handY)+70, handX, handY);
+    fx.stroke();
+    fx.strokeStyle = "#5c8368"; fx.lineWidth = 3.5;
+    fx.beginPath();
+    fx.moveTo(hs.x, hs.y);
+    fx.quadraticCurveTo((hs.x+handX)/2, Math.max(hs.y, handY)+70, handX, handY);
+    fx.stroke();
+
+    /* shadow */
+    fx.fillStyle = "rgba(74,53,38,.22)";
+    fx.beginPath(); fx.ellipse(h.x, h.y+16, 26, 9, 0, 0, Math.PI*2); fx.fill();
+
+    /* legs */
+    fx.fillStyle = "#3d6a94";
+    fillRR(fx, h.x-13, h.y-8, 11, 26, 5, "#3d6a94");
+    fillRR(fx, h.x+2,  h.y-8, 11, 26, 5, "#3d6a94");
+    fx.strokeStyle="#4a3526"; fx.lineWidth=2.5;
+    rr(fx, h.x-13, h.y-8, 11, 26, 5); fx.stroke();
+    rr(fx, h.x+2,  h.y-8, 11, 26, 5); fx.stroke();
+    /* boots */
+    fillRR(fx, h.x-15, h.y+14, 14, 9, 4, "#4a3526");
+    fillRR(fx, h.x+1,  h.y+14, 14, 9, 4, "#4a3526");
+
+    /* body (overalls) */
+    fillRR(fx, h.x-16, h.y-40, 32, 36, 11, "#4a9cc4");
+    fx.strokeStyle="#4a3526"; fx.lineWidth=3; rr(fx, h.x-16, h.y-40, 32, 36, 11); fx.stroke();
+    fx.fillStyle = "#e8794a";
+    fx.fillRect(h.x-16, h.y-26, 32, 6);
+
+    /* arms toward the wand */
+    fx.strokeStyle = "#f6ceac"; fx.lineWidth = 8; fx.lineCap = "round";
+    fx.beginPath(); fx.moveTo(h.x-2, h.y-30); fx.lineTo(handX, handY); fx.stroke();
+    fx.strokeStyle = "#4a3526"; fx.lineWidth = 1.6;
+    fx.beginPath(); fx.moveTo(h.x-2, h.y-30); fx.lineTo(handX, handY); fx.stroke();
+
+    /* head */
+    fx.beginPath(); fx.arc(h.x, h.y-50, 13, 0, Math.PI*2);
+    fx.fillStyle = "#f6ceac"; fx.fill();
+    fx.strokeStyle="#4a3526"; fx.lineWidth=3; fx.stroke();
+    /* cap */
+    fx.beginPath(); fx.arc(h.x, h.y-52, 13, Math.PI, 0);
+    fx.fillStyle = "#e8794a"; fx.fill(); fx.stroke();
+    fx.fillStyle = "#bb5527";
+    fx.beginPath();
+    fx.moveTo(h.x + facing*2, h.y-54);
+    fx.lineTo(h.x + facing*22, h.y-50);
+    fx.lineTo(h.x + facing*2, h.y-46);
+    fx.closePath(); fx.fill(); fx.stroke();
+    /* eye */
+    fx.fillStyle = "#4a3526";
+    fx.beginPath(); fx.arc(h.x + facing*5, h.y-47, 2.1, 0, Math.PI*2); fx.fill();
+
+    /* wand */
+    var wandLen = 34;
+    var tipX = handX + Math.cos(ang)*wandLen, tipY = handY + Math.sin(ang)*wandLen;
+    fx.strokeStyle = "#c9bfae"; fx.lineWidth = 6; fx.lineCap="round";
+    fx.beginPath(); fx.moveTo(handX, handY); fx.lineTo(tipX, tipY); fx.stroke();
+    fx.strokeStyle = "#4a3526"; fx.lineWidth = 1.8;
+    fx.beginPath(); fx.moveTo(handX, handY); fx.lineTo(tipX, tipY); fx.stroke();
+    fx.fillStyle = "#f5c451";
+    fx.beginPath(); fx.arc(tipX, tipY, 4.2, 0, Math.PI*2); fx.fill();
+    fx.strokeStyle="#4a3526"; fx.lineWidth=1.6; fx.stroke();
+
+    return { tipX:tipX, tipY:tipY, ang:ang };
   }
 
-  var pendingWeather = null;
+  function drawSprayCone(tip){
+    var dx = aim.x - tip.tipX, dy = aim.y - tip.tipY;
+    var len = Math.sqrt(dx*dx+dy*dy) || 1;
+    var nx = dx/len, ny = dy/len;
+    var spread = sprayRadius()*0.62;
+    var px = -ny, py = nx;
+    fx.globalAlpha = 0.30;
+    fx.fillStyle = "#eaf9ff";
+    fx.beginPath();
+    fx.moveTo(tip.tipX + px*4, tip.tipY + py*4);
+    fx.lineTo(aim.x + px*spread, aim.y + py*spread);
+    fx.lineTo(aim.x - px*spread, aim.y - py*spread);
+    fx.lineTo(tip.tipX - px*4, tip.tipY - py*4);
+    fx.closePath(); fx.fill();
+    fx.globalAlpha = 0.22;
+    fx.beginPath(); fx.arc(aim.x, aim.y, sprayRadius()*0.75, 0, Math.PI*2); fx.fill();
+    fx.globalAlpha = 1;
+  }
+
+  /* =========================================================
+     JOB LOOP
+     ========================================================= */
+  var job = null;
+  var aim = { x:CW/2, y:CH/2 };
+  var spraying = false, lastSprayPt = null, refilling = false;
+  var rafId = null, lastTs = 0, sprayAcc = 0, foamAcc = 0, rainAcc = 0, refillT = 0;
+
+  function pickJobDef(){
+    var r = regionDef();
+    var key = pick(r.jobs, state.jobsCompleted);
+    return JOBS[key];
+  }
+  function pickGrime(){
+    var r = regionDef();
+    var idx = Math.min(r.grimes.length-1, rigTier() + (state.jobsCompleted % 3 === 2 ? 1 : 0));
+    return GRIME_TYPES[r.grimes[Math.min(r.grimes.length-1, idx)]];
+  }
+
   function startJob(){
-    showScreen("screen-job");
-    playIntroThenBegin();
-  }
+    var def = pickJobDef();
+    var type = pickGrime();
+    var weather = WEATHERS[Math.floor(Math.random()*WEATHERS.length)];
+    var seed = (state.jobsCompleted+1) * 2654435761 % 4294967296;
+    var rng = makeRng(seed);
 
-  function playIntroThenBegin(){
-    var intro = $("jobIntro");
-    var truckEl = $("introTruck");
-    pendingWeather = WEATHER_TYPES[Math.floor(Math.random()*WEATHER_TYPES.length)];
-    intro.style.background = pendingWeather.sky;
-    truckEl.innerHTML = buildTruckSVG();
-    intro.classList.remove("hidden");
-    truckEl.classList.remove("drive-in");
-    void truckEl.offsetWidth;
-    truckEl.classList.add("drive-in");
-    setTimeout(function(){
-      intro.classList.add("hidden");
-      beginJobRound();
-    }, 950);
-  }
-
-  function beginJobRound(){
-    var def = pickJob();
-    var grime = GRIME_TIERS[rigTierIndex()];
-    var weather = pendingWeather || WEATHER_TYPES[0];
-    var m = def.margin;
-    var rect = { ix:m.left, iy:m.top, iw:CW-m.left-m.right, ih:CH-m.top-m.bottom };
     job = {
-      def: def,
-      grime: grime,
-      weather: weather,
-      rect: rect,
-      startTime: Date.now(),
-      duration: jobDuration(),
-      tank: tankMax(),
-      cleanliness: 0,
-      ended: false
+      def: def, area: def.area, grime: type, weather: weather,
+      duration: jobMs(), start: 0, tank: tankMax(), ended: false, started: false,
+      region: state.region
     };
+
+    showScreen("screen-job");
     $("jobName").textContent = def.name;
-    $("jobGrimeLabel").textContent = grime.name + (grime.payMult>1 ? " · pays +"+Math.round((grime.payMult-1)*100)+"%" : "") + " · " + weather.name;
-    $("weatherTint").style.background = weather.tint;
-    drawCleanLayer(def);
-    drawDirtyLayer(grime, rect.ix, rect.iy, rect.iw, rect.ih);
-    fxCtx.clearRect(0,0,CW,CH);
+    $("jobSub").textContent = type.name + " · " + regionDef().name + " · " + weather.name;
+    $("stageTint").style.background = weather.tint;
+
+    bx.clearRect(0,0,CW,CH);
+    def.scene(def.area, rng);
+    buildGrime(rng);
+    drawAllGrime();
+    fx.clearRect(0,0,CW,CH);
     particles = [];
-    lastPt = null;
-    updateTankUI();
-    updateCleanUI();
-    updateTimerUI(job.duration);
-    $("refillPrompt").classList.add("hidden");
-    refilling = false;
-    startCleanlinessLoop();
-    startFoamLoop();
-    startTimerLoop();
-    startRainLoop();
-  }
+    aim = { x: def.area.x + def.area.w/2, y: def.area.y + def.area.h/2 };
+    spraying = false; lastSprayPt = null; refilling = false;
+    sprayAcc = foamAcc = rainAcc = 0;
+    setTank(job.tank); setClean(0); setTimer(job.duration);
+    $("stageOverlay").classList.add("hidden");
 
-  function updateTankUI(){
-    var pct = clamp(job.tank/tankMax()*100,0,100);
-    $("tankFill").style.width = pct+"%";
-    $("tankPct").textContent = Math.round(pct)+"%";
-  }
-  function updateCleanUI(){
-    var pct = clamp(job.cleanliness*100,0,100);
-    $("cleanFill").style.width = pct+"%";
-    $("cleanPct").textContent = Math.round(pct)+"%";
-  }
-  function updateTimerUI(msLeft){
-    var pct = clamp(msLeft/job.duration*100,0,100);
-    var fill = $("timerFill");
-    fill.style.width = pct+"%";
-    fill.style.background = pct<25 ? "var(--red)" : "var(--orange)";
-    var secs = Math.max(0, Math.ceil(msLeft/1000));
-    var m = Math.floor(secs/60), s = secs%60;
-    $("timeLeftLabel").textContent = m+":"+(s<10?"0":"")+s;
-  }
-
-  var sampleCanvas = document.createElement("canvas");
-  sampleCanvas.width = 90; sampleCanvas.height = Math.round(90*CH/CW);
-  var sampleCtx = sampleCanvas.getContext("2d");
-  function computeCleanliness(){
-    var r = job.rect;
-    sampleCtx.clearRect(0,0,sampleCanvas.width, sampleCanvas.height);
-    sampleCtx.drawImage(dirtyCanvas, r.ix, r.iy, r.iw, r.ih, 0,0, sampleCanvas.width, sampleCanvas.height);
-    var data = sampleCtx.getImageData(0,0,sampleCanvas.width, sampleCanvas.height).data;
-    var dirty = 0, total = data.length/4;
-    for(var i=3;i<data.length;i+=4){ if(data[i] > 25) dirty++; }
-    return 1 - (dirty/total);
-  }
-
-  var cleanlinessTimer = null, foamTimer = null, timerLoopId = null;
-
-  function startCleanlinessLoop(){
-    if(cleanlinessTimer) clearInterval(cleanlinessTimer);
-    cleanlinessTimer = setInterval(function(){
+    playIntro(function(){
       if(!job || job.ended) return;
-      job.cleanliness = computeCleanliness();
-      updateCleanUI();
-      if(job.cleanliness >= 0.97){ endJob("complete"); }
-    }, 220);
-  }
-  function startFoamLoop(){
-    if(foamTimer) clearInterval(foamTimer);
-    if(foamAutoLevel()<=0) return;
-    var interval = Math.max(900, 2200 - foamAutoLevel()*500);
-    foamTimer = setInterval(function(){
-      if(!job || job.ended) return;
-      var r = job.rect;
-      var x = r.ix+20+Math.random()*(r.iw-40), y = r.iy+20+Math.random()*(r.ih-40);
-      sprayAt(x,y, 34+foamAutoLevel()*12, job.grime.toughness*toughnessFactor());
-      spawnParticles(x,y, job.grime.splash); ensureFx();
-    }, interval);
-  }
-  function startTimerLoop(){
-    if(timerLoopId) clearInterval(timerLoopId);
-    timerLoopId = setInterval(function(){
-      if(!job || job.ended) return;
-      var elapsed = Date.now()-job.startTime;
-      var left = job.duration - elapsed;
-      updateTimerUI(Math.max(0,left));
-      if(left<=0){ endJob("timeout"); }
-    }, 120);
-  }
-  function stopTimers(){
-    if(cleanlinessTimer){ clearInterval(cleanlinessTimer); cleanlinessTimer=null; }
-    if(foamTimer){ clearInterval(foamTimer); foamTimer=null; }
-    if(timerLoopId){ clearInterval(timerLoopId); timerLoopId=null; }
+      job.started = true;
+      job.start = now();
+      lastTs = 0;
+      rafId = requestAnimationFrame(frame);
+    });
   }
 
-  function pointerEnter(evt){
-    if(!job || job.ended) return;
-    lastPt = canvasPoint(evt);
-    if(!refilling && job.tank>0) doSpray(lastPt.x, lastPt.y);
+  function now(){ return (window.performance && performance.now) ? performance.now() : Date.now(); }
+
+  function playIntro(done){
+    var r = regionDef();
+    var el = document.createElement("div");
+    el.style.cssText = "position:absolute;inset:0;z-index:7;display:flex;align-items:flex-end;overflow:hidden;" +
+      "background:linear-gradient(180deg,"+r.sky[0]+" 0%,"+r.sky[1]+" 100%);";
+    var t = document.createElement("div");
+    t.style.cssText = "width:48%;margin:0 0 7% 5%;transform:translateX(-170%);transition:transform .8s cubic-bezier(.2,.75,.3,1);";
+    t.innerHTML = truckSVG();
+    el.appendChild(t);
+    stage.appendChild(el);
+    var go = function(){ t.style.transform = "translateX(0)"; };
+    if(window.requestAnimationFrame){ requestAnimationFrame(function(){ requestAnimationFrame(go); }); } else { go(); }
+    setTimeout(function(){
+      el.style.transition = "opacity .25s ease"; el.style.opacity = "0";
+      setTimeout(function(){
+        if(el.parentNode) el.parentNode.removeChild(el);
+        done();
+      }, 260);
+    }, 860);
   }
-  function pointerMove(evt){
-    if(!job || job.ended) return;
-    var p = canvasPoint(evt);
-    if(!lastPt){ lastPt = p; return; }
-    if(refilling || job.tank<=0){ lastPt = p; return; }
-    var dx = p.x-lastPt.x, dy=p.y-lastPt.y;
-    var dist = Math.sqrt(dx*dx+dy*dy);
-    var steps = Math.max(1, Math.floor(dist/6));
-    for(var i=1;i<=steps;i++){
-      var t = i/steps;
-      doSpray(lastPt.x+dx*t, lastPt.y+dy*t);
-      if(job.tank<=0) break;
+
+  function frame(ts){
+    if(!job || job.ended){ rafId = null; return; }
+    var dt = lastTs ? Math.min(80, ts - lastTs) : 16;
+    lastTs = ts;
+
+    /* timer */
+    var elapsed = now() - job.start;
+    var left = job.duration - elapsed;
+    setTimer(Math.max(0,left));
+    if(left <= 0){ endJob("timeout"); return; }
+
+    /* refill */
+    if(refilling){
+      refillT += dt;
+      var t = clamp(refillT / refillMs(), 0, 1);
+      job.tank = lerp(refillFrom, tankMax(), t);
+      setTank(job.tank);
+      if(t >= 1){ refilling = false; job.tank = tankMax(); setTank(job.tank); $("stageOverlay").classList.add("hidden"); }
     }
-    lastPt = p;
-  }
-  function pointerLeave(){ lastPt = null; }
 
-  function doSpray(x,y){
-    if(job.tank<=0){ startAutoRefill(); return; }
-    sprayAt(x,y, brushRadius(), job.grime.toughness*toughnessFactor());
-    job.tank -= 1.1/powerEff();
-    if(job.tank<0) job.tank=0;
-    updateTankUI();
-    if(Math.random()<0.6){
-      spawnParticles(x,y, Math.random()<0.5 ? job.grime.splash : "#eaf9ff");
-      ensureFx();
-    }
-    if(job.tank<=0){ startAutoRefill(); }
-  }
-
-  function startAutoRefill(){
-    if(refilling || !job || job.ended) return;
-    refilling = true;
-    shakeCanvas();
-    $("refillPrompt").classList.remove("hidden");
-    var dur = refillTime();
-    var startTank = job.tank;
-    var t0 = Date.now();
-    var iv = setInterval(function(){
-      if(!job || job.ended){ clearInterval(iv); refilling=false; return; }
-      var t = clamp((Date.now()-t0)/dur,0,1);
-      job.tank = startTank + (tankMax()-startTank)*t;
-      updateTankUI();
-      if(t>=1){
-        clearInterval(iv);
-        job.tank = tankMax();
-        updateTankUI();
-        refilling = false;
-        $("refillPrompt").classList.add("hidden");
+    /* player spray */
+    if(spraying && !refilling && job.tank > 0){
+      sprayAcc += dt;
+      while(sprayAcc >= 70){
+        sprayAcc -= 70;
+        sprayTick();
+        if(job.tank <= 0){ beginRefill(); break; }
       }
-    }, 40);
-  }
-
-  canvasWrap.addEventListener("pointerenter", pointerEnter);
-  canvasWrap.addEventListener("pointermove", pointerMove);
-  canvasWrap.addEventListener("pointerleave", pointerLeave);
-
-  function calcPay(mode, elapsed){
-    var basePay = 68 + state.jobsCompleted*4;
-    var pay = basePay * job.cleanliness * payMultiplier() * job.grime.payMult * streakBonusMult();
-    if(mode==="complete"){
-      var remainingFrac = Math.max(0, (job.duration-elapsed)/job.duration);
-      pay *= 1 + Math.min(0.35, remainingFrac*0.35);
+    } else if(!spraying){
+      sprayAcc = 0;
     }
-    return Math.max(1, Math.round(pay));
+
+    /* foam cannon */
+    if(foamLevel() > 0){
+      foamAcc += dt;
+      var iv = Math.max(700, 1900 - foamLevel()*550);
+      if(foamAcc >= iv){
+        foamAcc = 0;
+        var a = job.area;
+        var fxp = a.x + 30 + Math.random()*(a.w-60), fyp = a.y + 30 + Math.random()*(a.h-60);
+        sprayGrime(fxp, fyp, 40 + foamLevel()*10, 0.5*degreaserMult());
+        splash(fxp, fyp, job.grime.splash, 5);
+        updateClean();
+      }
+    }
+
+    /* rain */
+    if(job.weather.rain){
+      rainAcc += dt;
+      if(rainAcc > 45){ rainAcc = 0; rainDrop(); rainDrop(); }
+    }
+
+    /* render fx layer */
+    fx.clearRect(0,0,CW,CH);
+    drawParticles();
+    var tip = drawWasher();
+    if(spraying && !refilling && job.tank > 0) drawSprayCone(tip);
+
+    rafId = requestAnimationFrame(frame);
   }
-  function starsForJob(mode, elapsed, pctClean){
-    if(mode==="complete"){
-      var remainingFrac = Math.max(0, (job.duration-elapsed)/job.duration);
-      if(remainingFrac >= 0.4) return 3;
-      if(remainingFrac >= 0.15) return 2;
+
+  function sprayTick(){
+    var radius = sprayRadius();
+    var power = sprayPower() * degreaserMult();
+    var from = lastSprayPt || aim;
+    var dx = aim.x - from.x, dy = aim.y - from.y;
+    var dist = Math.sqrt(dx*dx+dy*dy);
+    var steps = clamp(Math.round(dist/(radius*0.55)), 1, 6);
+    /* the wand puts out a fixed amount per tick — sweeping spreads it thinner
+       across more ground rather than multiplying it, so flailing the cursor
+       doesn't out-clean a steady, deliberate pass */
+    var per = power / Math.max(1, steps*0.75);
+    var removed = 0;
+    for(var i=1;i<=steps;i++){
+      var t = steps === 1 ? 1 : i/steps;
+      removed += sprayGrime(from.x + dx*t, from.y + dy*t, radius, per);
+    }
+    lastSprayPt = { x:aim.x, y:aim.y };
+    job.tank = Math.max(0, job.tank - 1.2);
+    setTank(job.tank);
+    if(removed > 0.4) splash(aim.x, aim.y, job.grime.splash, 3);
+    updateClean();
+  }
+
+  var refillFrom = 0;
+  function beginRefill(){
+    if(refilling) return;
+    refilling = true; refillT = 0; refillFrom = job.tank;
+    $("overlayText").textContent = "Refilling tank…";
+    $("stageOverlay").classList.remove("hidden");
+    shakeStage();
+  }
+  function shakeStage(){
+    stage.classList.remove("shake");
+    void stage.offsetWidth;
+    stage.classList.add("shake");
+  }
+
+  function setTank(v){
+    var pct = clamp(v / tankMax() * 100, 0, 100);
+    $("tankFill").style.width = pct + "%";
+    $("tankLabel").textContent = Math.round(pct) + "%";
+  }
+  function setClean(frac){
+    var pct = clamp(frac*100, 0, 100);
+    $("cleanFill").style.width = pct + "%";
+    $("cleanLabel").textContent = Math.round(pct) + "%";
+  }
+  function setTimer(ms){
+    var pct = clamp(ms / job.duration * 100, 0, 100);
+    var f = $("timerFill");
+    f.style.width = pct + "%";
+    f.className = "fill " + (pct < 25 ? "bill" : "gold");
+    var secs = Math.max(0, Math.ceil(ms/1000));
+    $("timeLabel").textContent = Math.floor(secs/60) + ":" + (secs%60 < 10 ? "0" : "") + (secs%60);
+  }
+  function updateClean(){
+    var c = cleanliness();
+    setClean(c);
+    if(c >= 0.985) endJob("complete");
+  }
+
+  /* pointer control — hold to spray */
+  function stagePoint(evt){
+    var r = stage.getBoundingClientRect();
+    if(!r.width || !r.height) return { x:aim.x, y:aim.y };
+    return {
+      x: (evt.clientX - r.left) * (CW / r.width),
+      y: (evt.clientY - r.top)  * (CH / r.height)
+    };
+  }
+  stage.addEventListener("pointerdown", function(e){
+    if(!job || job.ended || !job.started) return;
+    e.preventDefault();
+    aim = stagePoint(e);
+    lastSprayPt = { x:aim.x, y:aim.y };
+    spraying = true;
+    sprayAcc = 70;
+  });
+  window.addEventListener("pointermove", function(e){
+    if(!job || job.ended) return;
+    aim = stagePoint(e);
+  });
+  window.addEventListener("pointerup", function(){ spraying = false; lastSprayPt = null; });
+  window.addEventListener("pointercancel", function(){ spraying = false; lastSprayPt = null; });
+
+  function stopJobLoop(){
+    if(rafId && window.cancelAnimationFrame) cancelAnimationFrame(rafId);
+    rafId = null; spraying = false; refilling = false;
+  }
+
+  /* =========================================================
+     SCORING + END OF JOB
+     ========================================================= */
+  function starsFor(mode, elapsed, pct){
+    if(mode === "complete"){
+      var leftFrac = Math.max(0, (job.duration - elapsed)/job.duration);
+      if(leftFrac >= 0.42) return 3;
+      if(leftFrac >= 0.16) return 2;
       return 1;
     }
-    if(pctClean >= 90) return 2;
-    if(pctClean >= 60) return 1;
+    if(pct >= 90) return 2;
+    if(pct >= 60) return 1;
     return 0;
   }
-  function starsHTML(count){
+  function starsHTML(n){
     var s = '<div class="stars">';
     for(var i=0;i<3;i++){
-      if(i<count){ s += '<span class="filled" style="animation-delay:'+(i*0.12)+'s;">★</span>'; }
-      else { s += '<span>☆</span>'; }
+      s += i < n
+        ? '<span class="on" style="animation-delay:'+(i*0.12)+'s">★</span>'
+        : '<span>☆</span>';
     }
-    s += '</div>';
-    return s;
+    return s + '</div>';
   }
 
   function endJob(mode){
     if(!job || job.ended) return;
     job.ended = true;
-    stopTimers();
-    lastPt = null;
-    var elapsed = Date.now()-job.startTime;
-    var pay = calcPay(mode, elapsed);
-    var tip = 0;
-    if(Math.random() < tipChance()){ tip = 8 + Math.floor(Math.random()*13); }
-    var totalPay = pay + tip;
-    var pctClean = Math.round(job.cleanliness*100);
-    var stars = starsForJob(mode, elapsed, pctClean);
+    stopJobLoop();
 
-    state.cash += totalPay;
-    state.cashSinceRepo += totalPay;
-    state.lifetimeEarnings += totalPay;
+    var elapsed = now() - job.start;
+    var c = cleanliness();
+    var pct = Math.round(c*100);
+    var stars = starsFor(mode, elapsed, pct);
+
+    var base = 55 + state.jobsCompleted*3;
+    var pay = base * c * payMult() * job.grime.pay * REGIONS[job.region].pay * streakMult();
+    if(mode === "complete"){
+      var leftFrac = Math.max(0, (job.duration-elapsed)/job.duration);
+      pay *= 1 + Math.min(0.35, leftFrac*0.35);
+    }
+    pay = Math.max(1, Math.round(pay));
+
+    var tip = (Math.random() < tipChance()) ? 10 + Math.floor(Math.random()*18) : 0;
+    var crew = crewIncome();
+    var total = pay + tip + crew;
+
+    state.cash += total;
+    state.cashSinceRepo += total;
+    state.lifetimeEarnings += total;
+    state.stats.crewEarnings += crew;
     state.jobsCompleted += 1;
     state.jobsSinceBill += 1;
-    if(mode==="complete"){ state.streak += 1; } else { state.streak = 0; }
-    if(pctClean > state.stats.bestCleanliness) state.stats.bestCleanliness = pctClean;
+    state.stats[job.region] = (state.stats[job.region]||0) + 1;
+    if(mode === "complete"){ state.streak += 1; } else { state.streak = 0; }
+    if(pct > state.stats.bestClean) state.stats.bestClean = pct;
     if(state.streak > state.stats.longestStreak) state.stats.longestStreak = state.streak;
-    saveState();
-    renderTop();
+    save(); renderTop();
 
-    if(mode==="complete" && stars===3){
-      spawnBurst(CW/2, CH/2, "#ffe27a");
-      ensureFx();
-      shakeCanvas();
-    }
+    if(mode === "complete" && stars === 3){ burst(CW/2, CH/2, "#ffe27a"); shakeStage(); }
+    fx.clearRect(0,0,CW,CH); drawParticles();
 
-    var headings = mode==="timeout"
-      ? ["Time's Up!","Time's Up!","Time's Up! (Close!)"]
-      : ["Job Complete!","Nice Work!","Perfect Job!"];
-    var emojis = mode==="timeout" ? ["⏰","⏰","⏰"] : ["✨","✨","🌟"];
-    var heading = headings[stars] || headings[0];
-    var emoji = emojis[stars] || emojis[0];
-    var tipLine = tip>0 ? '<div class="stat-line"><span>Tip 🫙</span><span>+$'+tip+'</span></div>' : '';
-    var streakLine = "";
-    if(mode==="complete" && state.streak>1){
-      streakLine = '<div class="stat-line"><span>Streak 🔥</span><span>x'+state.streak+'</span></div>';
-    } else if(mode==="timeout" && state.streak===0){
-      streakLine = '<p style="margin-top:4px;color:#8a7f6a;font-weight:700;">Streak broken — back to zero.</p>';
-    }
-    showModal(
-      '<div class="big-emoji">'+emoji+'</div>' +
-      '<h2>'+heading+'</h2>' +
+    var heads = mode === "timeout"
+      ? ["Out of time","Out of time","So close!"]
+      : ["Job done","Nice work!","Spotless!"];
+    var emo = mode === "timeout" ? "⏰" : (stars === 3 ? "🌟" : "✨");
+
+    var body =
+      '<div class="big-emoji">'+emo+'</div>' +
+      '<h2>'+(heads[stars] || heads[0])+'</h2>' +
       starsHTML(stars) +
-      '<div class="stat-line"><span>Cleanliness</span><span>'+pctClean+'%</span></div>' +
-      '<div class="stat-line"><span>Cash earned</span><span>+$'+pay+'</span></div>' +
-      tipLine + streakLine,
-      [{ label:"Nice — Continue", cls:"primary", action: afterJobContinue }]
-    );
+      '<div class="stat-line"><span>Cleanliness</span><span>'+pct+'%</span></div>' +
+      '<div class="stat-line"><span>Job pay</span><span>+'+money(pay)+'</span></div>' +
+      (tip>0  ? '<div class="stat-line"><span>Tip 🫙</span><span>+'+money(tip)+'</span></div>' : '') +
+      (crew>0 ? '<div class="stat-line"><span>Crew jobs 👷</span><span>+'+money(crew)+'</span></div>' : '') +
+      (mode==="complete" && state.streak>1 ? '<div class="stat-line"><span>Streak 🔥</span><span>x'+state.streak+' (+'+Math.round((streakMult()-1)*100)+'%)</span></div>' : '') +
+      (mode==="timeout" ? '<p class="subtle" style="margin-top:6px;">Streak broken — back to zero.</p>' : '');
+
+    showModal(body, [{ label:"Continue ▸", cls:"primary", action: afterJob }]);
   }
 
-  function afterJobContinue(){
-    if(!state.ownedOutright && state.lifetimeEarnings >= BUYOUT_TARGET){
-      triggerBuyoutModal();
-      return;
+  function afterJob(){
+    job = null;
+    /* story + unlock beats first */
+    if(!state.story.firstJob && state.jobsCompleted === 1){ return tellStory("firstJob", afterJob2); }
+    afterJob2();
+  }
+  function afterJob2(){
+    var unlocked = null;
+    REGION_ORDER.forEach(function(id){
+      if(id === "grove") return;
+      if(state.jobsCompleted >= REGIONS[id].unlock && !state.story[id+"Unlock"]) unlocked = id;
+    });
+    if(unlocked){
+      return tellStory(unlocked+"Unlock", function(){
+        showModal(
+          '<div class="big-emoji">'+REGIONS[unlocked].emoji+'</div>' +
+          '<h2>'+REGIONS[unlocked].name+' unlocked!</h2>' +
+          '<p>'+REGIONS[unlocked].tag+'</p>' +
+          '<div class="stat-line"><span>Pay rate</span><span>×'+REGIONS[unlocked].pay.toFixed(2)+'</span></div>' +
+          '<p class="subtle" style="margin-top:8px;">Switch routes any time from the map.</p>',
+          [{ label:"Nice", cls:"primary", action: afterJob3 }]
+        );
+      });
     }
-    if(state.jobsSinceBill >= billInterval()){ triggerBill(); } else { showScreen("screen-menu"); }
+    afterJob3();
+  }
+  function afterJob3(){
+    if(!state.ownedOutright && state.lifetimeEarnings >= BUYOUT_TARGET) return doBuyout();
+    if(state.jobsSinceBill >= billEvery()) return triggerBill();
+    showScreen("screen-home");
   }
 
-  function triggerBuyoutModal(){
+  function doBuyout(){
     state.ownedOutright = true;
-    state.rep += 15;
-    saveState();
-    renderTop();
-    showModal(
-      '<div class="big-emoji">🏆</div>' +
-      '<h2>You Own It — Outright!</h2>' +
-      '<p>Every dollar Uncle Lenny’s business ever owed is paid off. Power Wash Co. is yours, free and clear.</p>' +
-      '<div class="stat-line"><span>Legacy earned</span><span>+15 ⭐</span></div>' +
-      '<p style="margin-top:8px;">Overhead is just pocket change from here on — keep washing, it’s all profit now.</p>',
-      [{ label:"Keep Washing", cls:"primary", action: function(){
-          if(state.jobsSinceBill >= billInterval()){ triggerBill(); } else { showScreen("screen-menu"); }
+    state.rep += 20;
+    save(); renderTop();
+    tellStory("buyout", function(){
+      showModal(
+        '<div class="big-emoji">🏆</div>' +
+        '<h2>You own it — outright!</h2>' +
+        '<p>Every cent Uncle Lenny’s business ever owed is paid off. Power Wash Co. is yours, free and clear.</p>' +
+        '<div class="stat-line"><span>Legacy earned</span><span>+20 ⭐</span></div>' +
+        '<p class="subtle" style="margin-top:8px;">Overhead is pocket change from here. Keep washing — it’s all profit now.</p>',
+        [{ label:"Back to work", cls:"primary", action:function(){
+            if(state.jobsSinceBill >= billEvery()) triggerBill(); else showScreen("screen-home");
         } }]
-    );
+      );
+    });
   }
 
+  /* =========================================================
+     BILLS, LOANS, REPOSSESSION
+     ========================================================= */
   function triggerBill(){
     var amount = overheadAmount(state.billNumber);
     state.billNumber += 1;
     state.jobsSinceBill = 0;
-    if(state.loan>0){ state.loan = Math.round(state.loan*1.12); }
+    if(state.loan > 0) state.loan = Math.round(state.loan * 1.12);
+
     if(state.cash >= amount){
       state.cash -= amount;
-      var repGain = Math.max(1, Math.floor(amount/45)) + (state.perks.wordofmouth ? 1 : 0);
-      state.rep += repGain;
-      saveState(); renderTop();
-      showModal(
-        '<div class="big-emoji">🧾</div>' +
-        '<h2>Overhead Paid</h2>' +
-        '<p>Van lease, gas and soap: <strong>$'+amount+'</strong>. Handled.</p>' +
-        '<div class="stat-line"><span>Reputation earned</span><span>+'+repGain+' ⭐</span></div>',
-        [{ label:"Back to the garage", cls:"primary", action: function(){ showScreen("screen-menu"); } }]
-      );
+      var gain = Math.max(1, Math.floor(amount/50)) + (state.perks.wordofmouth ? 1 : 0);
+      state.rep += gain;
+      save(); renderTop();
+      var go = function(){
+        showModal(
+          '<div class="big-emoji">🧾</div><h2>Overhead paid</h2>' +
+          '<p>Lease, fuel and soap: <strong>'+money(amount)+'</strong>. Handled.</p>' +
+          '<div class="stat-line"><span>Reputation earned</span><span>+'+gain+' ⭐</span></div>',
+          [{ label:"Back to the garage", cls:"primary", action:function(){ showScreen("screen-home"); } }]
+        );
+      };
+      if(!state.story.firstBill) tellStory("firstBill", go); else go();
     } else {
       repossess(amount);
     }
   }
 
   function repossess(amount){
-    var repGain = Math.max(1, Math.floor(state.cashSinceRepo/40));
-    state.rep += repGain;
+    var gain = Math.max(1, Math.floor(state.cashSinceRepo/45));
+    state.rep += gain;
     state.cashSinceRepo = 0;
     state.streak = 0;
     state.stats.repoCount += 1;
     state.billNumber = Math.max(1, Math.round(state.billNumber*0.6));
     var fresh = defaultState().gear;
-    if(state.perks.headstart) fresh.nozzle = 1;
+    if(state.perks.headstart) fresh.pressure = 1;
     state.gear = fresh;
-    state.legacyAvailable = true;
-    saveState(); renderTop();
-    showModal(
-      '<div class="big-emoji">🚨</div>' +
-      '<h2>Van Repossessed</h2>' +
-      '<p>Couldn\u2019t cover the $'+amount+' bill \u2014 the rig got stripped back to basics.</p>' +
-      '<div class="stat-line"><span>Legacy earned</span><span>+'+repGain+' \u2B50</span></div>' +
-      (state.loan>0 ? '<p style="margin-top:6px;">The loan doesn\u2019t vanish with the rig \u2014 you still owe $'+state.loan+'.</p>' : '') +
-      '<p style="margin-top:8px;">Spend your stars now, then it\u2019s back to easy dirt while you rebuild.</p>',
-      [{ label:"Spend Legacy Points", cls:"primary", action: function(){ showScreen("screen-perks"); } }]
-    );
-  }
-
-  $("btnQuitJob").addEventListener("click", function(){
-    if(job && !job.ended){ stopTimers(); job.ended = true; lastPt = null; }
-    showScreen("screen-menu");
-  });
-
-  /* ---------------- STORY ---------------- */
-  function showStory(){
-    showModal(
-      '<div class="big-emoji">🧼</div>' +
-      '<h2>Power Wash Co.</h2>' +
-      '<p>Your uncle Lenny retired to Florida and left you two things: a beat-up pressure washer, and a mountain of paperwork he never quite got around to.</p>' +
-      '<p>Turns out "Power Wash Co." owes back rent, a business loan, and a stack of unpaid supply bills. The plan is simple \u2014 hose down every driveway, patio and deck in town, keep the bills paid, and maybe, someday, actually own this business outright.</p>' +
-      '<p style="margin-top:8px;font-weight:700;">Grab the wand. The van won\u2019t wash itself.</p>',
-      [{ label:"Let's get to work", cls:"primary", action: function(){
-          if(!state.seenIntro){ state.seenIntro = true; saveState(); }
-        } }]
-    );
-  }
-  $("btnStory").addEventListener("click", showStory);
-
-  /* ---------------- NAV ---------------- */
-  $("btnStartJob").addEventListener("click", startJob);
-  $("btnEquip").addEventListener("click", function(){ showScreen("screen-equip"); });
-  $("btnPerks").addEventListener("click", function(){ showScreen("screen-perks"); });
-  $("btnStats").addEventListener("click", function(){ showScreen("screen-stats"); });
-  $("btnBackFromStats").addEventListener("click", function(){ showScreen("screen-menu"); });
-  $("btnBackFromEquip").addEventListener("click", function(){ showScreen("screen-menu"); });
-  $("btnBackFromPerks").addEventListener("click", function(){
-    state.legacyAvailable = false;
-    saveState();
-    showScreen("screen-menu");
-  });
-  $("btnReset").addEventListener("click", function(){
-    if(confirm("Reset all progress? This can't be undone.")){
-      state = defaultState();
-      saveState();
-      renderTop();
-      showScreen("screen-menu");
+    /* crew walk unless you paid for severance */
+    var kept = {};
+    if(state.perks.severance){
+      for(var i=0;i<CREW.length;i++){
+        if(crewHired(CREW[i].id)){ kept[CREW[i].id] = state.crew[CREW[i].id]; break; }
+      }
     }
-  });
+    var lostCrew = Object.keys(state.crew).length - Object.keys(kept).length;
+    state.crew = kept;
+    state.legacyAvailable = true;
+    save(); renderTop();
 
-  /* ---------------- INIT ---------------- */
+    var go = function(){
+      showModal(
+        '<div class="big-emoji">🚨</div><h2>Van repossessed</h2>' +
+        '<p>Couldn’t cover the '+money(amount)+' bill — the rig got stripped back to basics.</p>' +
+        '<div class="stat-line"><span>Legacy earned</span><span>+'+gain+' ⭐</span></div>' +
+        (lostCrew>0 ? '<p class="subtle" style="margin-top:6px;">'+lostCrew+' crew member'+(lostCrew>1?'s':'')+' walked — no rig, no work.</p>' : '') +
+        (state.loan>0 ? '<p class="subtle" style="margin-top:6px;">The loan doesn’t vanish with the rig — you still owe '+money(state.loan)+'.</p>' : '') +
+        '<p style="margin-top:8px;">Spend your stars, then it’s back to easy dirt while you rebuild.</p>',
+        [{ label:"Spend Legacy ⭐", cls:"primary", action:function(){ showScreen("screen-legacy"); } }]
+      );
+    };
+    if(!state.story.firstRepo) tellStory("firstRepo", go); else go();
+  }
+
+  var LOANS = [ {take:250, owe:340}, {take:650, owe:900}, {take:1500, owe:2100} ];
+  function renderLoanPanel(){
+    var p = $("loanPanel");
+    if(state.loan > 0){
+      p.innerHTML =
+        '<div class="row spread center"><span>💳 Outstanding loan</span><strong>'+money(state.loan)+'</strong></div>' +
+        '<p class="subtle" style="margin:4px 0 8px;">Grows 12% at every bill. Survives repossession.</p>' +
+        '<button class="btn small block ghost" id="btnPayLoan">Pay it off ('+money(state.loan)+')</button>';
+      var b = $("btnPayLoan");
+      b.disabled = state.cash < state.loan;
+      b.onclick = function(){
+        if(state.cash < state.loan) return;
+        state.cash -= state.loan; state.loan = 0;
+        save(); renderTop(); renderHome();
+      };
+    } else {
+      p.innerHTML =
+        '<div class="row spread center"><span>💳 Need cash fast?</span></div>' +
+        '<p class="subtle" style="margin:4px 0 8px;">Borrow now, pay back more later.</p>' +
+        '<button class="btn small block ghost" id="btnLoan">Take a loan</button>';
+      $("btnLoan").onclick = function(){
+        var btns = LOANS.map(function(o){
+          return { label:"Borrow "+money(o.take)+" (owe "+money(o.owe)+")", cls:"ghost", action:function(){
+            state.cash += o.take; state.loan += o.owe; save(); renderTop(); renderHome();
+          }};
+        });
+        btns.push({ label:"Never mind", cls:"ghost" });
+        showModal('<div class="big-emoji">💳</div><h2>Take a loan</h2><p>High interest. This isn’t free money.</p>', btns);
+      };
+    }
+  }
+
+  /* =========================================================
+     MODALS + DIALOGUE
+     ========================================================= */
+  function showModal(html, buttons){
+    $("modalCard").innerHTML = html + '<div class="col" style="margin-top:14px" id="modalBtns"></div>';
+    var wrap = $("modalBtns");
+    (buttons||[{label:"OK",cls:"primary"}]).forEach(function(b){
+      var btn = document.createElement("button");
+      btn.className = "btn block " + (b.cls || "primary");
+      btn.textContent = b.label;
+      btn.onclick = function(){ hideModal(); if(b.action) b.action(); };
+      wrap.appendChild(btn);
+    });
+    $("modalWrap").classList.remove("hidden");
+  }
+  function hideModal(){ $("modalWrap").classList.add("hidden"); }
+
+  var STORY = {
+    intro: [
+      { who:"lenny", text:"Kid! You picked up. Listen — I’m in Florida. The sun’s out, my knees are done, and the van is yours." },
+      { who:"you",   text:"The van… and the debt that comes with it, right?" },
+      { who:"lenny", text:"Details, details. Hose is in the back, soap’s under the seat. Keep the bills paid and they can’t take her." },
+      { who:"lenny", text:"Do that long enough and one day you’ll own Power Wash Co. outright. I never managed it. You might." }
+    ],
+    firstJob: [
+      { who:"lenny", text:"One driveway down. See that clean stripe? That’s the good stuff. That’s money talking." },
+      { who:"you",   text:"It is weirdly satisfying." },
+      { who:"lenny", text:"Weirdly? Kid, that’s the whole job." }
+    ],
+    firstBill: [
+      { who:"lenny", text:"Bill came, huh? Lease, fuel, soap. Comes every few jobs whether you’re ready or not." },
+      { who:"lenny", text:"Miss one and they take the rig. Ask me how I know. Actually — don’t." }
+    ],
+    cityUnlock: [
+      { who:"lenny", text:"Downtown’s calling. Glass towers, loading bays, money that doesn’t blink at your invoice." },
+      { who:"you",   text:"Skyscraper windows? From a platform?" },
+      { who:"lenny", text:"Don’t look down and you’ll be fine. Mostly fine." }
+    ],
+    harborUnlock: [
+      { who:"lenny", text:"Saltwick Harbor. My old stomping ground. Barnacles, salt crust, boat owners with deep pockets." },
+      { who:"lenny", text:"Salt fights back harder than anything inland. Crank that pressure up before you go." }
+    ],
+    crewFirst: [
+      { who:"you",   text:"I hired someone today." },
+      { who:"lenny", text:"You hired someone. Look at you — that’s not a van anymore, that’s a company." }
+    ],
+    firstRepo: [
+      { who:"lenny", text:"They took her, didn’t they. Happened to me in ’09, middle of winter." },
+      { who:"lenny", text:"Gear’s gone, kid. But what you learned doing it? That stays. Get up. Rebuild." }
+    ],
+    buyout: [
+      { who:"you",   text:"Lenny. It’s paid off. All of it. Every cent you owed." },
+      { who:"lenny", text:"…Say that again." },
+      { who:"you",   text:"Power Wash Co. is ours. Free and clear." },
+      { who:"lenny", text:"Thirty years I chased that. Took you a season. I’m proud of you, kid. Now go raise your rates." }
+    ]
+  };
+  var dlgQueue = [], dlgDone = null;
+  function tellStory(key, done){
+    if(!STORY[key]){ if(done) done(); return; }
+    state.story[key] = 1; save();
+    runDialogue(STORY[key], done);
+  }
+  function runDialogue(lines, done){
+    dlgQueue = lines.slice(); dlgDone = done;
+    $("dlgWrap").classList.remove("hidden");
+    nextLine();
+  }
+  function nextLine(){
+    if(!dlgQueue.length){
+      $("dlgWrap").classList.add("hidden");
+      var d = dlgDone; dlgDone = null;
+      if(d) d();
+      return;
+    }
+    var l = dlgQueue.shift();
+    $("dlgPortrait").innerHTML = portraitSVG(l.who);
+    $("dlgName").textContent = l.who === "lenny" ? "Uncle Lenny" : "You";
+    $("dlgText").textContent = l.text;
+    $("dlgNext").textContent = dlgQueue.length ? "Next ▸" : "Got it";
+  }
+  $("dlgNext").onclick = nextLine;
+
+  /* =========================================================
+     SCREENS
+     ========================================================= */
+  var SCREENS = ["screen-home","screen-map","screen-job","screen-upgrades","screen-crew","screen-legacy","screen-stats"];
+  function showScreen(id){
+    if(id !== "screen-job"){ stopJobLoop(); if(job && !job.ended){ job.ended = true; job = null; } }
+    SCREENS.forEach(function(s){ $(s).classList.toggle("hidden", s !== id); });
+    if(id === "screen-home") renderHome();
+    if(id === "screen-map") renderMap();
+    if(id === "screen-upgrades"){ renderTree(); renderShop(); }
+    if(id === "screen-crew") renderCrew();
+    if(id === "screen-legacy") renderLegacy();
+    if(id === "screen-stats") renderStats();
+  }
+
+  function renderTop(){
+    $("cashBadge").textContent = money(state.cash);
+    $("repBadge").textContent = state.rep;
+    var sb = $("streakBadge");
+    if(state.streak > 1){ sb.classList.remove("hidden"); $("streakVal").textContent = state.streak; }
+    else sb.classList.add("hidden");
+    var cb = $("crewBadge"), ci = crewIncome();
+    if(ci > 0){ cb.classList.remove("hidden"); $("crewVal").textContent = money(ci) + "/job"; }
+    else cb.classList.add("hidden");
+  }
+
+  function renderHome(){
+    var t = TIERS[rigTier()];
+    $("tierName").textContent = t[0];
+    $("tierSub").textContent = t[1];
+    $("truckArt").innerHTML = truckSVG();
+    $("heroMascot").innerHTML = mascotSVG();
+    var r = regionDef();
+    $("regionEmoji").textContent = r.emoji;
+    $("regionName").textContent = r.name;
+
+    var interval = billEvery(), due = overheadAmount(state.billNumber);
+    var remain = Math.max(0, interval - state.jobsSinceBill);
+    $("billPanel").innerHTML =
+      '<div class="meter"><div class="label-row"><span>🧾 Next overhead bill</span>' +
+      '<span>'+money(due)+' in '+remain+' job'+(remain===1?'':'s')+'</span></div>' +
+      '<div class="track"><div class="fill bill" style="width:'+clamp(state.jobsSinceBill/interval*100,0,100)+'%"></div></div></div>';
+
+    var ci = crewIncome();
+    $("crewPanel").innerHTML = ci > 0
+      ? '<div class="row spread center"><span>👷 Crew on payroll</span><strong>'+Object.keys(state.crew).length+'</strong></div>' +
+        '<p class="subtle" style="margin-top:4px;">They finish a job every time you do: <strong>'+money(ci)+'</strong> per job.</p>'
+      : '<div class="row spread center"><span>👷 No crew yet</span></div>' +
+        '<p class="subtle" style="margin-top:4px;">Hire someone and they’ll work a job every time you finish one.</p>';
+
+    if(state.ownedOutright){
+      $("buyoutPanel").innerHTML =
+        '<div class="row spread center"><span>🏆 Owned outright</span><strong>Debt free</strong></div>' +
+        '<p class="subtle" style="margin-top:4px;">Every cent paid off. Overhead is pocket change now.</p>';
+    } else {
+      var shown = Math.min(state.lifetimeEarnings, BUYOUT_TARGET);
+      $("buyoutPanel").innerHTML =
+        '<div class="meter"><div class="label-row"><span>🏆 Buy the business outright</span>' +
+        '<span>'+money(shown)+' / '+money(BUYOUT_TARGET)+'</span></div>' +
+        '<div class="track"><div class="fill clean" style="width:'+(shown/BUYOUT_TARGET*100)+'%"></div></div></div>';
+    }
+    renderLoanPanel();
+  }
+
+  function renderMap(){
+    $("mapArt").innerHTML = mapSVG();
+    var grid = $("regionGrid");
+    grid.innerHTML = "";
+    REGION_ORDER.forEach(function(id){
+      var r = REGIONS[id], open = regionUnlocked(id), active = state.region === id;
+      var card = document.createElement("div");
+      card.className = "card region-card" + (active && open ? " active" : "") + (open ? "" : " locked");
+      card.innerHTML =
+        '<h3>'+r.emoji+' '+r.name+'</h3>' +
+        '<p>'+r.tag+'</p>' +
+        '<div class="card-foot"><span class="tag">×'+r.pay.toFixed(2)+' pay</span>' +
+        '<span class="subtle">'+(open ? (active ? "Current route" : "Tap to switch") : "Unlocks at "+r.unlock+" jobs")+'</span></div>';
+      if(open){
+        card.onclick = function(){
+          state.region = id; save();
+          renderTop(); renderMap();
+        };
+      }
+      grid.appendChild(card);
+    });
+  }
+
+  function renderTree(){
+    var wrap = $("treeWrap");
+    Array.prototype.slice.call(wrap.querySelectorAll(".tnode,.branch-label")).forEach(function(el){ el.remove(); });
+    var svg = $("treeLines");
+    svg.innerHTML = "";
+    var step = 360/BRANCHES.length, radii = [17,30,42];
+    BRANCHES.forEach(function(key, i){
+      var ang = -90 + i*step, def = GEAR[key], prev = {x:50,y:50};
+      for(var l=0; l<def.costs.length; l++){
+        var pos = polar(50,50,radii[l],ang);
+        var owned = lvl(key) > l, isNext = lvl(key) === l;
+        var line = document.createElementNS("http://www.w3.org/2000/svg","line");
+        line.setAttribute("x1",prev.x); line.setAttribute("y1",prev.y);
+        line.setAttribute("x2",pos.x);  line.setAttribute("y2",pos.y);
+        line.setAttribute("stroke", owned ? "#4a3526" : "#d8c9a8");
+        line.setAttribute("stroke-width","2"); line.setAttribute("stroke-linecap","round");
+        if(!owned) line.setAttribute("stroke-dasharray","3,3");
+        svg.appendChild(line);
+        prev = pos;
+        var node = document.createElement("div");
+        node.className = "tnode " + (owned ? "owned" : (isNext ? "next" : "locked"));
+        node.style.left = pos.x+"%"; node.style.top = pos.y+"%";
+        node.textContent = def.icon;
+        var badge = document.createElement("div");
+        badge.className = "lvl"; badge.textContent = (l+1);
+        node.appendChild(badge);
+        (function(k,li,d){ node.onclick = function(){ openGearModal(k,li,d); }; })(key,l,def);
+        wrap.appendChild(node);
+      }
+      var lp = polar(50,50,radii[radii.length-1]+15,ang);
+      var label = document.createElement("div");
+      label.className = "branch-label";
+      label.style.left = lp.x+"%"; label.style.top = lp.y+"%";
+      label.textContent = def.title;
+      wrap.appendChild(label);
+    });
+  }
+
+  function buyGear(key, cost){
+    if(state.cash < cost) return;
+    state.cash -= cost;
+    state.gear[key] = (state.gear[key]||0) + 1;
+    save(); renderTop(); renderTree(); renderShop();
+  }
+  function openGearModal(key, level, def){
+    var owned = lvl(key) > level, isNext = lvl(key) === level;
+    var head = '<div class="big-emoji">'+def.icon+'</div><h2>'+def.title+' — Lv.'+(level+1)+'</h2><p>'+def.desc[level]+'</p>';
+    if(owned) return showModal(head + '<p class="tag" style="margin-top:6px;">Already installed ✓</p>', [{label:"Close",cls:"ghost"}]);
+    if(!isNext) return showModal(head + '<p class="subtle" style="margin-top:6px;">Install level '+level+' first.</p>', [{label:"Close",cls:"ghost"}]);
+    var cost = costOf(key, level), afford = state.cash >= cost;
+    showModal(head + '<div class="stat-line"><span>Cost</span><span>'+money(cost)+'</span></div>',
+      [{ label: afford ? "Buy for "+money(cost) : "Not enough cash", cls: afford?"primary":"ghost",
+         action: afford ? function(){ buyGear(key,cost); } : null }]);
+  }
+
+  function renderShop(){
+    var grid = $("shopGrid");
+    grid.innerHTML = "";
+    Object.keys(SHOP).forEach(function(key){
+      var def = SHOP[key], l = lvl(key), maxed = l >= def.costs.length;
+      var card = document.createElement("div");
+      card.className = "card" + (maxed ? " owned" : "");
+      card.innerHTML = '<h3>'+def.icon+' '+def.title+'</h3><p>'+(maxed ? def.desc[def.desc.length-1] : def.desc[l])+'</p>' +
+        (def.costs.length>1 ? '<div class="subtle">Level '+l+' / '+def.costs.length+'</div>' : '');
+      var foot = document.createElement("div");
+      foot.className = "card-foot";
+      if(maxed){
+        foot.innerHTML = '<span class="tag">✓ '+(def.costs.length>1 ? "Maxed" : "Installed")+'</span>';
+      } else {
+        var cost = costOf(key, l);
+        var btn = document.createElement("button");
+        btn.className = "btn small";
+        btn.textContent = money(cost);
+        btn.disabled = state.cash < cost;
+        btn.onclick = function(){ buyGear(key, cost); renderHome(); };
+        foot.appendChild(btn);
+      }
+      card.appendChild(foot);
+      grid.appendChild(card);
+    });
+  }
+
+  function renderCrew(){
+    var ci = crewIncome();
+    $("crewSummary").innerHTML =
+      '<div class="row spread center"><span>Crew income</span><strong>'+money(ci)+' per job you finish</strong></div>' +
+      '<p class="subtle" style="margin-top:4px;">Scales with your current route ('+regionDef().name+', ×'+regionDef().pay.toFixed(2)+').</p>';
+    var grid = $("crewGrid");
+    grid.innerHTML = "";
+    CREW.forEach(function(c){
+      var hired = crewHired(c.id), l = crewLevel(c.id);
+      var card = document.createElement("div");
+      card.className = "card" + (hired ? " owned" : "");
+      var rate = Math.round(c.rate * (1 + l*0.6) * regionDef().pay);
+      card.innerHTML =
+        '<h3>'+c.emoji+' '+c.name+'</h3><p>'+c.blurb+'</p>' +
+        (hired ? '<div class="subtle">Level '+(l+1)+' · brings in '+money(rate)+' per job</div>'
+               : '<div class="subtle">Brings in '+money(Math.round(c.rate*regionDef().pay))+' per job</div>');
+      var foot = document.createElement("div");
+      foot.className = "card-foot";
+      if(!hired){
+        var b = document.createElement("button");
+        b.className = "btn small green";
+        b.textContent = "Hire · " + money(c.hire);
+        b.disabled = state.cash < c.hire;
+        b.onclick = function(){
+          if(state.cash < c.hire) return;
+          state.cash -= c.hire;
+          state.crew[c.id] = 0;
+          save(); renderTop();
+          if(!state.story.crewFirst) tellStory("crewFirst", renderCrew); else renderCrew();
+        };
+        foot.appendChild(b);
+      } else if(l < c.ups.length){
+        var cost = Math.round(c.ups[l] * (state.perks.discount ? 0.85 : 1));
+        var ub = document.createElement("button");
+        ub.className = "btn small";
+        ub.textContent = "Train · " + money(cost);
+        ub.disabled = state.cash < cost;
+        ub.onclick = function(){
+          if(state.cash < cost) return;
+          state.cash -= cost;
+          state.crew[c.id] = l + 1;
+          save(); renderTop(); renderCrew();
+        };
+        foot.appendChild(ub);
+      } else {
+        foot.innerHTML = '<span class="tag">✓ Fully trained</span>';
+      }
+      card.appendChild(foot);
+      grid.appendChild(card);
+    });
+  }
+
+  function renderLegacy(){
+    var can = !!state.legacyAvailable;
+    $("legacyStatus").textContent = can
+      ? "Spend your stars now — this window closes when you head back to work."
+      : "Stars are locked in until your next repossession. Keep hustling.";
+    var grid = $("perkGrid");
+    grid.innerHTML = "";
+    Object.keys(PERKS).forEach(function(k){
+      var def = PERKS[k], owned = !!state.perks[k];
+      var card = document.createElement("div");
+      card.className = "card" + (owned ? " owned" : "");
+      card.innerHTML = '<h3>'+def.icon+' '+def.title+'</h3><p>'+def.desc+'</p>';
+      var foot = document.createElement("div");
+      foot.className = "card-foot";
+      if(owned){
+        foot.innerHTML = '<span class="tag">✓ Owned</span>';
+      } else {
+        var b = document.createElement("button");
+        b.className = "btn small";
+        b.textContent = "⭐ " + def.cost;
+        b.disabled = !can || state.rep < def.cost;
+        b.onclick = function(){
+          if(!state.legacyAvailable || state.rep < def.cost) return;
+          state.rep -= def.cost; state.perks[k] = true;
+          save(); renderTop(); renderLegacy();
+        };
+        foot.appendChild(b);
+      }
+      card.appendChild(foot);
+      grid.appendChild(card);
+    });
+  }
+
+  function renderStats(){
+    $("statsPanel").innerHTML =
+      '<div class="stat-line"><span>Lifetime earned</span><span>'+money(state.lifetimeEarnings)+'</span></div>' +
+      '<div class="stat-line"><span>Jobs finished</span><span>'+state.jobsCompleted+'</span></div>' +
+      '<div class="stat-line"><span>Earned by the crew</span><span>'+money(state.stats.crewEarnings)+'</span></div>' +
+      '<div class="stat-line"><span>Best cleanliness</span><span>'+Math.round(state.stats.bestClean)+'%</span></div>' +
+      '<div class="stat-line"><span>Current streak</span><span>🔥 '+state.streak+'</span></div>' +
+      '<div class="stat-line"><span>Longest streak</span><span>🔥 '+state.stats.longestStreak+'</span></div>' +
+      '<div class="stat-line"><span>Times repossessed</span><span>'+state.stats.repoCount+'</span></div>' +
+      '<div class="stat-line"><span>Jobs by route</span><span>🏡 '+(state.stats.grove||0)+' · 🏙️ '+(state.stats.city||0)+' · ⚓ '+(state.stats.harbor||0)+'</span></div>';
+    var grid = $("achieveGrid");
+    grid.innerHTML = "";
+    ACHIEVEMENTS.forEach(function(a){
+      var got = a.cond(state);
+      var card = document.createElement("div");
+      card.className = "card" + (got ? " owned" : "");
+      card.innerHTML = '<h3>'+(got ? a.icon : "🔒")+' '+a.title+'</h3><p>'+a.desc+'</p>';
+      grid.appendChild(card);
+    });
+  }
+
+  /* =========================================================
+     NAV WIRING
+     ========================================================= */
+  $("btnStartJob").onclick = function(){ startJob(); };
+  $("btnMap").onclick = function(){ showScreen("screen-map"); };
+  $("btnMapQuick").onclick = function(){ showScreen("screen-map"); };
+  $("btnUpgrades").onclick = function(){ showScreen("screen-upgrades"); };
+  $("btnCrew").onclick = function(){ showScreen("screen-crew"); };
+  $("btnLegacy").onclick = function(){ showScreen("screen-legacy"); };
+  $("btnStats").onclick = function(){ showScreen("screen-stats"); };
+  $("btnBackMap").onclick = function(){ showScreen("screen-home"); };
+  $("btnBackUpgrades").onclick = function(){ showScreen("screen-home"); };
+  $("btnBackCrew").onclick = function(){ showScreen("screen-home"); };
+  $("btnBackStats").onclick = function(){ showScreen("screen-home"); };
+  $("btnBackLegacy").onclick = function(){
+    state.legacyAvailable = false; save();
+    showScreen("screen-home");
+  };
+  $("btnQuitJob").onclick = function(){
+    stopJobLoop();
+    if(job) job.ended = true;
+    job = null;
+    showScreen("screen-home");
+  };
+  $("btnStory").onclick = function(){ runDialogue(STORY.intro, null); };
+  $("btnReset").onclick = function(){
+    showModal('<div class="big-emoji">🧹</div><h2>Reset everything?</h2><p>All cash, gear, crew and stars are wiped. This can’t be undone.</p>',
+      [{ label:"Yes, wipe it", cls:"primary", action:function(){
+          state = defaultState(); save(); renderTop(); showScreen("screen-home");
+        }},
+       { label:"Cancel", cls:"ghost" }]);
+  };
+
+  /* =========================================================
+     BOOT
+     ========================================================= */
   renderTop();
-  showScreen("screen-menu");
-  if(!state.seenIntro){ showStory(); }
+  showScreen("screen-home");
+  if(!state.story.intro) tellStory("intro", null);
 
 })();
 </script>

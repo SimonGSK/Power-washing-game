@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Power Wash Co.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#3a2f28;
+    --cream:#f6ecd2;
+    --cream-2:#e9dcb8;
+    --orange:#c1683f;
+    --orange-dark:#8f4726;
+    --teal:#4f8fa6;
+    --teal-dark:#356273;
+    --yellow:#e0a83e;
+    --yellow-dark:#a97a22;
+    --green:#7a9c5e;
+    --green-dark:#52713d;
+    --red:#a4485f;
+    --red-dark:#7a3143;
+    --sky-a:#a9d8c9;
+    --sky-b:#f3e3ad;
+    --panel-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.2), 5px 5px 0 var(--ink);
+    --page-bg: linear-gradient(180deg, var(--sky-a) 0%, var(--sky-b) 100%);
+    --text-body: #3a2f28;
+    --pixel-font: 'Pixelify Sans', 'Courier New', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--page-bg);
+    font-family:var(--pixel-font);
+    color:var(--text-body);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:var(--pixel-font);color:var(--ink);letter-spacing:.3px;}
+  canvas{image-rendering:pixelated;image-rendering:crisp-edges;}
+  #app{
+    width:100%;
+    max-width:720px;
+    min-height:100vh;
+    padding:14px 14px 34px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .hidden{display:none !important;}
+
+  #topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .badge{
+    background:var(--cream);border:3px solid var(--ink);border-radius:0;box-shadow:var(--panel-shadow);
+    padding:6px 10px;display:flex;align-items:center;gap:6px;
+    font-family:var(--pixel-font);font-weight:600;font-size:15px;white-space:nowrap;
+  }
+  .badge .emoji{font-size:18px;}
+
+  .panel{
+    background:var(--cream);border:3px solid var(--ink);border-radius:0;box-shadow:var(--panel-shadow);padding:16px;
+  }
+  .btn{
+    font-family:var(--pixel-font);font-weight:600;font-size:15px;color:var(--ink);
+    background:var(--yellow);border:3px solid var(--ink);border-radius:0;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--yellow-dark);
+    padding:11px 16px;cursor:pointer;text-align:center;
+  }
+  .btn:active{transform:translate(4px,4px);box-shadow: inset 2px 2px 0 rgba(255,255,255,.15), inset -2px -2px 0 rgba(0,0,0,.25);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .btn:disabled:active{transform:none;box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--yellow-dark);}
+  .btn.primary{background:var(--orange);color:#fdf3e2;box-shadow: inset 2px 2px 0 rgba(255,255,255,.3), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--orange-dark);}
+  .btn.primary:active{box-shadow: inset 2px 2px 0 rgba(255,255,255,.12), inset -2px -2px 0 rgba(0,0,0,.28);}
+  .btn.teal{background:var(--teal);color:#f2f9fb;box-shadow: inset 2px 2px 0 rgba(255,255,255,.3), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--teal-dark);}
+  .btn.teal:active{box-shadow: inset 2px 2px 0 rgba(255,255,255,.12), inset -2px -2px 0 rgba(0,0,0,.28);}
+  .btn.green{background:var(--green);color:#f5f9ef;box-shadow: inset 2px 2px 0 rgba(255,255,255,.3), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--green-dark);}
+  .btn.green:active{box-shadow: inset 2px 2px 0 rgba(255,255,255,.12), inset -2px -2px 0 rgba(0,0,0,.28);}
+  .btn.ghost{background:var(--cream-2);color:var(--ink);box-shadow: inset 2px 2px 0 rgba(255,255,255,.3), inset -2px -2px 0 rgba(0,0,0,.15), 4px 4px 0 #b7a679;}
+  .btn.ghost:active{box-shadow: inset 2px 2px 0 rgba(255,255,255,.1), inset -2px -2px 0 rgba(0,0,0,.2);}
+  .btn.block{width:100%;}
+  .btn.small{padding:6px 10px;font-size:12.5px;box-shadow: inset 1.5px 1.5px 0 rgba(255,255,255,.3), inset -1.5px -1.5px 0 rgba(0,0,0,.2), 3px 3px 0 var(--yellow-dark);}
+  .btn.small:active{transform:translate(3px,3px);box-shadow: inset 1.5px 1.5px 0 rgba(255,255,255,.12), inset -1.5px -1.5px 0 rgba(0,0,0,.25);}
+
+  .row{display:flex;gap:10px;}
+  .col{display:flex;flex-direction:column;gap:10px;}
+  .center{align-items:center;justify-content:center;}
+  .spread{justify-content:space-between;}
+
+  /* ---------- MENU ---------- */
+  #hero{display:flex;align-items:center;justify-content:center;gap:12px;padding:4px 0 2px;}
+  #mascot{width:56px;height:56px;flex-shrink:0;}
+  .title-wrap{text-align:left;}
+  .title-wrap h1{font-size:22px;margin:2px 0 2px;}
+  .title-wrap p{margin:0;font-weight:600;color:#6b5a3f;font-size:12.5px;}
+
+  #truckHero{text-align:center;padding-bottom:14px;}
+  #vanScene{width:100%;max-width:300px;margin:0 auto;}
+  .tier-name{font-family:var(--pixel-font);font-weight:600;font-size:17px;margin:10px 0 2px;}
+  .tier-sub{margin:0;font-size:12.5px;color:#6b5a3f;}
+
+  #loanPanel{display:flex;flex-direction:column;gap:8px;}
+  #loanPanel .loan-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;font-weight:700;}
+  #loanPanel .loan-note{font-size:11.5px;color:#6b5a3f;margin:0;}
+
+  .bill-meter{margin-top:8px;}
+  .bill-meter .label-row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#6b5a3f;margin-bottom:4px;}
+  .meter-track{height:12px;background:var(--cream-2);border:2px solid var(--ink);border-radius:0;overflow:hidden;}
+  .meter-fill{height:100%;background:var(--red);transition:width .3s ease;}
+
+  /* ---------- JOB SCREEN ---------- */
+  #job-header{display:flex;justify-content:space-between;align-items:center;}
+  #job-header .job-name{font-size:18px;margin:0;}
+  .timer-wrap .label-row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#6b5a3f;margin-bottom:4px;}
+  #timerFill{background:var(--orange);}
+  #canvas-wrap{
+    position:relative;width:100%;aspect-ratio: 8/5;border-radius:0;overflow:hidden;
+    border:3px solid var(--ink);box-shadow:var(--panel-shadow);touch-action:none;background:#000;
+  }
+  #canvas-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+  #cleanCanvas{z-index:1;} #dirtyCanvas{z-index:2;} #fxCanvas{z-index:3;pointer-events:none;}
+  #jobIntro{
+    position:absolute;inset:0;z-index:6;overflow:hidden;
+    background:linear-gradient(180deg, var(--sky-a) 0%, #cfe6b8 70%, #b7d494 100%);
+  }
+  #introTruck{
+    position:absolute;left:8%;bottom:14%;width:34%;
+    transform:translateX(-260%);
+  }
+  #introTruck.drive-in{animation:driveIn 0.95s steps(14) forwards;}
+  @keyframes driveIn{ from{transform:translateX(-260%);} to{transform:translateX(0);} }
+  #refillPrompt{
+    position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;
+    background:rgba(35,30,20,.5);
+  }
+  #job-controls{display:flex;gap:10px;align-items:center;}
+  .tank-wrap,.clean-wrap{flex:1;}
+  .tank-wrap .label-row,.clean-wrap .label-row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#6b5a3f;margin-bottom:4px;}
+  .tank-fill{height:100%;background:var(--teal);transition:width .12s linear;}
+  .clean-fill{height:100%;background:var(--green);transition:width .2s ease;}
+
+  /* ---------- RADIAL SKILL TREE ---------- */
+  .tree-wrap{position:relative;width:100%;max-width:440px;aspect-ratio:1/1;margin:6px auto 10px;}
+  .tree-lines{position:absolute;inset:0;width:100%;height:100%;}
+  .thub{
+    position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;
+    border-radius:0;background:var(--yellow);border:3px solid var(--ink);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.2), 4px 4px 0 var(--yellow-dark);
+    display:flex;align-items:center;justify-content:center;font-size:24px;z-index:2;
+  }
+  .tnode{
+    position:absolute;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:0;
+    border:3px solid var(--ink);background:var(--cream-2);display:flex;align-items:center;justify-content:center;
+    font-size:18px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);z-index:2;
+  }
+  .tnode.owned{background:var(--green);}
+  .tnode.next{background:var(--orange);}
+  .tnode.locked{opacity:.4;cursor:default;box-shadow:2px 2px 0 #a89d80;}
+  .tnode .lvl-badge{
+    position:absolute;bottom:-7px;right:-7px;background:var(--cream);border:2px solid var(--ink);
+    border-radius:0;font-size:10px;padding:0 4px;font-weight:800;font-family:var(--pixel-font);
+  }
+  .branch-label{
+    position:absolute;font-family:var(--pixel-font);font-weight:600;font-size:10.5px;text-align:center;
+    width:76px;margin-left:-38px;margin-top:-8px;color:#6b5a3f;z-index:2;pointer-events:none;
+  }
+
+  /* ---------- ITEM / PERK GRID ---------- */
+  .perk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:420px){.perk-grid{grid-template-columns:1fr;}}
+  .perk-card{background:var(--cream-2);border:3px solid var(--ink);border-radius:0;padding:10px;display:flex;flex-direction:column;gap:6px;box-shadow:3px 3px 0 var(--ink);}
+  .perk-card h3{font-size:13.5px;margin:0;}
+  .perk-card p{font-size:11.5px;margin:0;color:#6b5a3f;flex:1;}
+  .perk-card.owned{background:var(--green);}
+
+  /* ---------- MODAL ---------- */
+  #modal-overlay{position:fixed;inset:0;background:rgba(35,30,20,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;}
+  #modal-content{max-width:420px;width:100%;text-align:center;}
+  #modal-content .big-emoji{font-size:40px;margin-bottom:4px;}
+  #modal-content h2{margin:0 0 4px;font-size:20px;}
+  #modal-content p{margin:2px 0;font-size:14px;}
+  .stat-line{display:flex;justify-content:space-between;font-weight:700;font-size:13.5px;padding:3px 0;border-bottom:2px dashed #cbb98a;}
+  .stat-line:last-of-type{border-bottom:none;}
+
+  a.link-muted{color:#6b5a3f;font-size:12px;text-decoration:underline;cursor:pointer;}
+  .section-title{font-size:19px;margin:0 0 2px;}
+  .subtle{color:#6b5a3f;font-size:12.5px;margin:0 0 6px;}
+  .divider{border:none;border-top:3px dashed #cbb98a;margin:8px 0;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="topbar">
+    <div class="badge"><span class="emoji">💵</span><span id="cashBadge">$0</span></div>
+    <div class="badge"><span class="emoji">⭐</span><span id="repBadge">0</span></div>
+  </div>
+
+  <!-- MENU -->
+  <div id="screen-menu" class="screen col">
+    <div id="hero">
+      <svg id="mascot" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+        <rect x="24" y="120" width="80" height="6" fill="#3a2f28" opacity="0.15"/>
+        <rect x="32" y="48" width="64" height="6" fill="#3a2f28"/>
+        <rect x="32" y="52" width="6" height="20" fill="#3a2f28"/>
+        <rect x="90" y="52" width="6" height="20" fill="#3a2f28"/>
+        <rect x="24" y="60" width="16" height="16" fill="#f6ecd2"/>
+        <rect x="40" y="52" width="20" height="24" fill="#f6ecd2"/>
+        <rect x="64" y="56" width="20" height="20" fill="#f6ecd2"/>
+        <rect x="84" y="64" width="16" height="16" fill="#f6ecd2"/>
+        <rect x="28" y="68" width="72" height="52" fill="#3a2f28"/>
+        <rect x="32" y="72" width="64" height="44" fill="#4f8fa6"/>
+        <rect x="32" y="92" width="64" height="6" fill="#3a2f28"/>
+        <rect x="46" y="70" width="6" height="6" fill="#e39a8a"/>
+        <rect x="76" y="70" width="6" height="6" fill="#e39a8a"/>
+        <rect x="54" y="66" width="6" height="6" fill="#3a2f28"/>
+        <rect x="70" y="66" width="6" height="6" fill="#3a2f28"/>
+        <rect x="56" y="78" width="16" height="4" fill="#3a2f28"/>
+        <rect x="104" y="42" width="8" height="8" fill="#4f8fa6"/>
+        <rect x="98" y="50" width="18" height="8" fill="#4f8fa6"/>
+      </svg>
+      <div class="title-wrap">
+        <h1>Power Wash Co.</h1>
+        <p>Grab the wand. Make it shine. Repeat.</p>
+      </div>
+    </div>
+
+    <div class="panel" id="truckHero">
+      <div id="vanScene"></div>
+      <p class="tier-name" id="rigTierName">Rookie Rig</p>
+      <p class="tier-sub" id="rigTierSub">A hose, a dream, and a little elbow grease.</p>
+    </div>
+
+    <div class="panel" id="loanPanel"></div>
+
+    <div class="panel">
+      <div class="bill-meter">
+        <div class="label-row"><span>Next overhead bill</span><span id="billDueLabel">$0 in 3 jobs</span></div>
+        <div class="meter-track"><div class="meter-fill" id="billMeterFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <button class="btn primary block" id="btnStartJob" style="padding:16px;font-size:19px;">💦 Start Next Job</button>
+    <div class="row">
+      <button class="btn teal block" id="btnEquip">🔧 Skill Tree</button>
+      <button class="btn green block" id="btnPerks">⭐ Legacy</button>
+    </div>
+    <div class="row center" style="gap:16px;">
+      <a class="link-muted" id="btnStory">📖 Our Story</a>
+      <a class="link-muted" id="btnReset">Reset save</a>
+    </div>
+  </div>
+
+  <!-- JOB -->
+  <div id="screen-job" class="screen col hidden">
+    <div id="job-header">
+      <div>
+        <h2 class="job-name" id="jobName">Driveway</h2>
+        <p id="jobGrimeLabel" style="margin:0;font-size:12.5px;font-weight:700;color:#6b6050;">Everyday Dirt</p>
+      </div>
+      <button class="btn ghost small" id="btnQuitJob">Pack up</button>
+    </div>
+    <div class="timer-wrap">
+      <div class="label-row"><span>Customer's patience</span><span id="timeLeftLabel">0:24</span></div>
+      <div class="meter-track"><div class="meter-fill" id="timerFill" style="width:100%"></div></div>
+    </div>
+    <div id="canvas-wrap">
+      <canvas id="cleanCanvas" width="800" height="500"></canvas>
+      <canvas id="dirtyCanvas" width="800" height="500"></canvas>
+      <canvas id="fxCanvas" width="800" height="500"></canvas>
+      <div id="jobIntro" class="hidden">
+        <div id="introTruck"></div>
+      </div>
+      <div id="refillPrompt" class="hidden">
+        <div class="panel" style="text-align:center;padding:16px 22px;">
+          <div style="font-size:30px;">🚰</div>
+          <div style="font-family:var(--pixel-font);font-weight:600;">Refilling tank…</div>
+        </div>
+      </div>
+    </div>
+    <div id="job-controls">
+      <div class="tank-wrap">
+        <div class="label-row"><span>Tank</span><span id="tankPct">100%</span></div>
+        <div class="meter-track"><div class="tank-fill" id="tankFill" style="width:100%"></div></div>
+      </div>
+      <div class="clean-wrap">
+        <div class="label-row"><span>Clean</span><span id="cleanPct">0%</span></div>
+        <div class="meter-track"><div class="clean-fill" id="cleanFill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EQUIPMENT / SKILL TREE + SHOP -->
+  <div id="screen-equip" class="screen col hidden">
+    <div class="row spread center">
+      <h2 class="section-title">Skill Tree</h2>
+      <button class="btn ghost small" id="btnBackFromEquip">Back</button>
+    </div>
+    <p class="subtle">Tap a node to upgrade. Lost if you get repossessed.</p>
+    <div class="tree-wrap" id="treeWrap">
+      <svg class="tree-lines" id="treeLines" viewBox="0 0 100 100"></svg>
+      <div class="thub">🚐</div>
+    </div>
+    <hr class="divider">
+    <h3 style="margin:0;">Shop</h3>
+    <p class="subtle">One-off gear for the rig.</p>
+    <div class="perk-grid" id="itemGrid"></div>
+  </div>
+
+  <!-- PERKS -->
+  <div id="screen-perks" class="screen col hidden">
+    <div class="row spread center">
+      <h2 class="section-title">Legacy</h2>
+      <button class="btn ghost small" id="btnBackFromPerks">Back</button>
+    </div>
+    <p class="subtle" id="legacyStatus">Spent with ⭐ reputation. Permanent — survives every repossession.</p>
+    <div class="perk-grid" id="perkGrid"></div>
+    <hr class="divider">
+    <h3 style="margin:0;">New Routes</h3>
+    <p class="subtle">Permanently add new job scenery to the rotation.</p>
+    <div class="perk-grid" id="unlockGrid"></div>
+  </div>
+
+  <div id="modal-overlay" class="hidden">
+    <div class="panel" id="modal-content"></div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var SVG_NS = "http://www.w3.org/2000/svg";
+
+  /* ---------------- STATE ---------------- */
+  var STORAGE_KEY = "pwco_save_v2";
+  var defaultState = function(){
+    return {
+      cash: 90,
+      rep: 0,
+      loan: 0,
+      jobsCompleted: 0,
+      jobsSinceBill: 0,
+      billNumber: 1,
+      cashSinceRepo: 0,
+      seenIntro: false,
+      legacyAvailable: false,
+      gear: { nozzle:0, pressure:0, refill:0, rent:0, pay:0, patience:0, tipjar:0, watertank:0, prowasher:0, foamcannon:0, degreaser:0, permit:0 },
+      perks: { headstart:false, discount:false, lowoverhead:false, basepay:false, wordofmouth:false },
+      unlocks: { dock:false, pool:false }
+    };
+  };
+  var state = loadState();
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return defaultState();
+      var parsed = JSON.parse(raw);
+      var d = defaultState();
+      parsed.gear = Object.assign(d.gear, parsed.gear||{});
+      parsed.perks = Object.assign(d.perks, parsed.perks||{});
+      parsed.unlocks = Object.assign(d.unlocks, parsed.unlocks||{});
+      return Object.assign(d, parsed);
+    }catch(e){ return defaultState(); }
+  }
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  /* ---------------- CONFIG ---------------- */
+  var BRANCH_ORDER = ["nozzle","pressure","refill","rent","pay","patience"];
+  var EQUIP_DEFS = {
+    nozzle:   { title:"Nozzle Width", icon:"🌊", costs:[70,190,420], desc:["Wider spray arc","Even wider arc","Full-width soak"] },
+    pressure: { title:"Water Pressure", icon:"⚡", costs:[90,240,500], desc:["Sips less water per spray","Sips even less","Barely sips at all"] },
+    refill:   { title:"Refill Speed", icon:"⏱️", costs:[80,210,440], desc:["Faster tank refills","Even faster","Near-instant refill"] },
+    rent:     { title:"Lower Rent", icon:"📋", costs:[100,260,540], desc:["Overhead bills 8% cheaper","16% cheaper total","24% cheaper total"] },
+    pay:      { title:"Money per Job", icon:"💵", costs:[90,230,480], desc:["+10% cash per job","+20% total","+30% total"] },
+    patience: { title:"Patience", icon:"⏳", costs:[70,190,420], desc:["+7s per job timer","+14s total","+21s total"] }
+  };
+  var ITEM_DEFS = {
+    tipjar:      { title:"Tip Jar", icon:"🫙", costs:[130], desc:["Bolt one on: 30% chance of a bonus tip each job"] },
+    watertank:   { title:"Water Tank", icon:"🛢️", costs:[60,180,420], desc:["+50 tank capacity","+100 total capacity","+150 total capacity"] },
+    prowasher:   { title:"Pro Pressure Washer", icon:"🚿", costs:[650], desc:["A serious unit — bonus spray radius and efficiency"] },
+    foamcannon:  { title:"Foam Cannon", icon:"🫧", costs:[150,320], desc:["Auto-cleans a little on its own","Auto-cleans faster"] },
+    degreaser:   { title:"Chemical Degreaser", icon:"🧪", costs:[140,300], desc:["Cuts grime toughness by 12%","Cuts grime toughness by 24% total"] },
+    permit:      { title:"Business Permit", icon:"📜", costs:[220], desc:["+1 job before every overhead bill comes due"] }
+  };
+
+  var PERK_DEFS = {
+    headstart:    { title:"Loyal Client", icon:"🤝", cost:4, desc:"Every new rig starts with Nozzle lvl.1 already installed." },
+    discount:     { title:"Bulk Soap Deal", icon:"🧴", cost:5, desc:"All skill tree & shop purchases cost 15% less." },
+    lowoverhead:  { title:"Tax Write-off", icon:"📃", cost:6, desc:"Overhead bills are an extra 15% cheaper." },
+    basepay:      { title:"Regulars", icon:"📞", cost:5, desc:"Earn an extra 20% cash on every job." },
+    wordofmouth:  { title:"Word of Mouth", icon:"📣", cost:7, desc:"Earn +1 bonus reputation every time you pay a bill." }
+  };
+
+  var JOB_TYPES = [
+    { type:"driveway", name:"Driveway", clean:"#cdc6ba", margin:{top:44,bottom:0,left:30,right:30} },
+    { type:"patio", name:"Brick Patio", clean:"#cf8464", margin:{top:34,bottom:0,left:26,right:26} },
+    { type:"deck", name:"Wood Deck", clean:"#d1a468", margin:{top:34,bottom:0,left:0,right:0} },
+    { type:"wall", name:"Garden Wall", clean:"#ece5d2", margin:{top:50,bottom:34,left:0,right:0} }
+  ];
+  var DOCK_TYPE = { type:"dock", name:"Boat Dock", clean:"#a9a099", margin:{top:0,bottom:64,left:0,right:0} };
+  var POOL_TYPE = { type:"pool", name:"Pool Deck", clean:"#d9d2c2", margin:{top:0,bottom:54,left:0,right:0} };
+
+  var UNLOCK_DEFS = {
+    dock: { title:"Boat Dock Route", icon:"🛥️", cost:6, desc:"Unlocks Boat Dock jobs — new scenery in the rotation for good." },
+    pool: { title:"Pool Deck Route", icon:"🏊", cost:8, desc:"Unlocks Pool Deck jobs — new scenery in the rotation for good." }
+  };
+  function pickJob(){
+    var pool = JOB_TYPES.slice();
+    if(state.unlocks.dock) pool.push(DOCK_TYPE);
+    if(state.unlocks.pool) pool.push(POOL_TYPE);
+    return pool[state.jobsCompleted % pool.length];
+  }
+
+  /* Difficulty scales with your rig tier: better gear unlocks tougher (better-paying) grime */
+  var GRIME_TIERS = [
+    { name:"Everyday Dirt", a:"#5b4327", b:"#463319", payMult:1.00, toughness:1.00 },
+    { name:"Moss & Algae", a:"#4a5d23", b:"#374717", payMult:1.15, toughness:1.25 },
+    { name:"Grease & Grime", a:"#2b2620", b:"#1c1812", payMult:1.30, toughness:1.50 },
+    { name:"Rust Stains", a:"#8a4a1f", b:"#6b3714", payMult:1.45, toughness:1.75 },
+    { name:"Old Paint & Graffiti", a:"#5e3d7a", b:"#7a2e5e", payMult:1.60, toughness:2.00 }
+  ];
+
+  /* ---------------- HELPERS ---------------- */
+  function $(id){ return document.getElementById(id); }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function shade(hex, pct){
+    var f = parseInt(hex.slice(1),16), t = pct<0?0:255, p = Math.abs(pct)/100;
+    var R = f>>16, G = f>>8&0x00FF, B = f&0x0000FF;
+    var nr = Math.round((t-R)*p)+R, ng = Math.round((t-G)*p)+G, nb = Math.round((t-B)*p)+B;
+    return "#"+(0x1000000+nr*0x10000+ng*0x100+nb).toString(16).slice(1);
+  }
+  function polar(cx,cy,r,angleDeg){
+    var rad = angleDeg*Math.PI/180;
+    return { x: cx + r*Math.cos(rad), y: cy + r*Math.sin(rad) };
+  }
+  function getDef(key){ return EQUIP_DEFS[key] || ITEM_DEFS[key]; }
+  function gearLevel(k){ return state.gear[k]||0; }
+  function gearCost(k, level){
+    var def = getDef(k);
+    if(level >= def.costs.length) return null;
+    var base = def.costs[level];
+    return Math.round(base * (state.perks.discount ? 0.85 : 1));
+  }
+  function tankMax(){ return 100 + gearLevel("watertank")*50; }
+  function brushRadius(){ return 24 + gearLevel("nozzle")*11 + (gearLevel("prowasher")>0?18:0); }
+  function powerEff(){ return 1 + gearLevel("pressure")*0.4 + (gearLevel("prowasher")>0?0.5:0); }
+  function refillTime(){ return Math.max(700, 2600 - gearLevel("refill")*650); }
+  function foamAutoLevel(){ return gearLevel("foamcannon"); }
+  function jobDuration(){ return 22000 + gearLevel("patience")*7000; }
+  function tipChance(){ return gearLevel("tipjar")>0 ? 0.3 : 0; }
+  function billInterval(){ return 3 + (gearLevel("permit")>0 ? 1 : 0); }
+  function toughnessFactor(){ return Math.max(0.55, 1 - gearLevel("degreaser")*0.12); }
+  function rentMultiplier(){
+    return Math.max(0.5, 1 - gearLevel("rent")*0.08) * (state.perks.lowoverhead ? 0.85 : 1);
+  }
+  function payMultiplier(){
+    return (1 + gearLevel("pay")*0.1) * (state.perks.basepay ? 1.2 : 1);
+  }
+  function overheadAmount(n){
+    var amt = Math.round(85 * Math.pow(1.15, n-1));
+    return Math.round(amt * rentMultiplier());
+  }
+  function totalGearScore(){
+    var s = 0;
+    Object.keys(state.gear).forEach(function(k){ s += state.gear[k]||0; });
+    return s;
+  }
+  function rigTierIndex(){
+    var sum = totalGearScore();
+    if(sum===0) return 0;
+    if(sum<=6) return 1;
+    if(sum<=13) return 2;
+    if(sum<=20) return 3;
+    return 4;
+  }
+  var TIER_NAMES = [
+    ["Rookie Rig","A hose, a dream, and a little elbow grease."],
+    ["Starter Rig","Getting the hang of this."],
+    ["Solid Rig","Neighbors are starting to notice."],
+    ["Pro Rig","This thing hums."],
+    ["Elite Rig","People book you weeks in advance."]
+  ];
+  var TIER_BODY = ["#cfc7b3","#7fb8c9","#4f8fa6","#c1683f","#e0a83e"];
+  var TIER_STRIPE = ["#a89d80","#4f8fa6","#356273","#8f4726","#a97a22"];
+
+  /* ---------------- TRUCK ART (shared by menu + job intro) ---------------- */
+  function buildTruckSVG(){
+    var tier = rigTierIndex();
+    var body = TIER_BODY[tier], stripe = TIER_STRIPE[tier];
+    var tankLvl = gearLevel("watertank");
+    var tankH = 16 + tankLvl*6;
+    var hasTip = gearLevel("tipjar")>0;
+    var hasPro = gearLevel("prowasher")>0;
+    var s = '<svg viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" style="width:100%;height:auto;display:block;">';
+    s += '<rect x="10" y="98" width="200" height="8" fill="#3a2f28" opacity="0.15"/>';
+    s += '<rect x="20" y="48" width="118" height="42" fill="'+body+'" stroke="#3a2f28" stroke-width="4"/>';
+    s += '<rect x="138" y="48" width="34" height="42" fill="'+body+'" stroke="#3a2f28" stroke-width="4"/>';
+    s += '<rect x="146" y="54" width="18" height="16" fill="#bdeaf6" stroke="#3a2f28" stroke-width="3"/>';
+    s += '<rect x="20" y="62" width="118" height="8" fill="'+stripe+'"/>';
+    s += '<rect x="36" y="86" width="22" height="22" fill="#3a2f28"/><rect x="42" y="92" width="10" height="10" fill="#c9c2b0"/>';
+    s += '<rect x="140" y="86" width="22" height="22" fill="#3a2f28"/><rect x="146" y="92" width="10" height="10" fill="#c9c2b0"/>';
+    s += '<rect x="4" y="'+(70-tankH)+'" width="20" height="'+tankH+'" fill="#4f8fa6" stroke="#3a2f28" stroke-width="3"/>';
+    if(hasTip){ s += '<rect x="26" y="34" width="16" height="14" fill="#e0a83e" stroke="#3a2f28" stroke-width="3"/><rect x="30" y="38" width="8" height="6" fill="#3a2f28"/>'; }
+    if(tier>=4){ s += '<rect x="180" y="20" width="6" height="6" fill="#e0a83e"/><rect x="192" y="30" width="4" height="4" fill="#e0a83e"/>'; }
+    s += '<rect x="178" y="66" width="28" height="20" fill="'+(hasPro?"#d8d8d8":"#e0a83e")+'" stroke="#3a2f28" stroke-width="3"/>';
+    s += '<rect x="188" y="72" width="10" height="8" fill="'+(hasPro?"#a4485f":"#c1683f")+'"/>';
+    s += '<rect x="182" y="86" width="6" height="14" fill="#4f8fa6"/>';
+    s += '</svg>';
+    return s;
+  }
+  function renderVanScene(){
+    $("vanScene").innerHTML = buildTruckSVG();
+  }
+
+  /* ---------------- RENDER: TOP + MENU ---------------- */
+  function renderTop(){
+    $("cashBadge").textContent = "$"+state.cash;
+    $("repBadge").textContent = state.rep;
+  }
+  function renderMenu(){
+    var t = TIER_NAMES[rigTierIndex()];
+    $("rigTierName").textContent = t[0];
+    $("rigTierSub").textContent = t[1];
+    renderVanScene();
+    var interval = billInterval();
+    var due = overheadAmount(state.billNumber);
+    var remaining = Math.max(0, interval - state.jobsSinceBill);
+    $("billDueLabel").textContent = "$"+due+" in "+remaining+" job"+(remaining===1?"":"s");
+    $("billMeterFill").style.width = clamp(state.jobsSinceBill/interval*100,0,100)+"%";
+    renderLoanPanel();
+  }
+
+  /* ---------------- LOAN ---------------- */
+  var LOAN_OPTIONS = [
+    { amount:150, owe:205 },
+    { amount:350, owe:480 },
+    { amount:700, owe:965 }
+  ];
+  function renderLoanPanel(){
+    var panel = $("loanPanel");
+    if(state.loan > 0){
+      panel.innerHTML =
+        '<div class="loan-row"><span>💳 Outstanding loan</span><span>$'+state.loan+'</span></div>' +
+        '<p class="loan-note">Grows with interest at every bill. Doesn\u2019t go away if the van gets repossessed.</p>' +
+        '<button class="btn small block" id="btnPayLoan">Pay it off ($'+state.loan+')</button>';
+      var payBtn = $("btnPayLoan");
+      payBtn.disabled = state.cash < state.loan;
+      payBtn.addEventListener("click", function(){
+        if(state.cash < state.loan) return;
+        state.cash -= state.loan;
+        state.loan = 0;
+        saveState(); renderTop(); renderMenu();
+      });
+    } else {
+      panel.innerHTML =
+        '<div class="loan-row"><span>💳 Need cash fast?</span><span></span></div>' +
+        '<p class="loan-note">Take a loan now, pay it back with high interest later.</p>' +
+        '<button class="btn small block" id="btnTakeLoan">Take a loan</button>';
+      $("btnTakeLoan").addEventListener("click", openLoanModal);
+    }
+  }
+  function openLoanModal(){
+    var body = '<div class="big-emoji">💳</div><h2>Take a Loan</h2><p>High interest — this isn\u2019t free money.</p>';
+    var buttons = LOAN_OPTIONS.map(function(opt){
+      return { label:"Borrow $"+opt.amount+" (owe $"+opt.owe+")", cls:"ghost", action:function(){ takeLoan(opt); } };
+    });
+    buttons.push({ label:"Never mind", cls:"ghost" });
+    showModal(body, buttons);
+  }
+  function takeLoan(opt){
+    state.cash += opt.amount;
+    state.loan += opt.owe;
+    saveState(); renderTop(); renderMenu();
+  }
+
+  /* ---------------- SCREEN SWITCH ---------------- */
+  function showScreen(id){
+    ["screen-menu","screen-job","screen-equip","screen-perks"].forEach(function(s){
+      $(s).classList.toggle("hidden", s!==id);
+    });
+    if(id==="screen-menu") renderMenu();
+    if(id==="screen-equip"){ renderTree(); renderItems(); }
+    if(id==="screen-perks") renderPerks();
+  }
+
+  /* ---------------- MODAL ---------------- */
+  function showModal(html, buttons){
+    $("modal-content").innerHTML = html + '<div class="col" style="margin-top:14px;" id="modalBtns"></div>';
+    var wrap = $("modalBtns");
+    buttons.forEach(function(b){
+      var btn = document.createElement("button");
+      btn.className = "btn block "+(b.cls||"primary");
+      btn.textContent = b.label;
+      if(b.action){
+        btn.onclick = function(){ hideModal(); b.action(); };
+      } else {
+        btn.onclick = function(){ hideModal(); };
+      }
+      wrap.appendChild(btn);
+    });
+    $("modal-overlay").classList.remove("hidden");
+  }
+  function hideModal(){ $("modal-overlay").classList.add("hidden"); }
+
+  /* ---------------- RADIAL SKILL TREE ---------------- */
+  function purchaseGear(key, cost){
+    if(state.cash < cost) return;
+    state.cash -= cost;
+    state.gear[key] = (state.gear[key]||0) + 1;
+    saveState();
+    renderTop(); renderTree(); renderItems();
+  }
+
+  function openTreeNodeModal(key, level, def){
+    var owned = gearLevel(key) > level;
+    var isNext = gearLevel(key) === level;
+    var body = '<div class="big-emoji">'+def.icon+'</div><h2>'+def.title+' — Lv.'+(level+1)+'</h2><p>'+def.desc[level]+'</p>';
+    if(owned){
+      showModal(body+'<p style="font-weight:800;color:#173322;">Already installed ✓</p>', [{label:"Close",cls:"ghost"}]);
+    } else if(isNext){
+      var cost = gearCost(key, level);
+      var afford = state.cash >= cost;
+      showModal(body+'<div class="stat-line"><span>Cost</span><span>$'+cost+'</span></div>',
+        [{ label: afford ? "Buy for $"+cost : "Not enough cash", cls: afford?"primary":"ghost", action: afford ? function(){ purchaseGear(key,cost); } : null }]);
+    } else {
+      showModal(body+'<p style="color:#8a7f6a;font-weight:700;">Upgrade Level '+level+' first.</p>', [{label:"Close",cls:"ghost"}]);
+    }
+  }
+
+  function renderTree(){
+    var wrap = $("treeWrap");
+    wrap.querySelectorAll(".tnode,.branch-label").forEach(function(el){ el.remove(); });
+    var svg = $("treeLines");
+    svg.innerHTML = "";
+    var angleStep = 360/BRANCH_ORDER.length;
+    var radii = [17,30,42];
+    BRANCH_ORDER.forEach(function(key, i){
+      var angle = -90 + i*angleStep;
+      var def = EQUIP_DEFS[key];
+      var prev = { x:50, y:50 };
+      for(var lvl=0; lvl<def.costs.length; lvl++){
+        var pos = polar(50,50,radii[lvl],angle);
+        var owned = gearLevel(key) > lvl;
+        var isNext = gearLevel(key) === lvl;
+
+        var line = document.createElementNS(SVG_NS,"line");
+        line.setAttribute("x1",prev.x); line.setAttribute("y1",prev.y);
+        line.setAttribute("x2",pos.x); line.setAttribute("y2",pos.y);
+        line.setAttribute("stroke", owned ? "#3a2f28" : "#cbb98a");
+        line.setAttribute("stroke-width","1.6");
+        line.setAttribute("stroke-linecap","round");
+        if(!owned) line.setAttribute("stroke-dasharray","2,2");
+        svg.appendChild(line);
+        prev = pos;
+
+        var node = document.createElement("div");
+        node.className = "tnode " + (owned?"owned":(isNext?"next":"locked"));
+        node.style.left = pos.x+"%";
+        node.style.top = pos.y+"%";
+        node.textContent = def.icon;
+        var badge = document.createElement("div");
+        badge.className = "lvl-badge";
+        badge.textContent = (lvl+1);
+        node.appendChild(badge);
+        (function(kk,ll,dd){
+          node.addEventListener("click", function(){ openTreeNodeModal(kk,ll,dd); });
+        })(key,lvl,def);
+        wrap.appendChild(node);
+      }
+      var labelPos = polar(50,50, radii[radii.length-1]+10, angle);
+      var label = document.createElement("div");
+      label.className = "branch-label";
+      label.style.left = labelPos.x+"%";
+      label.style.top = labelPos.y+"%";
+      label.textContent = def.title;
+      wrap.appendChild(label);
+    });
+  }
+
+  /* ---------------- SHOP ITEMS ---------------- */
+  function renderItems(){
+    var grid = $("itemGrid");
+    grid.innerHTML = "";
+    Object.keys(ITEM_DEFS).forEach(function(key){
+      var def = ITEM_DEFS[key];
+      var lvl = gearLevel(key);
+      var maxed = lvl >= def.costs.length;
+      var card = document.createElement("div");
+      card.className = "perk-card" + (maxed?" owned":"");
+      var desc = maxed ? def.desc[def.desc.length-1] : def.desc[lvl];
+      var lvlLine = def.costs.length>1 ? '<div style="font-size:11px;font-weight:800;color:#6b6050;">Level '+lvl+' / '+def.costs.length+'</div>' : '';
+      card.innerHTML = '<h3>'+def.icon+' '+def.title+'</h3><p>'+desc+'</p>'+lvlLine;
+      if(maxed){
+        var tag = document.createElement("div");
+        tag.style.cssText = "font-family:'Pixelify Sans',sans-serif;font-weight:600;font-size:13px;color:#173322;";
+        tag.textContent = "✓ " + (def.costs.length>1 ? "Maxed" : "Installed");
+        card.appendChild(tag);
+      } else {
+        var cost = gearCost(key, lvl);
+        var btn = document.createElement("button");
+        btn.className = "btn small";
+        btn.textContent = "$"+cost;
+        btn.disabled = state.cash < cost;
+        btn.onclick = (function(kk,cc){ return function(){ purchaseGear(kk,cc); renderMenu(); }; })(key,cost);
+        card.appendChild(btn);
+      }
+      grid.appendChild(card);
+    });
+  }
+
+  /* ---------------- LEGACY (PERKS + ROUTE UNLOCKS) SCREEN ---------------- */
+  function renderPerks(){
+    var canSpend = !!state.legacyAvailable;
+    $("legacyStatus").textContent = canSpend
+      ? "Spend your stars now — this window closes once you head back to work."
+      : "Stars are locked in until your next repossession. Keep hustling.";
+
+    var grid = $("perkGrid");
+    grid.innerHTML = "";
+    Object.keys(PERK_DEFS).forEach(function(k){
+      var def = PERK_DEFS[k];
+      var owned = !!state.perks[k];
+      var card = document.createElement("div");
+      card.className = "perk-card"+(owned?" owned":"");
+      card.innerHTML = '<h3>'+def.icon+' '+def.title+'</h3><p>'+def.desc+'</p>';
+      if(owned){
+        var tag = document.createElement("div");
+        tag.style.cssText="font-family:'Pixelify Sans',sans-serif;font-weight:600;font-size:13px;color:#173322;";
+        tag.textContent = "✓ Owned";
+        card.appendChild(tag);
+      } else {
+        var btn = document.createElement("button");
+        btn.className = "btn small";
+        btn.textContent = "⭐ "+def.cost;
+        btn.disabled = !canSpend || state.rep < def.cost;
+        btn.onclick = (function(kk,dd){
+          return function(){
+            if(!state.legacyAvailable || state.rep < dd.cost) return;
+            state.rep -= dd.cost;
+            state.perks[kk] = true;
+            saveState();
+            renderTop(); renderPerks();
+          };
+        })(k, def);
+        card.appendChild(btn);
+      }
+      grid.appendChild(card);
+    });
+
+    var ugrid = $("unlockGrid");
+    ugrid.innerHTML = "";
+    Object.keys(UNLOCK_DEFS).forEach(function(k){
+      var def = UNLOCK_DEFS[k];
+      var owned = !!state.unlocks[k];
+      var card = document.createElement("div");
+      card.className = "perk-card"+(owned?" owned":"");
+      card.innerHTML = '<h3>'+def.icon+' '+def.title+'</h3><p>'+def.desc+'</p>';
+      if(owned){
+        var tag = document.createElement("div");
+        tag.style.cssText="font-family:'Pixelify Sans',sans-serif;font-weight:600;font-size:13px;color:#173322;";
+        tag.textContent = "✓ Unlocked";
+        card.appendChild(tag);
+      } else {
+        var btn = document.createElement("button");
+        btn.className = "btn small";
+        btn.textContent = "⭐ "+def.cost;
+        btn.disabled = !canSpend || state.rep < def.cost;
+        btn.onclick = (function(kk,dd){
+          return function(){
+            if(!state.legacyAvailable || state.rep < dd.cost) return;
+            state.rep -= dd.cost;
+            state.unlocks[kk] = true;
+            saveState();
+            renderTop(); renderPerks();
+          };
+        })(k, def);
+        card.appendChild(btn);
+      }
+      ugrid.appendChild(card);
+    });
+  }
+
+  /* ---------------- JOB / CANVAS GAME ---------------- */
+  var cleanCanvas = $("cleanCanvas"), dirtyCanvas = $("dirtyCanvas"), fxCanvas = $("fxCanvas");
+  var cleanCtx = cleanCanvas.getContext("2d"), dirtyCtx = dirtyCanvas.getContext("2d"), fxCtx = fxCanvas.getContext("2d");
+  var CW = cleanCanvas.width, CH = cleanCanvas.height;
+
+  var job = null;
+
+
+
+  var PX = 8;
+  function pxs(v){ return Math.round(v/PX)*PX; }
+
+  function drawGrassBlock(x,y,w,h){
+    cleanCtx.fillStyle = "#7a9c5e";
+    cleanCtx.fillRect(x,y,w,h);
+  }
+  function drawGrassBand(x,y,w,h){
+    if(w<=0||h<=0) return;
+    cleanCtx.fillStyle = "#7a9c5e";
+    cleanCtx.fillRect(x,y,w,h);
+    cleanCtx.fillStyle = "#5f7d47";
+    for(var gx=pxs(x); gx<x+w; gx+=PX){
+      for(var gy=pxs(y); gy<y+h; gy+=PX){
+        if(((gx/PX + gy/PX*3) % 5) < 1.2){ cleanCtx.fillRect(gx,gy,PX,PX); }
+      }
+    }
+  }
+  function drawGarageBand(x,y,w,h){
+    cleanCtx.fillStyle = "#8a99a6";
+    cleanCtx.fillRect(x,y,w,h);
+    cleanCtx.fillStyle = "#5f6b75";
+    for(var gx=x; gx<x+w; gx+=PX*4){ cleanCtx.fillRect(gx,y,3,h); }
+    cleanCtx.fillStyle = "#4a5560";
+    cleanCtx.fillRect(x,y+h-PX,w,PX);
+  }
+  function drawHedgeBand(x,y,w,h){
+    cleanCtx.fillStyle = "#5f7d47";
+    cleanCtx.fillRect(x,y,w,h);
+    cleanCtx.fillStyle = "#4a6636";
+    for(var gx=x; gx<x+w; gx+=PX*2){ cleanCtx.fillRect(gx,y+h-PX,PX,PX); }
+  }
+  function drawWallBand(x,y,w,h){
+    cleanCtx.fillStyle = "#d8c9a3";
+    cleanCtx.fillRect(x,y,w,h);
+    cleanCtx.fillStyle = "#bfae82";
+    for(var gy=y; gy<y+h; gy+=12){ cleanCtx.fillRect(x,gy,w,2); }
+  }
+  function drawRoofBand(x,y,w,h){
+    cleanCtx.fillStyle = "#8f4726";
+    cleanCtx.fillRect(x,y,w,h);
+    cleanCtx.fillStyle = "#6b331a";
+    for(var rx=x; rx<x+w; rx+=PX*2){ cleanCtx.fillRect(rx,y,PX,h); }
+    cleanCtx.fillStyle = "#a9754a";
+    cleanCtx.fillRect(x,y+h-4,w,4);
+  }
+  function drawWaterBand(x,y,w,h,colorA,colorB){
+    cleanCtx.fillStyle = colorA;
+    cleanCtx.fillRect(x,y,w,h);
+    cleanCtx.fillStyle = colorB;
+    for(var wx=x; wx<x+w; wx+=PX*3){ cleanCtx.fillRect(wx, y+Math.round(h/2), PX, 3); }
+    for(var wx2=x+PX; wx2<x+w; wx2+=PX*3){ cleanCtx.fillRect(wx2, y+Math.round(h/3), PX, 3); }
+  }
+
+  function drawCleanLayer(def){
+    var m = def.margin;
+    var ix=m.left, iy=m.top, iw=CW-m.left-m.right, ih=CH-m.top-m.bottom;
+    cleanCtx.clearRect(0,0,CW,CH);
+    drawGrassBlock(0,0,CW,CH);
+
+    if(def.type==="driveway"){
+      drawGarageBand(0,0,CW,m.top);
+      drawGrassBand(0,m.top,m.left,ih);
+      drawGrassBand(CW-m.right,m.top,m.right,ih);
+    } else if(def.type==="patio"){
+      drawHedgeBand(0,0,CW,m.top);
+      drawGrassBand(0,m.top,m.left,ih);
+      drawGrassBand(CW-m.right,m.top,m.right,ih);
+    } else if(def.type==="deck"){
+      drawWallBand(0,0,CW,m.top);
+    } else if(def.type==="wall"){
+      drawRoofBand(0,0,CW,m.top);
+      drawGrassBand(0,CH-m.bottom,CW,m.bottom);
+    } else if(def.type==="dock"){
+      drawWaterBand(0,CH-m.bottom,CW,m.bottom,"#4f8fa6","#356273");
+    } else if(def.type==="pool"){
+      drawWaterBand(0,CH-m.bottom,CW,m.bottom,"#6fc3d1","#4a9aab");
+      cleanCtx.fillStyle = "#e9dcb8";
+      cleanCtx.fillRect(0,CH-m.bottom,CW,4);
+    }
+
+    cleanCtx.fillStyle = def.clean;
+    cleanCtx.fillRect(ix,iy,iw,ih);
+    cleanCtx.strokeStyle = shade(def.clean,-20);
+    cleanCtx.lineWidth = 3;
+
+    if(def.type==="driveway"){
+      for(var i=0;i<8;i++){
+        cleanCtx.beginPath();
+        var sx = ix+Math.random()*iw, sy = iy+Math.random()*ih;
+        var ex = sx+(Math.random()*100-50), ey = sy+(Math.random()*100-50);
+        cleanCtx.moveTo(pxs(sx),pxs(sy)); cleanCtx.lineTo(pxs(ex),pxs(ey));
+        cleanCtx.stroke();
+      }
+      drawCar(ix+iw-184, iy+ih-100);
+    } else if(def.type==="patio"){
+      var bw=64, bh=32;
+      cleanCtx.save();
+      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
+      for(var y=iy;y<iy+ih+bh;y+=bh){
+        var offset = (Math.floor((y-iy)/bh)%2)*(bw/2);
+        for(var x=ix-bw;x<ix+iw+bw;x+=bw){ cleanCtx.strokeRect(x+offset,y,bw,bh); }
+      }
+      cleanCtx.restore();
+      drawPottedPlant(ix+26, iy+ih-92);
+    } else if(def.type==="deck"){
+      cleanCtx.save();
+      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
+      for(var yy=iy+40; yy<iy+ih; yy+=36){
+        cleanCtx.beginPath(); cleanCtx.moveTo(ix,yy); cleanCtx.lineTo(ix+iw,yy); cleanCtx.stroke();
+      }
+      cleanCtx.restore();
+      drawDeckRailing(ix,iy,iw);
+      drawPottedPlant(ix+iw-90, iy+ih-92);
+    } else if(def.type==="wall"){
+      cleanCtx.save();
+      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
+      for(var xx=ix+70; xx<ix+iw; xx+=88){
+        cleanCtx.beginPath(); cleanCtx.moveTo(xx,iy); cleanCtx.lineTo(xx,iy+ih); cleanCtx.stroke();
+      }
+      cleanCtx.restore();
+      drawWindow(ix+iw/2-64, iy+26);
+      drawWallLamp(ix+iw-96, iy+46);
+    } else if(def.type==="dock"){
+      cleanCtx.save();
+      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
+      for(var dy=iy+40; dy<iy+ih; dy+=32){
+        cleanCtx.beginPath(); cleanCtx.moveTo(ix,dy); cleanCtx.lineTo(ix+iw,dy); cleanCtx.stroke();
+      }
+      cleanCtx.restore();
+      drawBoat(ix+iw-210, iy+ih-40);
+    } else if(def.type==="pool"){
+      cleanCtx.save();
+      cleanCtx.beginPath(); cleanCtx.rect(ix,iy,iw,ih); cleanCtx.clip();
+      for(var px2=ix+50; px2<ix+iw; px2+=70){
+        cleanCtx.beginPath(); cleanCtx.moveTo(px2,iy); cleanCtx.lineTo(px2,iy+ih); cleanCtx.stroke();
+      }
+      cleanCtx.restore();
+      drawUmbrella(ix+50, iy+30);
+    }
+
+    cleanCtx.strokeStyle = "#3a2f28";
+    cleanCtx.lineWidth = 6;
+    cleanCtx.strokeRect(3,3,CW-6,CH-6);
+  }
+
+  function drawCar(x,y){
+    cleanCtx.save();
+    cleanCtx.fillStyle = "#3a2f28";
+    cleanCtx.fillRect(x+6,y+82,168,8);
+    cleanCtx.fillRect(x-2,y+28,188,4);
+    cleanCtx.fillRect(x+22,y+6,126,4);
+    cleanCtx.fillStyle = "#c9543f";
+    cleanCtx.fillRect(x,y+30,184,44);
+    cleanCtx.fillRect(x+24,y+8,124,24);
+    cleanCtx.fillStyle = "#bde3ef";
+    cleanCtx.fillRect(x+34,y+12,44,16);
+    cleanCtx.fillRect(x+96,y+12,40,16);
+    cleanCtx.fillStyle = "#3a2f28";
+    cleanCtx.fillRect(x+14,y+64,30,30);
+    cleanCtx.fillRect(x+132,y+64,30,30);
+    cleanCtx.fillStyle = "#c9c2b0";
+    cleanCtx.fillRect(x+22,y+72,14,14);
+    cleanCtx.fillRect(x+140,y+72,14,14);
+    cleanCtx.restore();
+  }
+  function drawPottedPlant(x,y){
+    cleanCtx.save();
+    cleanCtx.fillStyle = "#a9663a";
+    cleanCtx.fillRect(x,y+52,60,30);
+    cleanCtx.fillStyle = "#c9814f";
+    cleanCtx.fillRect(x+4,y+58,52,20);
+    cleanCtx.fillStyle = "#4a6636";
+    cleanCtx.fillRect(x+8,y+14,44,42);
+    cleanCtx.fillStyle = "#5f7d47";
+    cleanCtx.fillRect(x+14,y+22,32,26);
+    cleanCtx.fillRect(x+18,y+8,24,12);
+    cleanCtx.restore();
+  }
+  function drawDeckRailing(x,y,w){
+    cleanCtx.save();
+    cleanCtx.fillStyle = "#3a2f28";
+    cleanCtx.fillRect(x,y,w,4);
+    for(var rx=x+10; rx<x+w; rx+=28){ cleanCtx.fillRect(rx,y,4,24); }
+    cleanCtx.restore();
+  }
+  function drawWindow(x,y){
+    cleanCtx.save();
+    cleanCtx.fillStyle = "#3a2f28";
+    cleanCtx.fillRect(x-6,y-6,140,112);
+    cleanCtx.fillStyle = "#bdeaf6";
+    cleanCtx.fillRect(x,y,128,100);
+    cleanCtx.fillStyle = "#3a2f28";
+    cleanCtx.fillRect(x+61,y,6,100);
+    cleanCtx.fillRect(x,y+47,128,6);
+    cleanCtx.fillStyle = "#a9754a";
+    cleanCtx.fillRect(x-14,y+100,156,14);
+    cleanCtx.restore();
+  }
+  function drawWallLamp(x,y){
+    cleanCtx.save();
+    cleanCtx.fillStyle = "#3a2f28";
+    cleanCtx.fillRect(x-3,y-3,26,40);
+    cleanCtx.fillStyle = "#e0a83e";
+    cleanCtx.fillRect(x,y,20,30);
+    cleanCtx.fillStyle = "#8f4726";
+    cleanCtx.fillRect(x-2,y+30,24,6);
+    cleanCtx.restore();
+  }
+  function drawBoat(x,y){
+    cleanCtx.save();
+    cleanCtx.fillStyle = "#3a2f28";
+    cleanCtx.fillRect(x,y+24,180,10);
+    cleanCtx.fillStyle = "#c1683f";
+    cleanCtx.fillRect(x+8,y+10,164,20);
+    cleanCtx.fillStyle = "#e9dcb8";
+    cleanCtx.fillRect(x+8,y+10,164,6);
+    cleanCtx.fillStyle = "#3a2f28";
+    cleanCtx.fillRect(x+70,y-30,6,42);
+    cleanCtx.fillStyle = "#f6ecd2";
+    cleanCtx.fillRect(x+76,y-26,40,30);
+    cleanCtx.restore();
+  }
+  function drawUmbrella(x,y){
+    cleanCtx.save();
+    cleanCtx.fillStyle = "#3a2f28";
+    cleanCtx.fillRect(x+30,y+20,6,60);
+    cleanCtx.fillStyle = "#a4485f";
+    cleanCtx.fillRect(x,y,72,10);
+    cleanCtx.fillRect(x+12,y-10,48,10);
+    cleanCtx.fillStyle = "#8a3247";
+    cleanCtx.fillRect(x,y+8,72,4);
+    cleanCtx.restore();
+  }
+
+  function drawDirtyLayer(grime, ix, iy, iw, ih){
+    dirtyCtx.clearRect(0,0,CW,CH);
+    dirtyCtx.save();
+    dirtyCtx.beginPath(); dirtyCtx.rect(ix,iy,iw,ih); dirtyCtx.clip();
+    dirtyCtx.fillStyle = grime.a;
+    dirtyCtx.fillRect(ix,iy,iw,ih);
+    var cols = Math.ceil(iw/PX), rows = Math.ceil(ih/PX);
+    for(var cy=0; cy<rows; cy++){
+      for(var cx=0; cx<cols; cx++){
+        if(Math.random()<0.55){
+          dirtyCtx.globalAlpha = 0.55 + Math.random()*0.4;
+          dirtyCtx.fillStyle = Math.random()<0.5 ? grime.a : grime.b;
+          dirtyCtx.fillRect(ix+cx*PX, iy+cy*PX, PX, PX);
+        }
+      }
+    }
+    dirtyCtx.globalAlpha = 1;
+    dirtyCtx.fillStyle = "#000";
+    var speckles = Math.round((iw*ih)/3200);
+    for(var s=0;s<speckles;s++){
+      dirtyCtx.globalAlpha = 0.3 + Math.random()*0.3;
+      var sxp = ix + Math.floor(Math.random()*cols)*PX;
+      var syp = iy + Math.floor(Math.random()*rows)*PX;
+      dirtyCtx.fillRect(sxp, syp, PX/2, PX/2);
+    }
+    dirtyCtx.globalAlpha = 1;
+    dirtyCtx.restore();
+  }
+
+  function sprayAt(x,y,radius,toughness){
+    var strength = clamp(1/(toughness||1), 0.32, 1);
+    dirtyCtx.globalCompositeOperation = "destination-out";
+    dirtyCtx.globalAlpha = strength;
+    var cx0 = pxs(x-radius), cx1 = pxs(x+radius);
+    var cy0 = pxs(y-radius), cy1 = pxs(y+radius);
+    var r2 = radius*radius;
+    for(var gx=cx0; gx<=cx1; gx+=PX){
+      for(var gy=cy0; gy<=cy1; gy+=PX){
+        var dx=(gx+PX/2)-x, dy=(gy+PX/2)-y;
+        if(dx*dx+dy*dy<=r2){ dirtyCtx.fillRect(gx,gy,PX,PX); }
+      }
+    }
+    dirtyCtx.globalAlpha = 1;
+    dirtyCtx.globalCompositeOperation = "source-over";
+  }
+
+  var particles = [];
+  function spawnParticles(x,y){
+    for(var i=0;i<3;i++){
+      particles.push({ x:x, y:y, vx:(Math.random()*2-1)*1.6, vy:(Math.random()*-1.5-0.4), life:1 });
+    }
+  }
+  var fxRunning = false;
+  function fxLoop(){
+    fxCtx.clearRect(0,0,CW,CH);
+    for(var i=particles.length-1;i>=0;i--){
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.09; p.life -= 0.035;
+      if(p.life<=0){ particles.splice(i,1); continue; }
+      fxCtx.globalAlpha = clamp(p.life,0,1);
+      fxCtx.fillStyle = "#eaf9ff";
+      fxCtx.beginPath();
+      fxCtx.arc(p.x,p.y,3.2,0,Math.PI*2);
+      fxCtx.fill();
+    }
+    fxCtx.globalAlpha = 1;
+    if(particles.length>0){ requestAnimationFrame(fxLoop); } else { fxRunning = false; }
+  }
+  function ensureFx(){ if(!fxRunning){ fxRunning = true; requestAnimationFrame(fxLoop); } }
+
+  function canvasPoint(evt){
+    var rect = canvasWrap.getBoundingClientRect();
+    var cx = (evt.clientX - rect.left) * (CW/rect.width);
+    var cy = (evt.clientY - rect.top) * (CH/rect.height);
+    return {x:cx, y:cy};
+  }
+
+  var lastPt = null, refilling = false;
+  var canvasWrap = $("canvas-wrap");
+
+  function startJob(){
+    showScreen("screen-job");
+    playIntroThenBegin();
+  }
+
+  function playIntroThenBegin(){
+    var intro = $("jobIntro");
+    var truckEl = $("introTruck");
+    truckEl.innerHTML = buildTruckSVG();
+    intro.classList.remove("hidden");
+    truckEl.classList.remove("drive-in");
+    void truckEl.offsetWidth;
+    truckEl.classList.add("drive-in");
+    setTimeout(function(){
+      intro.classList.add("hidden");
+      beginJobRound();
+    }, 950);
+  }
+
+  function beginJobRound(){
+    var def = pickJob();
+    var grime = GRIME_TIERS[rigTierIndex()];
+    var m = def.margin;
+    var rect = { ix:m.left, iy:m.top, iw:CW-m.left-m.right, ih:CH-m.top-m.bottom };
+    job = {
+      def: def,
+      grime: grime,
+      rect: rect,
+      startTime: Date.now(),
+      duration: jobDuration(),
+      tank: tankMax(),
+      cleanliness: 0,
+      ended: false
+    };
+    $("jobName").textContent = def.name;
+    $("jobGrimeLabel").textContent = grime.name + (grime.payMult>1 ? " · pays +"+Math.round((grime.payMult-1)*100)+"%" : "");
+    drawCleanLayer(def);
+    drawDirtyLayer(grime, rect.ix, rect.iy, rect.iw, rect.ih);
+    fxCtx.clearRect(0,0,CW,CH);
+    particles = [];
+    lastPt = null;
+    updateTankUI();
+    updateCleanUI();
+    updateTimerUI(job.duration);
+    $("refillPrompt").classList.add("hidden");
+    refilling = false;
+    startCleanlinessLoop();
+    startFoamLoop();
+    startTimerLoop();
+  }
+
+  function updateTankUI(){
+    var pct = clamp(job.tank/tankMax()*100,0,100);
+    $("tankFill").style.width = pct+"%";
+    $("tankPct").textContent = Math.round(pct)+"%";
+  }
+  function updateCleanUI(){
+    var pct = clamp(job.cleanliness*100,0,100);
+    $("cleanFill").style.width = pct+"%";
+    $("cleanPct").textContent = Math.round(pct)+"%";
+  }
+  function updateTimerUI(msLeft){
+    var pct = clamp(msLeft/job.duration*100,0,100);
+    var fill = $("timerFill");
+    fill.style.width = pct+"%";
+    fill.style.background = pct<25 ? "var(--red)" : "var(--orange)";
+    var secs = Math.max(0, Math.ceil(msLeft/1000));
+    var m = Math.floor(secs/60), s = secs%60;
+    $("timeLeftLabel").textContent = m+":"+(s<10?"0":"")+s;
+  }
+
+  var sampleCanvas = document.createElement("canvas");
+  sampleCanvas.width = 90; sampleCanvas.height = Math.round(90*CH/CW);
+  var sampleCtx = sampleCanvas.getContext("2d");
+  function computeCleanliness(){
+    var r = job.rect;
+    sampleCtx.clearRect(0,0,sampleCanvas.width, sampleCanvas.height);
+    sampleCtx.drawImage(dirtyCanvas, r.ix, r.iy, r.iw, r.ih, 0,0, sampleCanvas.width, sampleCanvas.height);
+    var data = sampleCtx.getImageData(0,0,sampleCanvas.width, sampleCanvas.height).data;
+    var dirty = 0, total = data.length/4;
+    for(var i=3;i<data.length;i+=4){ if(data[i] > 25) dirty++; }
+    return 1 - (dirty/total);
+  }
+
+  var cleanlinessTimer = null, foamTimer = null, timerLoopId = null;
+
+  function startCleanlinessLoop(){
+    if(cleanlinessTimer) clearInterval(cleanlinessTimer);
+    cleanlinessTimer = setInterval(function(){
+      if(!job || job.ended) return;
+      job.cleanliness = computeCleanliness();
+      updateCleanUI();
+      if(job.cleanliness >= 0.97){ endJob("complete"); }
+    }, 220);
+  }
+  function startFoamLoop(){
+    if(foamTimer) clearInterval(foamTimer);
+    if(foamAutoLevel()<=0) return;
+    var interval = Math.max(900, 2200 - foamAutoLevel()*500);
+    foamTimer = setInterval(function(){
+      if(!job || job.ended) return;
+      var r = job.rect;
+      var x = r.ix+20+Math.random()*(r.iw-40), y = r.iy+20+Math.random()*(r.ih-40);
+      sprayAt(x,y, 34+foamAutoLevel()*12, job.grime.toughness*toughnessFactor());
+      spawnParticles(x,y); ensureFx();
+    }, interval);
+  }
+  function startTimerLoop(){
+    if(timerLoopId) clearInterval(timerLoopId);
+    timerLoopId = setInterval(function(){
+      if(!job || job.ended) return;
+      var elapsed = Date.now()-job.startTime;
+      var left = job.duration - elapsed;
+      updateTimerUI(Math.max(0,left));
+      if(left<=0){ endJob("timeout"); }
+    }, 120);
+  }
+  function stopTimers(){
+    if(cleanlinessTimer){ clearInterval(cleanlinessTimer); cleanlinessTimer=null; }
+    if(foamTimer){ clearInterval(foamTimer); foamTimer=null; }
+    if(timerLoopId){ clearInterval(timerLoopId); timerLoopId=null; }
+  }
+
+  function pointerEnter(evt){
+    if(!job || job.ended) return;
+    lastPt = canvasPoint(evt);
+    if(!refilling && job.tank>0) doSpray(lastPt.x, lastPt.y);
+  }
+  function pointerMove(evt){
+    if(!job || job.ended) return;
+    var p = canvasPoint(evt);
+    if(!lastPt){ lastPt = p; return; }
+    if(refilling || job.tank<=0){ lastPt = p; return; }
+    var dx = p.x-lastPt.x, dy=p.y-lastPt.y;
+    var dist = Math.sqrt(dx*dx+dy*dy);
+    var steps = Math.max(1, Math.floor(dist/6));
+    for(var i=1;i<=steps;i++){
+      var t = i/steps;
+      doSpray(lastPt.x+dx*t, lastPt.y+dy*t);
+      if(job.tank<=0) break;
+    }
+    lastPt = p;
+  }
+  function pointerLeave(){ lastPt = null; }
+
+  function doSpray(x,y){
+    if(job.tank<=0){ startAutoRefill(); return; }
+    sprayAt(x,y, brushRadius(), job.grime.toughness*toughnessFactor());
+    job.tank -= 1.1/powerEff();
+    if(job.tank<0) job.tank=0;
+    updateTankUI();
+    if(Math.random()<0.6){ spawnParticles(x,y); ensureFx(); }
+    if(job.tank<=0){ startAutoRefill(); }
+  }
+
+  function startAutoRefill(){
+    if(refilling || !job || job.ended) return;
+    refilling = true;
+    $("refillPrompt").classList.remove("hidden");
+    var dur = refillTime();
+    var startTank = job.tank;
+    var t0 = Date.now();
+    var iv = setInterval(function(){
+      if(!job || job.ended){ clearInterval(iv); refilling=false; return; }
+      var t = clamp((Date.now()-t0)/dur,0,1);
+      job.tank = startTank + (tankMax()-startTank)*t;
+      updateTankUI();
+      if(t>=1){
+        clearInterval(iv);
+        job.tank = tankMax();
+        updateTankUI();
+        refilling = false;
+        $("refillPrompt").classList.add("hidden");
+      }
+    }, 40);
+  }
+
+  canvasWrap.addEventListener("pointerenter", pointerEnter);
+  canvasWrap.addEventListener("pointermove", pointerMove);
+  canvasWrap.addEventListener("pointerleave", pointerLeave);
+
+  function calcPay(mode, elapsed){
+    var basePay = 68 + state.jobsCompleted*4;
+    var pay = basePay * job.cleanliness * payMultiplier() * job.grime.payMult;
+    if(mode==="complete"){
+      var remainingFrac = Math.max(0, (job.duration-elapsed)/job.duration);
+      pay *= 1 + Math.min(0.35, remainingFrac*0.35);
+    }
+    return Math.max(1, Math.round(pay));
+  }
+
+  function endJob(mode){
+    if(!job || job.ended) return;
+    job.ended = true;
+    stopTimers();
+    lastPt = null;
+    var elapsed = Date.now()-job.startTime;
+    var pay = calcPay(mode, elapsed);
+    var tip = 0;
+    if(Math.random() < tipChance()){ tip = 8 + Math.floor(Math.random()*13); }
+    var totalPay = pay + tip;
+    state.cash += totalPay;
+    state.cashSinceRepo += totalPay;
+    state.jobsCompleted += 1;
+    state.jobsSinceBill += 1;
+    saveState();
+    renderTop();
+
+    var pctClean = Math.round(job.cleanliness*100);
+    var emoji = mode==="timeout" ? "⏰" : "✨";
+    var heading = mode==="timeout" ? "Time's Up!" : "Job Complete!";
+    var tipLine = tip>0 ? '<div class="stat-line"><span>Tip 🫙</span><span>+$'+tip+'</span></div>' : '';
+    showModal(
+      '<div class="big-emoji">'+emoji+'</div>' +
+      '<h2>'+heading+'</h2>' +
+      '<div class="stat-line"><span>Cleanliness</span><span>'+pctClean+'%</span></div>' +
+      '<div class="stat-line"><span>Cash earned</span><span>+$'+pay+'</span></div>' +
+      tipLine,
+      [{ label:"Nice — Continue", cls:"primary", action: afterJobContinue }]
+    );
+  }
+
+  function afterJobContinue(){
+    if(state.jobsSinceBill >= billInterval()){ triggerBill(); } else { showScreen("screen-menu"); }
+  }
+
+  function triggerBill(){
+    var amount = overheadAmount(state.billNumber);
+    state.billNumber += 1;
+    state.jobsSinceBill = 0;
+    if(state.loan>0){ state.loan = Math.round(state.loan*1.12); }
+    if(state.cash >= amount){
+      state.cash -= amount;
+      var repGain = Math.max(1, Math.floor(amount/45)) + (state.perks.wordofmouth ? 1 : 0);
+      state.rep += repGain;
+      saveState(); renderTop();
+      showModal(
+        '<div class="big-emoji">🧾</div>' +
+        '<h2>Overhead Paid</h2>' +
+        '<p>Van lease, gas and soap: <strong>$'+amount+'</strong>. Handled.</p>' +
+        '<div class="stat-line"><span>Reputation earned</span><span>+'+repGain+' ⭐</span></div>',
+        [{ label:"Back to the garage", cls:"primary", action: function(){ showScreen("screen-menu"); } }]
+      );
+    } else {
+      repossess(amount);
+    }
+  }
+
+  function repossess(amount){
+    var repGain = Math.max(1, Math.floor(state.cashSinceRepo/40));
+    state.rep += repGain;
+    state.cashSinceRepo = 0;
+    var fresh = defaultState().gear;
+    if(state.perks.headstart) fresh.nozzle = 1;
+    state.gear = fresh;
+    state.legacyAvailable = true;
+    saveState(); renderTop();
+    showModal(
+      '<div class="big-emoji">🚨</div>' +
+      '<h2>Van Repossessed</h2>' +
+      '<p>Couldn\u2019t cover the $'+amount+' bill \u2014 the rig got stripped back to basics.</p>' +
+      '<div class="stat-line"><span>Legacy earned</span><span>+'+repGain+' \u2B50</span></div>' +
+      (state.loan>0 ? '<p style="margin-top:6px;">The loan doesn\u2019t vanish with the rig \u2014 you still owe $'+state.loan+'.</p>' : '') +
+      '<p style="margin-top:8px;">Spend your stars now, then it\u2019s back to easy dirt while you rebuild.</p>',
+      [{ label:"Spend Legacy Points", cls:"primary", action: function(){ showScreen("screen-perks"); } }]
+    );
+  }
+
+  $("btnQuitJob").addEventListener("click", function(){
+    if(job && !job.ended){ stopTimers(); job.ended = true; lastPt = null; }
+    showScreen("screen-menu");
+  });
+
+  /* ---------------- STORY ---------------- */
+  function showStory(){
+    showModal(
+      '<div class="big-emoji">🧼</div>' +
+      '<h2>Power Wash Co.</h2>' +
+      '<p>Your uncle Lenny retired to Florida and left you two things: a beat-up pressure washer, and a mountain of paperwork he never quite got around to.</p>' +
+      '<p>Turns out "Power Wash Co." owes back rent, a business loan, and a stack of unpaid supply bills. The plan is simple \u2014 hose down every driveway, patio and deck in town, keep the bills paid, and maybe, someday, actually own this business outright.</p>' +
+      '<p style="margin-top:8px;font-weight:700;">Grab the wand. The van won\u2019t wash itself.</p>',
+      [{ label:"Let's get to work", cls:"primary", action: function(){
+          if(!state.seenIntro){ state.seenIntro = true; saveState(); }
+        } }]
+    );
+  }
+  $("btnStory").addEventListener("click", showStory);
+
+  /* ---------------- NAV ---------------- */
+  $("btnStartJob").addEventListener("click", startJob);
+  $("btnEquip").addEventListener("click", function(){ showScreen("screen-equip"); });
+  $("btnPerks").addEventListener("click", function(){ showScreen("screen-perks"); });
+  $("btnBackFromEquip").addEventListener("click", function(){ showScreen("screen-menu"); });
+  $("btnBackFromPerks").addEventListener("click", function(){
+    state.legacyAvailable = false;
+    saveState();
+    showScreen("screen-menu");
+  });
+  $("btnReset").addEventListener("click", function(){
+    if(confirm("Reset all progress? This can't be undone.")){
+      state = defaultState();
+      saveState();
+      renderTop();
+      showScreen("screen-menu");
+    }
+  });
+
+  /* ---------------- INIT ---------------- */
+  renderTop();
+  showScreen("screen-menu");
+  if(!state.seenIntro){ showStory(); }
+
+})();
+</script>
+</body>
+</html>

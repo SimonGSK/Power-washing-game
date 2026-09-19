@@ -176,29 +176,32 @@
   .job-meters > div{flex:1;}
 
   /* ---------------- SKILL TREE ---------------- */
-  .tree-wrap{position:relative;width:100%;max-width:460px;aspect-ratio:1/1;margin:4px auto 6px;}
+  .tree-wrap{position:relative;width:100%;max-width:640px;aspect-ratio:1.18/1;margin:4px auto 6px;}
   .tree-lines{position:absolute;inset:0;width:100%;height:100%;}
-  .thub{
-    position:absolute;left:50%;top:50%;width:68px;height:68px;margin:-34px 0 0 -34px;border-radius:50%;
-    background:var(--sun);border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;
-    font-size:26px;z-index:2;box-shadow:0 4px 0 var(--sun-dark), inset 0 2px 0 rgba(255,255,255,.5);
-  }
   .tnode{
-    position:absolute;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;
+    position:absolute;width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;
     border:3px solid var(--ink);background:var(--parchment-2);display:flex;align-items:center;justify-content:center;
-    font-size:19px;cursor:pointer;z-index:2;box-shadow:0 3px 0 rgba(74,53,38,.3), inset 0 2px 0 rgba(255,255,255,.5);
+    font-size:17px;cursor:pointer;z-index:2;box-shadow:0 3px 0 rgba(74,53,38,.3), inset 0 2px 0 rgba(255,255,255,.5);
+    transition:transform .08s ease;
   }
+  .tnode:hover{transform:scale(1.08);}
+  .tnode.core{width:54px;height:54px;margin:-27px 0 0 -27px;font-size:22px;}
+  .tnode.leafnode{width:46px;height:46px;margin:-23px 0 0 -23px;font-size:19px;}
   .tnode.owned{background:var(--leaf);}
   .tnode.next{background:var(--coral);}
-  .tnode.locked{opacity:.42;cursor:default;}
+  .tnode.leafnode.owned{background:var(--sun);}
+  .tnode.locked{opacity:.40;cursor:default;box-shadow:0 2px 0 rgba(74,53,38,.2);}
+  .tnode.locked:hover{transform:none;}
   .tnode .lvl{
     position:absolute;bottom:-6px;right:-6px;background:var(--parchment);border:2px solid var(--ink);
     border-radius:999px;font-size:10px;padding:0 5px;font-weight:800;
   }
   .branch-label{
-    position:absolute;font-size:11px;font-weight:800;text-align:center;width:88px;margin-left:-44px;margin-top:-7px;
-    color:var(--ink-soft);z-index:2;pointer-events:none;
+    position:absolute;font-size:10.5px;font-weight:800;text-align:center;width:66px;margin-left:-33px;margin-top:-7px;
+    color:var(--ink-soft);z-index:2;pointer-events:none;text-shadow:0 1px 0 var(--parchment);
   }
+  .tree-legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:12px;font-weight:700;color:var(--ink-soft);}
+  .tree-legend i{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--ink);vertical-align:-2px;margin-right:4px;}
 
   /* ---------------- CARDS ---------------- */
   .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -368,8 +371,12 @@
     <p class="subtle">Tap a node to upgrade the rig. Gear is lost if the van gets repossessed.</p>
     <div class="panel">
       <div class="tree-wrap" id="treeWrap">
-        <svg class="tree-lines" id="treeLines" viewBox="0 0 100 100"></svg>
-        <div class="thub">🚚</div>
+        <svg class="tree-lines" id="treeLines" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="tree-legend">
+        <span><i style="background:var(--coral)"></i>Available</span>
+        <span><i style="background:var(--leaf)"></i>Installed</span>
+        <span><i style="background:var(--parchment-2);opacity:.5"></i>Locked</span>
       </div>
     </div>
     <h3>Shop</h3>
@@ -448,7 +455,9 @@
       ownedOutright: false,
       legacyAvailable: false,
       region: "grove",
-      gear: { pressure:0, nozzle:0, tank:0, refill:0, pay:0, patience:0,
+      gear: { powercore:0, tankcore:0, bizcore:0,
+              pressure:0, nozzle:0, tank:0, refill:0, pay:0, patience:0,
+              surge:0, bigrig:0, empire:0,
               tipjar:0, prowasher:0, foamcannon:0, degreaser:0, permit:0, lease:0 },
       perks: { headstart:false, discount:false, lowoverhead:false, basepay:false, wordofmouth:false, severance:false },
       crew: {},
@@ -528,8 +537,22 @@
     { name:"Drizzle",  tint:"rgba(70,92,104,0.18)",  sun:false, rain:true }
   ];
 
-  /* Skill tree — pressure is the headline stat now */
+  /* Skill tree: three trunks, each forking into two branches that rejoin at a capstone */
   var BRANCHES = ["pressure","nozzle","tank","refill","pay","patience"];
+  var LIMBS = [
+    { core:"powercore", x:21, y:74, label:"Water",
+      twigs:[ { key:"pressure", pts:[[9,57],[5,40],[9,24]] },
+              { key:"nozzle",   pts:[[31,56],[29,39],[33,23]] } ],
+      leaf:{ key:"surge", x:19, y:9 } },
+    { core:"tankcore", x:50, y:76, label:"Tank",
+      twigs:[ { key:"tank",   pts:[[42,57],[39,40],[43,24]] },
+              { key:"refill", pts:[[58,57],[61,40],[57,24]] } ],
+      leaf:{ key:"bigrig", x:50, y:9 } },
+    { core:"bizcore", x:79, y:74, label:"Business",
+      twigs:[ { key:"pay",      pts:[[69,56],[71,39],[67,23]] },
+              { key:"patience", pts:[[91,57],[95,40],[91,24]] } ],
+      leaf:{ key:"empire", x:81, y:9 } }
+  ];
   var GEAR = {
     pressure:{ title:"Water Pressure", icon:"⚡", costs:[110,290,640],
       desc:["Strips grime noticeably faster","Cuts through the mid layer","Blasts deep crust in one pass"] },
@@ -542,7 +565,23 @@
     pay:     { title:"Money per Job",  icon:"💵", costs:[100,260,560],
       desc:["+12% cash per job","+24% total","+36% total"] },
     patience:{ title:"Patience",       icon:"⏳", costs:[80,210,460],
-      desc:["+10s on every job","+20s total","+30s total"] }
+      desc:["+10s on every job","+20s total","+30s total"] },
+
+    /* trunks - each one opens the two branches above it */
+    powercore:{ title:"Pump Core",    icon:"💧", costs:[150],
+      desc:["A stronger pump core. Slightly more spray power, and it opens the Pressure and Nozzle branches."] },
+    tankcore: { title:"Plumbing",     icon:"🔩", costs:[150],
+      desc:["Wider plumbing. A little more capacity, and it opens the Capacity and Refill branches."] },
+    bizcore:  { title:"Paperwork",    icon:"💼", costs:[150],
+      desc:["Books in order. A little more pay, and it opens the Money and Patience branches."] },
+
+    /* capstones - each needs BOTH branches of its trunk maxed */
+    surge:    { title:"Surge Lance",  icon:"🌟", costs:[1500],
+      desc:["Both water branches, combined: +0.40 spray power and a wider arc."] },
+    bigrig:   { title:"Big Rig Tank", icon:"🚛", costs:[1500],
+      desc:["Both tank branches, combined: +200 capacity and 30% faster refills."] },
+    empire:   { title:"Franchise",    icon:"👑", costs:[1700],
+      desc:["Both business branches, combined: +20% pay and +12s on every job."] }
   };
   var SHOP = {
     prowasher: { title:"Pro Pressure Washer", icon:"🚿", costs:[900],
@@ -631,21 +670,36 @@
     return Math.round(d.costs[level] * (state.perks.discount ? 0.85 : 1));
   }
 
-  function tankMax(){ return 260 + [0,110,240,400][Math.min(3, lvl("tank"))]; }
-  function sprayPower(){
-    return 0.50 + lvl("pressure")*0.30 + (lvl("prowasher")>0 ? 0.42 : 0);
+  function tankMax(){
+    return 260 + [0,110,240,400][Math.min(3, lvl("tank"))]
+      + (lvl("tankcore")>0 ? 70 : 0)
+      + (lvl("bigrig")>0 ? 200 : 0);
   }
-  function sprayRadius(){ return 34 + lvl("nozzle")*9 + (lvl("prowasher")>0 ? 12 : 0); }
+  function sprayPower(){
+    return 0.50 + lvl("pressure")*0.30
+      + (lvl("prowasher")>0 ? 0.42 : 0)
+      + (lvl("powercore")>0 ? 0.12 : 0)
+      + (lvl("surge")>0 ? 0.40 : 0);
+  }
+  function sprayRadius(){
+    return 34 + lvl("nozzle")*9 + (lvl("prowasher")>0 ? 12 : 0) + (lvl("surge")>0 ? 8 : 0);
+  }
   function waterPerTick(){ return 0.85; }
-  function refillMs(){ return Math.max(550, 1700 - lvl("refill")*400); }
-  function jobMs(){ return 40000 + lvl("patience")*10000; }
+  function refillMs(){
+    var t = Math.max(550, 1700 - lvl("refill")*400);
+    return lvl("bigrig")>0 ? t*0.7 : t;
+  }
+  function jobMs(){ return 40000 + lvl("patience")*10000 + (lvl("empire")>0 ? 12000 : 0); }
   function degreaserMult(){ return [1, 1.18, 1.32][Math.min(2, lvl("degreaser"))]; }
   function foamLevel(){ return lvl("foamcannon"); }
   function tipChance(){ return lvl("tipjar")>0 ? 0.35 : 0; }
   function billEvery(){ return 3 + (lvl("permit")>0 ? 1 : 0); }
   function leaseMult(){ return [1, 0.90, 0.80, 0.70][Math.min(3, lvl("lease"))]; }
   function overheadMult(){ return leaseMult() * (state.perks.lowoverhead ? 0.85 : 1); }
-  function payMult(){ return (1 + lvl("pay")*0.12) * (state.perks.basepay ? 1.2 : 1); }
+  function payMult(){
+    var m = 1 + lvl("pay")*0.12 + (lvl("bizcore")>0 ? 0.06 : 0) + (lvl("empire")>0 ? 0.20 : 0);
+    return m * (state.perks.basepay ? 1.2 : 1);
+  }
   function streakMult(){ return 1 + Math.min(0.30, state.streak*0.012); }
   function regionDef(){ return REGIONS[state.region] || REGIONS.grove; }
 
@@ -2171,7 +2225,9 @@
   /* =========================================================
      MODALS + DIALOGUE
      ========================================================= */
-  function showModal(html, buttons){
+  var modalDismissible = false;
+  function showModal(html, buttons, opts){
+    modalDismissible = !!(opts && opts.dismissible);
     $("modalCard").innerHTML = html + '<div class="col" style="margin-top:14px" id="modalBtns"></div>';
     var wrap = $("modalBtns");
     (buttons||[{label:"OK",cls:"primary"}]).forEach(function(b){
@@ -2183,7 +2239,14 @@
     });
     $("modalWrap").classList.remove("hidden");
   }
-  function hideModal(){ $("modalWrap").classList.add("hidden"); }
+  function hideModal(){ $("modalWrap").classList.add("hidden"); modalDismissible = false; }
+  /* clicking the backdrop or pressing Escape backs out of any optional modal */
+  $("modalWrap").addEventListener("click", function(e){
+    if(e.target === $("modalWrap") && modalDismissible) hideModal();
+  });
+  window.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && modalDismissible && !$("modalWrap").classList.contains("hidden")) hideModal();
+  });
 
   var STORY = {
     intro: [
@@ -2338,42 +2401,101 @@
     });
   }
 
+  var SVGNS = "http://www.w3.org/2000/svg";
+
   function renderTree(){
     var wrap = $("treeWrap");
     Array.prototype.slice.call(wrap.querySelectorAll(".tnode,.branch-label")).forEach(function(el){ el.remove(); });
     var svg = $("treeLines");
     svg.innerHTML = "";
-    var step = 360/BRANCHES.length, radii = [17,30,42];
-    BRANCHES.forEach(function(key, i){
-      var ang = -90 + i*step, def = GEAR[key], prev = {x:50,y:50};
-      for(var l=0; l<def.costs.length; l++){
-        var pos = polar(50,50,radii[l],ang);
-        var owned = lvl(key) > l, isNext = lvl(key) === l;
-        var line = document.createElementNS("http://www.w3.org/2000/svg","line");
-        line.setAttribute("x1",prev.x); line.setAttribute("y1",prev.y);
-        line.setAttribute("x2",pos.x);  line.setAttribute("y2",pos.y);
-        line.setAttribute("stroke", owned ? "#4a3526" : "#d8c9a8");
-        line.setAttribute("stroke-width","2"); line.setAttribute("stroke-linecap","round");
-        if(!owned) line.setAttribute("stroke-dasharray","3,3");
-        svg.appendChild(line);
-        prev = pos;
-        var node = document.createElement("div");
-        node.className = "tnode " + (owned ? "owned" : (isNext ? "next" : "locked"));
-        node.style.left = pos.x+"%"; node.style.top = pos.y+"%";
-        node.textContent = def.icon;
-        var badge = document.createElement("div");
-        badge.className = "lvl"; badge.textContent = (l+1);
-        node.appendChild(badge);
-        (function(k,li,d){ node.onclick = function(){ openGearModal(k,li,d); }; })(key,l,def);
-        wrap.appendChild(node);
+
+    function branchLine(a, b, w, live){
+      var path = document.createElementNS(SVGNS, "path");
+      var mx = (a[0]+b[0])/2 + (b[1]-a[1])*0.12;
+      var my = (a[1]+b[1])/2;
+      path.setAttribute("d", "M"+a[0]+" "+a[1]+" Q"+mx+" "+my+" "+b[0]+" "+b[1]);
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", live ? "#8a5f36" : "#e2d2ae");
+      path.setAttribute("stroke-width", w);
+      path.setAttribute("stroke-linecap", "round");
+      if(!live) path.setAttribute("stroke-dasharray", "2.5,3");
+      svg.appendChild(path);
+    }
+    function addNode(x, y, cls, icon, badge, onClick){
+      var n = document.createElement("div");
+      n.className = "tnode " + cls;
+      n.style.left = x + "%"; n.style.top = y + "%";
+      n.textContent = icon;
+      if(badge){
+        var b = document.createElement("div");
+        b.className = "lvl"; b.textContent = badge;
+        n.appendChild(b);
       }
-      var lp = polar(50,50,radii[radii.length-1]+15,ang);
-      var label = document.createElement("div");
-      label.className = "branch-label";
-      label.style.left = lp.x+"%"; label.style.top = lp.y+"%";
-      label.textContent = def.title;
-      wrap.appendChild(label);
+      if(onClick) n.onclick = onClick;
+      wrap.appendChild(n);
+    }
+    function addLabel(x, y, text){
+      var l = document.createElement("div");
+      l.className = "branch-label";
+      l.style.left = x + "%"; l.style.top = y + "%";
+      l.textContent = text;
+      wrap.appendChild(l);
+    }
+
+    LIMBS.forEach(function(limb){
+      var coreOwned = lvl(limb.core) > 0;
+
+      /* trunk out of the ground */
+      branchLine([50, 103], [limb.x, limb.y], 6.5, coreOwned);
+      addNode(limb.x, limb.y, "core " + (coreOwned ? "owned" : "next"),
+        GEAR[limb.core].icon, null,
+        function(){ openGearModal(limb.core, 0); });
+
+      limb.twigs.forEach(function(twig, ti){
+        var def = GEAR[twig.key], prev = [limb.x, limb.y];
+        twig.pts.forEach(function(pt, i){
+          var owned = lvl(twig.key) > i;
+          branchLine(prev, pt, 4.4 - i*0.85, owned);
+          prev = pt;
+          var cls = owned ? "owned" : ((coreOwned && lvl(twig.key) === i) ? "next" : "locked");
+          (function(k, li){
+            addNode(pt[0], pt[1], cls, def.icon, i+1, function(){ openGearModal(k, li); });
+          })(twig.key, i);
+        });
+        addLabel(twig.pts[0][0], twig.pts[0][1] - (ti === 0 ? 12 : 4), def.title.split(" ")[0]);
+      });
+
+      /* the two branches rejoin at a capstone */
+      var maxed = lvl(limb.twigs[0].key) >= 3 && lvl(limb.twigs[1].key) >= 3;
+      var leafOwned = lvl(limb.leaf.key) > 0;
+      branchLine(limb.twigs[0].pts[2], [limb.leaf.x, limb.leaf.y], 2.4, leafOwned);
+      branchLine(limb.twigs[1].pts[2], [limb.leaf.x, limb.leaf.y], 2.4, leafOwned);
+      addNode(limb.leaf.x, limb.leaf.y,
+        "leafnode " + (leafOwned ? "owned" : (maxed ? "next" : "locked")),
+        GEAR[limb.leaf.key].icon, null,
+        function(){ openGearModal(limb.leaf.key, 0); });
     });
+  }
+
+  /* why a node can't be bought yet, or null if it can */
+  function treeGate(key, level){
+    for(var i=0;i<LIMBS.length;i++){
+      var L = LIMBS[i];
+      if(L.core === key) return null;
+      if(L.leaf.key === key){
+        if(lvl(L.twigs[0].key) >= 3 && lvl(L.twigs[1].key) >= 3) return null;
+        return "Needs " + GEAR[L.twigs[0].key].title + " and " + GEAR[L.twigs[1].key].title +
+               " both at level 3 \u2014 the two branches have to meet.";
+      }
+      for(var t=0;t<L.twigs.length;t++){
+        if(L.twigs[t].key === key){
+          if(lvl(L.core) === 0) return "Install " + GEAR[L.core].title + " on the trunk first.";
+          if(lvl(key) !== level) return "Install level " + level + " of this branch first.";
+          return null;
+        }
+      }
+    }
+    return lvl(key) === level ? null : "Install level " + level + " first.";
   }
 
   function buyGear(key, cost){
@@ -2382,15 +2504,34 @@
     state.gear[key] = (state.gear[key]||0) + 1;
     save(); renderTop(); renderTree(); renderShop();
   }
-  function openGearModal(key, level, def){
-    var owned = lvl(key) > level, isNext = lvl(key) === level;
-    var head = '<div class="big-emoji">'+def.icon+'</div><h2>'+def.title+' — Lv.'+(level+1)+'</h2><p>'+def.desc[level]+'</p>';
-    if(owned) return showModal(head + '<p class="tag" style="margin-top:6px;">Already installed ✓</p>', [{label:"Close",cls:"ghost"}]);
-    if(!isNext) return showModal(head + '<p class="subtle" style="margin-top:6px;">Install level '+level+' first.</p>', [{label:"Close",cls:"ghost"}]);
+
+  function openGearModal(key, level){
+    var def = GEAR[key] || SHOP[key];
+    var multi = def.costs.length > 1;
+    var head = '<div class="big-emoji">'+def.icon+'</div>' +
+               '<h2>'+def.title+(multi ? ' \u2014 Lv.'+(level+1) : '')+'</h2>' +
+               '<p>'+def.desc[level]+'</p>';
+    var closeBtn = { label:"Close", cls:"ghost" };
+
+    if(lvl(key) > level){
+      return showModal(head + '<p class="tag" style="margin-top:6px;">Already installed \u2713</p>',
+        [closeBtn], { dismissible:true });
+    }
+    var gate = treeGate(key, level);
+    if(gate){
+      return showModal(head + '<p class="subtle" style="margin-top:8px;">\ud83d\udd12 ' + gate + '</p>',
+        [closeBtn], { dismissible:true });
+    }
     var cost = costOf(key, level), afford = state.cash >= cost;
-    showModal(head + '<div class="stat-line"><span>Cost</span><span>'+money(cost)+'</span></div>',
-      [{ label: afford ? "Buy for "+money(cost) : "Not enough cash", cls: afford?"primary":"ghost",
-         action: afford ? function(){ buyGear(key,cost); } : null }]);
+    showModal(
+      head + '<div class="stat-line"><span>Cost</span><span>'+money(cost)+'</span></div>' +
+             '<div class="stat-line"><span>You have</span><span>'+money(state.cash)+'</span></div>',
+      [ afford
+          ? { label:"Buy for "+money(cost), cls:"primary", action:function(){ buyGear(key, cost); } }
+          : { label:"Not enough cash", cls:"ghost" },
+        { label:"Not now", cls:"ghost" } ],
+      { dismissible:true }
+    );
   }
 
   function renderShop(){

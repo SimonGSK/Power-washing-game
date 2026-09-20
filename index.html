@@ -771,7 +771,8 @@ body{
     grease: { name:"Grease & Grime",    layers:4, pay:1.36, shades:["#7f776a","#524c43","#2d2a24"], splash:"#d2ccbe" },
     soot:   { name:"City Soot",         layers:4, pay:1.42, shades:["#8c8c93","#5d5d65","#34343b"], splash:"#d6d6de" },
     salt:   { name:"Salt & Barnacles",  layers:5, pay:1.58, shades:["#c0cdc5","#93a79d","#657a70"], splash:"#eaf3ed" },
-    rust:   { name:"Rust & Weed",       layers:5, pay:1.62, shades:["#c98a5a","#9a5a2e","#6a3a18"], splash:"#e9c9a8" }
+    rust:   { name:"Rust & Weed",       layers:5, pay:1.62, shades:["#c98a5a","#9a5a2e","#6a3a18"], splash:"#e9c9a8" },
+    graffiti:{ name:"Graffiti",         layers:3, pay:1.50, shades:["#d43d6a","#2f7fd8","#f2c12e"], splash:"#ffffff", graffiti:true }
   };
 
   var WEATHERS = [
@@ -871,9 +872,9 @@ body{
   };
   /* Crew work their own jobs (income per job you finish) and draw wages on every overhead bill. */
   var CREW = [
-    { id:"jordan", name:"Jordan", icon:"p_jordan", hire:520,  rate:30,  ups:[420,1000,2400],   blurb:"Your cousin. Shows up. Mostly." },
-    { id:"mimi",   name:"Mimi",   icon:"p_mimi", hire:2100, rate:85,  ups:[1400,3200,7000],  blurb:"Fast, thorough, headphones always in." },
-    { id:"rex",    name:"Rex",    icon:"p_rex", hire:6400, rate:230, ups:[4200,9500,19000], blurb:"Ex-ferry mechanic. Fears no barnacle." }
+    { id:"jordan", name:"Jordan", icon:"p_jordan", hire:320,  rate:45,  ups:[260,600,1400],    blurb:"Your cousin. Shows up. Mostly." },
+    { id:"mimi",   name:"Mimi",   icon:"p_mimi", hire:1400, rate:120, ups:[900,2000,4500],   blurb:"Fast, thorough, headphones always in." },
+    { id:"rex",    name:"Rex",    icon:"p_rex", hire:4200, rate:300, ups:[2800,6000,12000], blurb:"Ex-ferry mechanic. Fears no barnacle." }
   ];
   /* Your son: no income, but he stands next to you on every job with a water gun. */
   var SON = { id:"son", name:"Ollie (your son)", icon:"p_son", hire:150, wage:10,
@@ -1613,6 +1614,7 @@ body{
     R(fx0, 0, 1, CH, P.c4); R(fx0+fw-1, 0, 1, CH, P.c1);
     /* the cradle: cables from the roof, a platform, a bucket, a cone */
     var py = a.y + a.h + 12;
+    var a2 = { x: 60, y: 0, w: 120, h: 0 }; a = { x: 60, y: a.y + a.h - 82, w: 120, h: 82 };  /* the cradle keeps its old span under the wider area */
     R(a.x+12, 0, 1, py, P.ink); R(a.x+a.w-12, 0, 1, py, P.ink); R(a.x+13, 0, 1, py, P.c1); R(a.x+a.w-11, 0, 1, py, P.c1);
     box(a.x+2, py, a.w-4, 5, P.sun, P.sunHi, P.sunLo);
     for(var st=a.x+6; st<a.x+a.w-6; st+=8) R(st, py+1, 4, 1, P.ink);
@@ -1759,18 +1761,38 @@ body{
      JOB DEFINITIONS (scene pixels)
      ========================================================= */
   var JOBS = {
-    driveway:  { name:"Driveway",        region:"grove",  scene:sceneDriveway,   area:{x:75,y:50,w:98,h:87},  hero:{x:44,y:116}, son:{x:22,y:112}, hose:{x:-8,y:124} },
-    patio:     { name:"Brick Patio",     region:"grove",  scene:scenePatio,      area:{x:75,y:52,w:94,h:82},  hero:{x:40,y:120}, son:{x:64,y:102}, hose:{x:-8,y:142} },
-    deck:      { name:"Back Deck",       region:"grove",  scene:sceneDeck,       area:{x:72,y:50,w:100,h:76}, hero:{x:38,y:100}, son:{x:60,y:88},  hose:{x:-8,y:130} },
-    fence:     { name:"Garden Fence",    region:"grove",  scene:sceneFence,      area:{x:30,y:54,w:182,h:50}, hero:{x:48,y:132}, son:{x:76,y:132}, hose:{x:-8,y:148}, vertical:true },
-    windows:   { name:"Tower Windows",   region:"city",   scene:sceneWindows,    area:{x:60,y:28,w:120,h:82}, hero:{x:75,y:120}, son:{x:104,y:120}, hose:{x:62,y:132}, vertical:true,
-                 over:function(){ var a=this.area, py=a.y+a.h+12; FX(a.x+12,0,1,py,P.ink); FX(a.x+13,0,1,py,P.c1); FX(a.x+a.w-12,0,1,py,P.ink); FX(a.x+a.w-11,0,1,py,P.c1); } },
-    storefront:{ name:"Storefront Glass",region:"city",   scene:sceneStorefront, area:{x:43,y:46,w:120,h:62}, hero:{x:198,y:130}, son:{x:170,y:126}, hose:{x:248,y:140}, vertical:true },
-    garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:59,y:30,w:118,h:76}, hero:{x:46,y:138}, son:{x:74,y:132}, hose:{x:-8,y:146}, vertical:true },
-    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:59,y:52,w:128,h:46}, hero:{x:36,y:112}, son:{x:66,y:108}, hose:{x:-8,y:122}, mask:maskHull, vertical:true, ragged:false, grimes:["moss","rust","rust","salt","rust"] },
-    dock:      { name:"Dock Planks",     region:"harbor", scene:sceneDock,       area:{x:75,y:54,w:90,h:78},  hero:{x:40,y:112}, son:{x:60,y:110}, hose:{x:-8,y:118} },
-    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:60,y:40,w:120,h:66}, hero:{x:38,y:118}, son:{x:64,y:112}, hose:{x:-8,y:130}, vertical:true }
+    driveway:  { name:"Driveway",        region:"grove",  scene:sceneDriveway,   area:{x:75,y:50,w:98,h:87},  hero:{x:44,y:116}, son:{x:22,y:112}, hose:{x:-8,y:124},
+                 grimes:["dust","mud","mud","moss"], patchChance:0.35,
+                 props:function(a){ ball(a.x+18, a.y+a.h-12); cone(a.x+a.w-14, a.y+a.h-4); } },
+    patio:     { name:"Brick Patio",     region:"grove",  scene:scenePatio,      area:{x:75,y:52,w:94,h:82},  hero:{x:40,y:120}, son:{x:64,y:102}, hose:{x:-8,y:142},
+                 grimes:["moss","mud","moss","mud"], patchChance:0.35,
+                 props:function(a){ pot(a.x+12, a.y+a.h-8); cafeChair(a.x+a.w-16, a.y+a.h-4, true); } },
+    deck:      { name:"Back Deck",       region:"grove",  scene:sceneDeck,       area:{x:72,y:50,w:100,h:76}, hero:{x:38,y:100}, son:{x:60,y:88},  hose:{x:-8,y:130},
+                 grimes:["moss","moss","mud","moss"], patchChance:0.35,
+                 props:function(a){ pot(a.x+12, a.y+a.h-8); grill(a.x+a.w-16, a.y+a.h-10); } },
+    fence:     { name:"Garden Fence",    region:"grove",  scene:sceneFence,      area:{x:30,y:54,w:182,h:50}, hero:{x:48,y:132}, son:{x:76,y:132}, hose:{x:-8,y:148}, vertical:true,
+                 grimes:["dust","moss","moss","mud"],
+                 props:function(a){ bush(a.x+40, a.y+a.h+2, 0.8); cat(a.x+120, a.y-1); } },
+    windows:   { name:"Tower Windows",   region:"city",   scene:sceneWindows,    area:{x:38,y:2,w:164,h:112}, hero:{x:75,y:124}, son:{x:104,y:124}, hose:{x:62,y:136}, vertical:true, patches:6,
+                 grimes:["dust","soot","soot","grease"],
+                 over:function(){ var cx0=60, cw=120, py=126; FX(cx0+12,0,1,py,P.ink); FX(cx0+13,0,1,py,P.c1); FX(cx0+cw-12,0,1,py,P.ink); FX(cx0+cw-11,0,1,py,P.c1); } },
+    storefront:{ name:"Storefront Glass",region:"city",   scene:sceneStorefront, area:{x:43,y:46,w:120,h:62}, hero:{x:198,y:130}, son:{x:170,y:126}, hose:{x:248,y:140}, vertical:true,
+                 grimes:["soot","grease","soot","soot"], graffitiChance:0.4,
+                 props:function(a){ bike(a.x+34, a.y+a.h+6); } },
+    garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:59,y:30,w:118,h:76}, hero:{x:46,y:138}, son:{x:74,y:132}, hose:{x:-8,y:146}, vertical:true, patchChance:0.3,
+                 grimes:["grease","soot","grease","soot"], graffitiChance:0.45,
+                 props:function(a){ cone(a.x+18, a.y+a.h+2); bin(a.x+a.w-16, a.y+a.h+2); } },
+    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:59,y:52,w:128,h:46}, hero:{x:36,y:112}, son:{x:66,y:108}, hose:{x:-8,y:122}, mask:maskHull, vertical:true, ragged:false,
+                 grimes:["moss","rust","rust","salt","rust"],
+                 props:function(a){ ladder(a.x+a.w-34, a.y+6, 32); } },
+    dock:      { name:"Dock Planks",     region:"harbor", scene:sceneDock,       area:{x:75,y:54,w:90,h:78},  hero:{x:40,y:112}, son:{x:60,y:110}, hose:{x:-8,y:118}, patchChance:0.3,
+                 grimes:["moss","salt","moss","salt"],
+                 props:function(a){ ropeCoil(a.x+16, a.y+a.h-8); lobsterTrap(a.x+a.w-18, a.y+12); } },
+    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:60,y:40,w:120,h:66}, hero:{x:38,y:118}, son:{x:64,y:112}, hose:{x:-8,y:130}, vertical:true, patchChance:0.3,
+                 grimes:["salt","grease","salt","salt"],
+                 props:function(a){ crate(a.x+16, a.y+a.h-6, 9); barrel(a.x+a.w-12, a.y+a.h-5); } }
   };
+
 
 
   /* =========================================================
@@ -1807,6 +1829,13 @@ body{
     var layers = type.layers;
     var margin = def.ragged === false ? 0 : Math.max(3, Math.round(Math.min(gCols, gRows) * 0.16));
     grimeTotal = 0;
+    cellColor = null;
+    if(type.graffiti){ buildGraffiti(rng); return; }
+    /* scattered patches instead of one field: always on the tower, sometimes elsewhere */
+    var nPatches = def.patches || (def.patchChance && rng() < def.patchChance ? 3 + Math.floor(rng()*3) : 0);
+    var patches = [];
+    for(var pi=0; pi<nPatches; pi++) patches.push({ x: 0.1 + rng()*0.8, y: 0.1 + rng()*0.8, r: 0.12 + rng()*0.16, sx: 0.7 + rng()*0.8 });
+    var patchN = nPatches ? makeNoise(gCols,gRows, 4, rng) : null;
     for(var cy=0; cy<gRows; cy++){
       for(var cx=0; cx<gCols; cx++){
         var i = cy*gCols+cx;
@@ -1815,6 +1844,13 @@ body{
         if(def.mask && !def.mask(px,py,a)){ grime[i] = 0; continue; }
         var v = n1[i]*0.74 + n2[i]*0.26;
         var hp = 0.70 + v * (layers - 0.30);
+        if(nPatches){
+          var inside = 0;
+          for(var q=0;q<patches.length;q++){ var pq=patches[q]; var dd = Math.hypot((cx/gCols - pq.x)*pq.sx, (cy/gRows - pq.y)/pq.sx); inside = Math.max(inside, 1 - dd/pq.r); }
+          inside += (patchN[i]-0.5)*0.5;
+          if(inside < 0.05){ grime[i] = 0; continue; }
+          hp *= Math.min(1, inside + 0.4);
+        }
         /* ragged edge: near the border the dirt thins out and breaks up instead of stopping on a line */
         if(margin){
           var ed = Math.min(cx, cy, gCols-1-cx, gRows-1-cy) / margin;
@@ -1838,6 +1874,51 @@ body{
     for(var k=0;k<grime.length;k++) if(grime[k] > 0.03) cellsTotal++;
   }
 
+  var cellColor = null;
+  var GRAFFITI_WORDS = ["WASH","YO","SAL","PWC","BOO","ZAP","WOW","ACE","MAX","RAD","FLY","HI","SUDS","NOPE"];
+  var GRAFFITI_INK = ["#d43d6a","#2f7fd8","#f2c12e","#3fbf6b","#f26d3d","#ffffff","#8f5fb5"];
+  function buildGraffiti(rng){
+    cellColor = new Array(gCols*gRows);
+    var layers = job.grime.layers;
+    function setCell(cx,cy,col,hp){ if(cx<0||cy<0||cx>=gCols||cy>=gRows) return; var i=cy*gCols+cx; if(grime[i]>0) return; grime[i]=hp; cellColor[i]=col; grimeTotal+=hp; }
+    function tag(word, x0, y0, s, col, shadow){
+      /* letters from the 3×5 font, s cells per pixel, with a one-cell drop shadow */
+      for(var li=0; li<word.length; li++){
+        var g = FONT[word[li]]; if(!g) continue;
+        for(var k=0;k<15;k++){ if(g[k]!=="1") continue; var gx0 = x0 + li*4*s + (k%3)*s, gy0 = y0 + Math.floor(k/3)*s;
+          for(var dy=0;dy<s;dy++) for(var dx=0;dx<s;dx++){ setCell(gx0+dx+1, gy0+dy+1, shadow, layers-1); }
+        }
+      }
+      for(var li2=0; li2<word.length; li2++){
+        var g2 = FONT[word[li2]]; if(!g2) continue;
+        for(var k2=0;k2<15;k2++){ if(g2[k2]!=="1") continue; var gx1 = x0 + li2*4*s + (k2%3)*s, gy1 = y0 + Math.floor(k2/3)*s;
+          for(var dy2=0;dy2<s;dy2++) for(var dx2=0;dx2<s;dx2++){ var i2=(gy1+dy2)*gCols+(gx1+dx2); if(gx1+dx2>=0&&gx1+dx2<gCols&&gy1+dy2>=0&&gy1+dy2<gRows){ if(grime[i2]>0){ grimeTotal -= grime[i2]; grime[i2]=0; } setCell(gx1+dx2, gy1+dy2, col, layers); } }
+        }
+      }
+    }
+    function ring(cx,cy,r,col){ for(var a=0;a<64;a++){ var t=a/64*Math.PI*2; setCell(Math.round(cx+Math.cos(t)*r), Math.round(cy+Math.sin(t)*r*0.8), col, layers-1); setCell(Math.round(cx+Math.cos(t)*r)+1, Math.round(cy+Math.sin(t)*r*0.8), col, layers-1); } }
+    function stroke(x0,y0,x1,y1,col){ var n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0)); for(var i=0;i<=n;i++){ var x=Math.round(x0+(x1-x0)*i/n), y=Math.round(y0+(y1-y0)*i/n); setCell(x,y,col,layers-1); setCell(x+1,y,col,layers-1); setCell(x,y+1,col,layers-1); } }
+    var nTags = 2 + Math.floor(rng()*2);
+    for(var tI=0; tI<nTags; tI++){
+      var word = GRAFFITI_WORDS[Math.floor(rng()*GRAFFITI_WORDS.length)];
+      var s = 3 + Math.floor(rng()*2);
+      var w = word.length*4*s, h = 5*s;
+      if(w > gCols-4) { s = 3; w = word.length*4*s; h = 5*s; }
+      var x0 = 2 + Math.floor(rng()*Math.max(1, gCols-w-4)), y0 = 2 + Math.floor(rng()*Math.max(1, gRows-h-4));
+      var col = GRAFFITI_INK[Math.floor(rng()*GRAFFITI_INK.length)];
+      tag(word, x0, y0, s, col, mix(col, "#000000", 0.55));
+    }
+    var doodles = 1 + Math.floor(rng()*3);
+    for(var dI=0; dI<doodles; dI++){
+      var col2 = GRAFFITI_INK[Math.floor(rng()*GRAFFITI_INK.length)];
+      if(rng() < 0.5) ring(4+Math.floor(rng()*(gCols-8)), 4+Math.floor(rng()*(gRows-8)), 3+Math.floor(rng()*5), col2);
+      else { var sx=Math.floor(rng()*gCols), sy=Math.floor(rng()*gRows); stroke(sx, sy, clamp(sx+Math.floor((rng()-0.5)*30),0,gCols-1), clamp(sy+Math.floor((rng()-0.5)*20),0,gRows-1), col2); }
+    }
+    grimeLeft = grimeTotal;
+    cellsTotal = 0; cellsClear = 0;
+    for(var k3=0;k3<grime.length;k3++) if(grime[k3] > 0.03) cellsTotal++;
+  }
+
   /* a cell is a flat 2×2 square in one of the three layer shades;
      the last of the top coat erodes to a checker before it goes */
   function paintCell(cx,cy){
@@ -1847,6 +1928,16 @@ body{
     if(w<=0||h<=0) return;
     gx.clearRect(px,py,w,h);
     if(hp <= 0.03) return;
+    if(cellColor){
+      /* graffiti fades: the paint lightens and breaks up as it comes off */
+      var f = hp / job.grime.layers, gcol = mix(cellColor[i], "#ffffff", (1-f)*0.55);
+      gx.fillStyle = gcol;
+      if(f > 0.75){ gx.fillRect(px, py, w, h); }
+      else if(f > 0.5){ gx.fillRect(px, py, w, 1); gx.fillRect(px, py+1, 1, 1); }
+      else if(f > 0.25){ gx.fillRect(px, py, 1, 1); gx.fillRect(px+1, py+1, 1, 1); }
+      else { gx.fillRect(px, py, 1, 1); }
+      return;
+    }
     var shades = job.shades;
     var idx = Math.min(4, Math.floor(hp)), f = hp - Math.floor(hp);
     var ca = shades[idx], cb = shades[Math.min(4, idx+1)];
@@ -2098,6 +2189,7 @@ body{
   }
   function pickGrime(){
     var r = regionDef(), def = pickJobDef();
+    if(def.graffitiChance && Math.random() < def.graffitiChance) return GRIME_TYPES.graffiti;
     var list = def.grimes || r.grimes;
     var idx = Math.min(list.length-1, rigTier() + (state.jobsCompleted % 3 === 2 ? 1 : 0));
     return GRIME_TYPES[list[Math.min(list.length-1, idx)]];
@@ -2110,7 +2202,7 @@ body{
     var seed = (state.jobsCompleted+1) * 2654435761 % 4294967296;
     var rng = makeRng(seed);
 
-    var deep1 = mix(type.shades[2], PAL_FALLBACK.ink, 0.28), deep2 = mix(type.shades[2], PAL_FALLBACK.ink, 0.5);
+    var deep1 = mix(type.shades[2], PAL_FALLBACK.ink, 0.14), deep2 = mix(type.shades[2], PAL_FALLBACK.ink, 0.28);
     job = {
       def: def, area: def.area, grime: type, weather: weather, shades: type.shades.concat([deep1, deep2]), tough: grimeToughness(),
       duration: jobMs(), start: 0, tank: tankMax(), ended: false, started: false,
@@ -2216,6 +2308,7 @@ body{
 
     fx.clearRect(0,0,CW,CH);
     if(job.def.over) job.def.over();
+    if(job.def.props){ var keepBx = bx; bx = fx; job.def.props(job.area); bx = keepBx; }
     drawParticles();
     drawSon();
     var tip = drawWasher();
@@ -2270,7 +2363,7 @@ body{
   function setClean(frac){
     var pct = clamp(frac*100, 0, 100);
     $("cleanFill").style.width = pct + "%";
-    $("cleanLabel").textContent = Math.round(pct) + "%";
+    $("cleanLabel").textContent = (pct >= 99.95 ? 100 : Math.floor(pct)) + "%";
   }
   function setTimer(ms){
     var pct = clamp(ms / job.duration * 100, 0, 100);
@@ -2330,7 +2423,7 @@ body{
      ========================================================= */
   /* stars follow how clean you left it: finished = 3, 85%+ = 2, 60%+ = 1 */
   function starsFor(mode, elapsed, pct){
-    if(mode === "complete") return 3;
+    if(mode === "complete" || pct >= 100) return 3;
     if(pct >= 85) return 2;
     if(pct >= 60) return 1;
     return 0;
@@ -2360,7 +2453,7 @@ body{
 
     var elapsed = now() - job.start;
     var c = cleanliness();
-    var pct = Math.round(c*100);
+    var pct = (mode === "complete" || c >= 0.9995) ? 100 : Math.floor(c*100);
     var stars = starsFor(mode, elapsed, pct);
 
     var base = 140 + state.jobsCompleted*6;
@@ -2713,6 +2806,7 @@ body{
   var SCREENS = ["screen-title","screen-home","screen-map","screen-job","screen-upgrades","screen-shop","screen-crew","screen-legacy","screen-stats"];
   function showScreen(id){
     if(id !== "screen-job"){ stopJobLoop(); if(job && !job.ended){ job.ended = true; job = null; } }
+    if(id !== "screen-legacy" && state.legacyAvailable && $("screen-legacy") && !$("screen-legacy").classList.contains("hidden")){ state.legacyAvailable = false; save(); }
     SCREENS.forEach(function(s){ $(s).classList.toggle("hidden", s !== id); });
     document.body.classList.toggle("at-home", id === "screen-home");
     $("chrome").classList.toggle("hidden", id === "screen-title");
@@ -2769,8 +2863,7 @@ body{
       mRow(ic("hourglass")+"Patience", Math.round(jobMs()/1000)+" s"),
       mRow(ic("coin")+"Pay bonus", "+"+Math.round((payMult()-1)*100)+"%"),
       mRow(ic("flask")+"Degreaser", "×"+degreaserMult().toFixed(2)),
-      mRow(ic("hardhat")+"Crew per job", money(crewIncome())),
-      mRow('<span title="How stubborn the dirt is on this route right now — it grows with every job you finish and with the route, and the rig has to keep up.">'+ic("sparkle")+"Dirt toughness</span>", "×"+progressToughness().toFixed(2), progressToughness() > 1.5 ? "pw-stats__val--down" : "")
+      mRow(ic("hardhat")+"Crew per job", money(crewIncome()))
     ]);
     $("regionName").textContent = regionDef().name;
 
@@ -3130,7 +3223,10 @@ body{
   }
 
   function renderLegacy(){
-    var can = true;
+    var can = !!state.legacyAvailable;
+    $("legacyStatus").textContent = can
+      ? "Spend your stars now — this window closes when you leave this screen."
+      : "Stars are locked until your next repossession. When you lose the rig, this is what you keep.";
     var grid = $("perkGrid");
     grid.innerHTML = "";
     Object.keys(PERKS).forEach(function(k){
@@ -3143,10 +3239,10 @@ body{
         foot.innerHTML = '<span class="pw-label pw-tag pw-tag--rep">'+ic("star")+def.cost+'</span>';
         var b = document.createElement("button");
         b.className = "pw-btn pw-btn--small";
-        b.textContent = "Take it";
-        b.disabled = state.rep < def.cost;
+        b.textContent = can ? "Take it" : "Locked";
+        b.disabled = !can || state.rep < def.cost;
         b.onclick = function(){
-          if(state.rep < def.cost) return;
+          if(!state.legacyAvailable || state.rep < def.cost) return;
           state.rep -= def.cost; state.perks[k] = true;
           save(); renderTop(); renderLegacy();
         };

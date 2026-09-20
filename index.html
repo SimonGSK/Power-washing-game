@@ -572,7 +572,7 @@ body{
   <div id="screen-job" class="screen hidden">
     <div class="pw-screen-head">
       <div><h2 class="pw-title" id="jobName">Driveway</h2><p class="pw-small" id="jobSub">Everyday Dirt · Maple Grove</p></div>
-      <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnQuitJob">Pack up</button>
+      <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnQuitJob">Call it done</button>
     </div>
     <div class="pw-meter">
       <div class="pw-meter__row"><span><span class="ico" data-ic="clock"></span>Customer's patience</span><span class="pw-label" id="timeLabel">0:40</span></div>
@@ -700,6 +700,7 @@ body{
       perks: {},
       crew: {},
       son: 0,
+      recentPays: [],
       stats: { bestClean:0, longestStreak:0, repoCount:0, crewEarnings:0, grove:0, city:0, harbor:0 },
       story: {}
     };
@@ -718,6 +719,7 @@ body{
       parsed.stats  = Object.assign(d.stats,  parsed.stats  || {});
       parsed.crew   = Object.assign(d.crew,   parsed.crew   || {});
       parsed.story  = Object.assign(d.story,  parsed.story  || {});
+      if(!Array.isArray(parsed.recentPays)) parsed.recentPays = [];
       return Object.assign(d, parsed);
     }catch(e){ return defaultState(); }
   }
@@ -768,7 +770,8 @@ body{
     moss:   { name:"Moss & Algae",      layers:4, pay:1.24, shades:["#93b166","#61883b","#3d6425"], splash:"#c9e4a6" },
     grease: { name:"Grease & Grime",    layers:4, pay:1.36, shades:["#7f776a","#524c43","#2d2a24"], splash:"#d2ccbe" },
     soot:   { name:"City Soot",         layers:4, pay:1.42, shades:["#8c8c93","#5d5d65","#34343b"], splash:"#d6d6de" },
-    salt:   { name:"Salt & Barnacles",  layers:5, pay:1.58, shades:["#c0cdc5","#93a79d","#657a70"], splash:"#eaf3ed" }
+    salt:   { name:"Salt & Barnacles",  layers:5, pay:1.58, shades:["#c0cdc5","#93a79d","#657a70"], splash:"#eaf3ed" },
+    rust:   { name:"Rust & Weed",       layers:5, pay:1.62, shades:["#c98a5a","#9a5a2e","#6a3a18"], splash:"#e9c9a8" }
   };
 
   var WEATHERS = [
@@ -1000,11 +1003,20 @@ body{
   function cleanPayFactor(c){ return c < 0.30 ? 0 : Math.pow((c-0.30)/0.70, 1.15); }
   function regionDef(){ return REGIONS[state.region] || REGIONS.grove; }
 
-  /* the bill follows the route you work (a downtown lease costs more) and creeps 4% a bill */
+  /* The bill scales with the business: 60% of what your last six jobs paid on average, times the
+     jobs between bills, with a floor per route. So it's the same squeeze for everyone — the
+     suspense is whether you spent your reserve on upgrades. (Tuned with the simulator: bills
+     take ~42% of income; a careful spender still gets tight now and then.) */
   var REGION_OVERHEAD = { grove:95, city:190, harbor:340 };
+  var BILL_SHARE = 0.60;
+  function recentPayAvg(){
+    var r = state.recentPays.slice(-6);
+    if(!r.length) return 0;
+    return r.reduce(function(a,b){ return a+b; }, 0) / r.length;
+  }
   function overheadBase(n){
     if(state.ownedOutright) return 25;
-    var amt = (REGION_OVERHEAD[state.region] || 95) * Math.pow(1.04, Math.min(n, 25)-1);
+    var amt = Math.max(REGION_OVERHEAD[state.region] || 95, BILL_SHARE * recentPayAvg() * billEvery());
     return Math.round(amt * overheadMult());
   }
   function overheadAmount(n){ return overheadBase(n) + crewSalary(); }
@@ -1128,7 +1140,10 @@ body{
      emitted as run-length SVG rects. Bought gear shows up on it. */
   function truckSVG(){
     var t = rigTier(), p = TIER_PAINT[t];
-    var W = 104, H = 44, G = [];
+    var tw = 30 + lvl("tank")*6 + (lvl("bigrig")?6:0);
+    var hasPro = lvl("prowasher")>0, hasTip = lvl("tipjar")>0, hasFoam = lvl("foamcannon")>0, hasDeg = lvl("degreaser")>0, hasPermit = lvl("permit")>0;
+    var Gy = 37, bedX = 8, tankX = 10, unitX = tankX + tw + 3, cabX = unitX + 15, front = cabX + 34;
+    var W = front + 8, H = 44, G = [];
     for(var y=0;y<H;y++){ G.push(new Array(W).fill(null)); }
     function px(x,y,w,h,c){ for(var yy=Math.round(y); yy<Math.round(y+h); yy++) for(var xx=Math.round(x); xx<Math.round(x+w); xx++) if(yy>=0&&yy<H&&xx>=0&&xx<W) G[yy][xx]=c; }
     function get(x,y){ return (y>=0&&y<H&&x>=0&&x<W) ? G[y][x] : null; }
@@ -1138,21 +1153,20 @@ body{
     }
     function disc(cx,cy,r,c){ for(var y=-r;y<=r;y++) for(var x=-r;x<=r;x++) if(x*x+y*y <= r*r+r*0.5) px(cx+x,cy+y,1,1,c); }
     function text(x,y,str,c){ for(var i=0;i<str.length;i++){ var g=FONT[str[i]]; if(!g) continue; for(var k=0;k<15;k++) if(g[k]==="1") px(x+i*4+(k%3), y+Math.floor(k/3), 1, 1, c); } }
-    var tw = 30 + lvl("tank")*4 + (lvl("bigrig")?4:0);
-    var hasPro = lvl("prowasher")>0, hasTip = lvl("tipjar")>0, hasFoam = lvl("foamcannon")>0, hasDeg = lvl("degreaser")>0, hasPermit = lvl("permit")>0;
-    var Gy = 37, bedX = 8, tankX = 10, unitX = tankX + tw + 3, cabX = unitX + 15, front = cabX + 34;
     var hi = mix(p.body, "#ffffff", 0.45), lo = mix(p.body, "#000000", 0.25);
     /* chassis + bed */
     px(bedX, Gy-8, cabX-bedX+2, 4, P.p1); px(bedX, Gy-8, cabX-bedX+2, 1, P.p2);
     px(bedX, Gy-16, cabX-bedX, 8, p.body); px(bedX, Gy-16, cabX-bedX, 1, hi); px(bedX, Gy-9, cabX-bedX, 1, lo);
     px(bedX+3, Gy-13, cabX-bedX-6, 1, p.trim);
     /* tank: a cylinder with rounded end caps, straps, a gauge and a filler */
-    var ty = Gy-30, th = 14;
-    for(var r=0;r<th;r++){ var d=Math.abs(r-(th-1)/2), inset=Math.round(7-Math.sqrt(Math.max(0,49-d*d))); var c = r<2 ? hi : (r<4 ? mix(p.body,"#ffffff",0.2) : (r>th-3 ? lo : p.body)); px(tankX+inset, ty+r, tw-inset*2, 1, c); }
+    var th = 14 + lvl("tank")*2 + (lvl("bigrig")?3:0), ty = Gy-16-th;
+    var rad = th/2;
+    for(var r=0;r<th;r++){ var d=Math.abs(r-(th-1)/2), inset=Math.round(rad-Math.sqrt(Math.max(0,rad*rad-d*d))); var c = r<2 ? hi : (r<4 ? mix(p.body,"#ffffff",0.2) : (r>th-3 ? lo : p.body)); px(tankX+inset, ty+r, tw-inset*2, 1, c); }
     [0.24, 0.76].forEach(function(f){ var sx=tankX+Math.round(tw*f); px(sx, ty, 2, th, p.trim); px(sx, ty+th-1, 2, 2, P.stoneLo); });
-    px(tankX+Math.round(tw*0.44), ty+4, 5, 7, P.ink); px(tankX+Math.round(tw*0.44)+1, ty+5, 3, 5, P.waterHi); px(tankX+Math.round(tw*0.44)+1, ty+8, 3, 2, P.water);
+    px(tankX+Math.round(tw*0.44), ty+4, 5, th-8, P.ink); px(tankX+Math.round(tw*0.44)+1, ty+5, 3, th-10, P.waterHi); px(tankX+Math.round(tw*0.44)+1, ty+5+Math.round((th-10)*0.45), 3, Math.round((th-10)*0.55), P.water);
     px(tankX+Math.round(tw*0.10), ty-3, 5, 3, P.stone); px(tankX+Math.round(tw*0.10), ty-3, 5, 1, P.c4);
-    text(tankX+Math.round(tw*0.55), ty+5, "H2O", "#ffffff");
+    text(tankX+Math.round(tw*0.55), ty+Math.round(th/2)-2, "H2O", "#ffffff");
+    for(var lv=0; lv<lvl("tank"); lv++) px(tankX+Math.round(tw*0.55)+lv*3, ty+th-4, 2, 2, P.sunHi);
     if(hasTip){ px(tankX+tw-9, ty-5, 5, 5, P.sun); px(tankX+tw-9, ty-5, 5, 1, P.sunHi); px(tankX+tw-8, ty-7, 3, 2, P.wood); }
     if(hasFoam){ px(tankX-3, ty+3, 4, 4, P.stoneLo); px(tankX-5, ty+4, 3, 2, P.stone); px(tankX-6, ty+4, 1, 2, "#ffffff"); }
     /* pressure washer unit with a pump, hose reel on top */
@@ -1187,7 +1201,8 @@ body{
     /* emit run-length rects */
     var out = [];
     for(var y=0;y<H;y++){ var x=0; while(x<W){ var c=G[y][x]; if(!c){ x++; continue; } var x0=x; while(x<W && G[y][x]===c) x++; out.push('<rect x="'+x0+'" y="'+y+'" width="'+(x-x0)+'" height="1" fill="'+c+'"/>'); } }
-    return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">' + out.join('') + '</svg>';
+    var VW = 8 + 10 + (30+18+6) + 3 + 15 + 34 + 8;   /* the longest possible rig */
+    return '<svg viewBox="0 0 '+VW+' '+H+'" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">' + out.join('') + '</svg>';
   }
 
   /* =========================================================
@@ -1337,9 +1352,19 @@ body{
   }
   function doorway(x,y,w,h,col){
     col = col||P.p2;
-    box(x,y,w,h,col,mix(col,"#ffffff",0.3),mix(col,"#000000",0.3));
-    R(x+2,y+2,w-4,Math.round(h*0.4),mix(col,"#000000",0.15)); R(x+w-3,y+Math.round(h*0.55),2,2,P.sun);
-    R(x-2,y+h+1,w+4,2,P.c3); R(x-2,y+h+3,w+4,1,P.c1);              /* step */
+    var dark = mix(col,"#000000",0.28), light = mix(col,"#ffffff",0.3);
+    R(x-2,y-2,w+4,h+3,P.parchLo); R(x-3,y-3,w+6,1,P.ink); R(x-3,y-3,1,h+4,P.ink); R(x+w+2,y-3,1,h+4,P.ink);   /* frame */
+    box(x,y,w,h,col,light,dark);
+    R(x+2,y+2,w-4,3,P.waterHi); R(x+2,y+2,w-4,1,"#ffffff"); R(x+Math.floor(w/2),y+2,1,3,P.ink);                /* fanlight */
+    R(x+2,y+7,Math.floor(w/2)-3,Math.round(h*0.32),dark); R(x+Math.floor(w/2)+1,y+7,w-Math.floor(w/2)-3,Math.round(h*0.32),dark);   /* upper panels */
+    R(x+3,y+8,Math.floor(w/2)-5,1,light); R(x+Math.floor(w/2)+2,y+8,w-Math.floor(w/2)-5,1,light);
+    var py0 = y+9+Math.round(h*0.32);
+    R(x+2,py0,Math.floor(w/2)-3,h-(py0-y)-5,dark); R(x+Math.floor(w/2)+1,py0,w-Math.floor(w/2)-3,h-(py0-y)-5,dark);          /* lower panels */
+    R(x+w-4,y+Math.round(h*0.52),2,2,P.sun); R(x+w-4,y+Math.round(h*0.52),1,1,P.sunHi);                                          /* knob */
+    R(x+1,y+h-3,w-2,2,P.stone); R(x+1,y+h-3,w-2,1,P.c4);                                                                          /* kick plate */
+    R(x-2,y+h+1,w+4,2,P.c3); R(x-2,y+h+3,w+4,1,P.c1); R(x+2,y+h+1,w-4,1,P.coral);                                                  /* step + mat */
+    R(x+w+4,y+3,4,3,P.parchHi); R(x+w+4,y+3,4,1,P.ink); R(x+w+5,y+4,1,1,P.ink); R(x+w+7,y+4,1,1,P.ink);                            /* number plate */
+    porchLight(x-6, y-1);
   }
   function glassDoor(x,y,w,h,frame){
     frame = frame||"#4d7f6f";
@@ -1472,6 +1497,13 @@ body{
   /* map-scale props: a house is ~22 px on the map, so a car is 10 and a tree 12 */
   function miniCar(x,y,col){ R(x-5,y-2,10,3,col); R(x-3,y-4,6,2,col); R(x-2,y-4,2,2,P.waterHi); R(x+1,y-4,2,2,P.waterHi); R(x-4,y+1,2,1,P.ink); R(x+2,y+1,2,1,P.ink); R(x-5,y-2,10,1,mix(col,"#ffffff",0.35)); }
   function miniBoat(x,y,col){ R(x-10,y+3,20,1,P.w1); R(x-11,y-1,22,4,P.ink); R(x-10,y-1,20,3,col); R(x-10,y-1,20,1,mix(col,"#ffffff",0.35)); R(x-4,y-5,10,4,P.parch); R(x-4,y-6,10,1,P.ink); R(x-2,y-4,2,2,P.waterHi); R(x+2,y-4,2,2,P.waterHi); R(x+5,y-9,1,4,P.ink); R(x+6,y-9,3,2,P.coral); }
+  function miniHouse(x,y,w,h,wall,roof){
+    R(x-2,y-1,w+4,1,P.ink); R(x-1,y,w+2,3,roof); R(x-1,y,w+2,1,mix(roof,"#ffffff",0.35)); R(x-2,y+3,w+4,1,mix(roof,"#000000",0.35));
+    R(x,y+4,w,h,wall); R(x-1,y+4,1,h,P.ink); R(x+w,y+4,1,h,P.ink); R(x,y+4+h,w,1,P.ink);
+    R(x+2,y+6,3,3,P.waterHi); R(x+w-4,y+6,2,4,P.p1); R(x+w-4,y+6,2,1,P.p3);
+    R(x+w-5,y-3,2,3,P.s3);
+  }
+  function antenna(x,y,h){ R(x,y-h,1,h,P.ink); R(x-2,y-h+3,5,1,P.ink); R(x-1,y-h+6,3,1,P.ink); R(x,y-h-1,1,1,P.coral); }
   function miniTree(cx,cy){ R(cx-1,cy-4,2,4,P.p1); blob(cx, cy-12, [2,4,5,6,6,6,5,4], function(r,dx){ return r<3 && dx<0 ? P.g4 : (r>5 ? P.g1 : P.g2); }); }
 
   /* =========================================================
@@ -1504,10 +1536,10 @@ body{
     R(a.x-1,a.y,1,CH-a.y,P.ink); R(a.x+a.w,a.y,1,CH-a.y,P.ink);
     tree(22, 60, 1); bush(48, 74, 0.9); rock(64, 66, 6);
     gnome(66, 104); hoseReel(62, 82);
-    stones(4, 130, 3);
+    stones(36, 134, 3);
     picketFence(186, 76, 54); cat(216, 74); bush(200, 56, 1); tree(226, 60, 0.9);
     mailbox(190, 122); flowerBed(186, 96, 48, 14, rng); bike(226, 138);
-    laundryLine(196, 58, 40); dog(150, 144); ball(64, 128); sprinkler(210, 140); smoke(184, 4);
+    laundryLine(196, 58, 40); dog(14, 144); ball(64, 128); sprinkler(210, 140); smoke(184, 4);
     bird(120, 12, P.berry); bird(60, 8, P.water);
   }
 
@@ -1525,7 +1557,6 @@ body{
       R(a.x, y, a.w, 1, P.s2);
       for(var x=a.x-bw+off; x<a.x+a.w; x+=bw){ if(x>a.x) R(x, y, 1, bh, P.s2); if(x+2>a.x && x+2<a.x+a.w-2) R(x+2, y+2, 3, 1, P.s4); }
     }
-    areaFrame(a);
     pot(30, 62); pot(16, 100); bench(36, 132); hoseReel(24, 86);
     grill(206, 64); pot(214, 106); rock(228, 128, 8);
     tree(16, 46, 0.85); flowerBed(190, 118, 42, 16, rng); bush(178, 30, 0.9); bush(62, 134, 0.8);
@@ -1542,7 +1573,6 @@ body{
     paintArea(a, P.p3);
     for(var py=a.y+7; py<a.y+a.h; py+=8){ R(a.x,py,a.w,1,P.p2); R(a.x,py+1,a.w,1,P.p4); }
     for(var px=a.x+16; px<a.x+a.w; px+=32){ R(px,a.y,1,a.h,P.p2); R(px+1,a.y+3,1,1,P.p1); }
-    areaFrame(a);
     R(a.x-4, a.y+a.h+1, a.w+8, 3, P.p3); R(a.x-4, a.y+a.h+1, a.w+8, 1, P.p4); R(a.x-4,a.y+a.h+4,a.w+8,1,P.ink);
     for(var rx=a.x-2; rx<a.x+a.w+4; rx+=10){ R(rx, a.y+a.h+4, 2, 8, P.p3); R(rx+1, a.y+a.h+4, 1, 8, P.p2); }
     R(a.x-4, a.y+a.h+12, a.w+8, 1, P.g1);
@@ -1560,11 +1590,10 @@ body{
     for(var px=a.x+5; px<a.x+a.w; px+=6){ R(px,a.y,1,a.h,P.p2); if(((px/6)&3)===0) R(px+3,a.y+Math.round(a.h*0.4),1,1,P.p1); }
     R(a.x, a.y+Math.round(a.h*0.22), a.w, 2, P.p2); R(a.x, a.y+Math.round(a.h*0.72), a.w, 2, P.p2);
     for(var t=a.x+2; t<a.x+a.w; t+=6) R(t, a.y-2, 2, 2, P.p4);
-    areaFrame(a);
     R(a.x-1, a.y+a.h+1, a.w+2, 1, P.g1);
     flowerBed(6, 116, 30, 16, rng); flowerBed(166, 118, 62, 18, rng);
     bush(106, 128, 1.1); gnome(132, 134); pot(26, 100); rock(150, 110, 6);
-    stones(96, 108, 4); bird(60, 6, P.coral); cat(128, 116); birdbath(170, 108); ball(20, 140); sprinkler(150, 140);
+    stones(96, 108, 4); bird(60, 6, P.coral); cat(128, 116); birdbath(14, 104); ball(44, 142); sprinkler(150, 140);
   }
 
   function sceneWindows(a, rng){
@@ -1604,7 +1633,6 @@ body{
     paintArea(a, P.waterHi); R(a.x,a.y,a.w,2,"#ffffff");
     R(a.x, a.y+Math.round(a.h*0.5)-1, a.w, 3, P.p2);
     for(var rx=a.x+4; rx<a.x+a.w-4; rx+=16) R(rx, a.y+3, 1, 6, "#ffffff");
-    areaFrame(a);
     awning(30, 24, 180, 12);
     glassDoor(172, 66, 20, 42, "#4d7f6f");
     box(173, 70, 18, 7, P.parchHi, null, null); pxText(175, 71, "OPEN", P.leafLo, 1);
@@ -1627,12 +1655,11 @@ body{
     for(var by=16; by<108; by+=8){ R(0,by,CW,1,P.c1); var off = ((by/8)&1)*10; for(var bxx=off; bxx<CW; bxx+=20) R(bxx,by,1,8,P.c1); }
     R(0,107,CW,1,P.ink);
     R(100,20,40,9,P.sun); R(100,20,40,1,P.sunHi); R(101,23,4,3,P.ink); R(107,23,4,3,P.ink); R(113,23,4,3,P.ink); R(119,23,4,3,P.ink); R(127,22,6,5,P.ink); R(129,24,2,1,P.sun);
-    R(0,60,CW,3,P.sun); R(0,63,CW,1,P.sunLo);
     pillar(12, 16, 16, 92); pillar(212, 16, 16, 92);
-    /* the stained wall section you wash */
+    /* the wall section you wash is just more wall; the yellow line runs right through it */
     paintArea(a, P.c2);
     for(var wy=a.y; wy<a.y+a.h; wy+=8){ R(a.x,wy,a.w,1,P.c1); var o2=((wy/8)&1)*10; for(var wx=a.x+o2; wx<a.x+a.w; wx+=20) R(wx,wy,1,8,P.c1); }
-    areaFrame(a);
+    R(0,60,CW,3,P.sun); R(0,63,CW,1,P.sunLo);
     /* floor with bay lines */
     pavement(0, 108, CW, 42, P.c3);
     for(var bay=30; bay<CW; bay+=50){ R(bay, 112, 2, 30, P.sunHi); }
@@ -1675,7 +1702,7 @@ body{
     paintArea(a, P.p3);
     for(var py=a.y+7; py<a.y+a.h; py+=8){ R(a.x,py,a.w,1,P.p2); R(a.x,py+1,a.w,1,P.p4); }
     for(var px=a.x+22; px<a.x+a.w; px+=44){ R(px,a.y,1,a.h,P.p2); }
-    areaFrame(a); R(a.x-1,a.y+a.h+1,a.w+2,2,P.w1); R(a.x-3,a.y-3,1,a.h+6,P.w1);
+    R(a.x-1,a.y+a.h+1,a.w+2,2,P.w1); R(a.x-3,a.y-3,1,a.h+6,P.w1);
     [a.x-7, a.x+a.w+1].forEach(function(px){
       box(px, a.y-8, 6, 15, P.p2, P.p3, P.p1); box(px, a.y+a.h-8, 6, 15, P.p2, P.p3, P.p1);
       R(px+1, a.y-10, 4, 2, P.p1); R(px, a.y+a.h+8, 6, 1, P.w1);
@@ -1702,7 +1729,6 @@ body{
     paintArea(a, P.p4);
     for(var py=a.y+6; py<a.y+a.h; py+=7){ R(a.x,py,a.w,1,P.p3); }
     for(var k=0;k<6;k++){ R(a.x+3+Math.floor(rng()*(a.w-6)), a.y+2+Math.floor(rng()*(a.h-4)), 1, 3, P.p2); }
-    areaFrame(a);
     netHang(a.x+8, a.y+10, 30, 38);
     buoy(a.x+a.w-18, a.y+22); buoy(a.x+a.w-30, a.y+35); lifeRing(a.x+a.w-12, a.y+50);
     sign(a.x+a.w/2-20, a.y+4, 40, P.parchHi);
@@ -1736,14 +1762,14 @@ body{
     driveway:  { name:"Driveway",        region:"grove",  scene:sceneDriveway,   area:{x:75,y:50,w:98,h:87},  hero:{x:44,y:116}, son:{x:22,y:112}, hose:{x:-8,y:124} },
     patio:     { name:"Brick Patio",     region:"grove",  scene:scenePatio,      area:{x:75,y:52,w:94,h:82},  hero:{x:40,y:120}, son:{x:64,y:102}, hose:{x:-8,y:142} },
     deck:      { name:"Back Deck",       region:"grove",  scene:sceneDeck,       area:{x:72,y:50,w:100,h:76}, hero:{x:38,y:100}, son:{x:60,y:88},  hose:{x:-8,y:130} },
-    fence:     { name:"Garden Fence",    region:"grove",  scene:sceneFence,      area:{x:30,y:54,w:182,h:50}, hero:{x:48,y:132}, son:{x:76,y:132}, hose:{x:-8,y:148} },
-    windows:   { name:"Tower Windows",   region:"city",   scene:sceneWindows,    area:{x:60,y:28,w:120,h:82}, hero:{x:75,y:120}, son:{x:104,y:120}, hose:{x:62,y:132},
+    fence:     { name:"Garden Fence",    region:"grove",  scene:sceneFence,      area:{x:30,y:54,w:182,h:50}, hero:{x:48,y:132}, son:{x:76,y:132}, hose:{x:-8,y:148}, vertical:true },
+    windows:   { name:"Tower Windows",   region:"city",   scene:sceneWindows,    area:{x:60,y:28,w:120,h:82}, hero:{x:75,y:120}, son:{x:104,y:120}, hose:{x:62,y:132}, vertical:true,
                  over:function(){ var a=this.area, py=a.y+a.h+12; FX(a.x+12,0,1,py,P.ink); FX(a.x+13,0,1,py,P.c1); FX(a.x+a.w-12,0,1,py,P.ink); FX(a.x+a.w-11,0,1,py,P.c1); } },
-    storefront:{ name:"Storefront Glass",region:"city",   scene:sceneStorefront, area:{x:43,y:46,w:120,h:62}, hero:{x:198,y:130}, son:{x:170,y:126}, hose:{x:248,y:140} },
-    garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:59,y:30,w:118,h:76}, hero:{x:46,y:138}, son:{x:74,y:132}, hose:{x:-8,y:146} },
-    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:59,y:52,w:128,h:46}, hero:{x:36,y:112}, son:{x:66,y:108}, hose:{x:-8,y:122}, mask:maskHull },
+    storefront:{ name:"Storefront Glass",region:"city",   scene:sceneStorefront, area:{x:43,y:46,w:120,h:62}, hero:{x:198,y:130}, son:{x:170,y:126}, hose:{x:248,y:140}, vertical:true },
+    garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:59,y:30,w:118,h:76}, hero:{x:46,y:138}, son:{x:74,y:132}, hose:{x:-8,y:146}, vertical:true },
+    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:59,y:52,w:128,h:46}, hero:{x:36,y:112}, son:{x:66,y:108}, hose:{x:-8,y:122}, mask:maskHull, vertical:true, ragged:false, grimes:["moss","rust","rust","salt","rust"] },
     dock:      { name:"Dock Planks",     region:"harbor", scene:sceneDock,       area:{x:75,y:54,w:90,h:78},  hero:{x:40,y:112}, son:{x:60,y:110}, hose:{x:-8,y:118} },
-    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:60,y:40,w:120,h:66}, hero:{x:38,y:118}, son:{x:64,y:112}, hose:{x:-8,y:130} }
+    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:60,y:40,w:120,h:66}, hero:{x:38,y:118}, son:{x:64,y:112}, hose:{x:-8,y:130}, vertical:true }
   };
 
 
@@ -1776,7 +1802,10 @@ body{
     jitter = new Float32Array(gCols*gRows);
     var n1 = makeNoise(gCols,gRows, 9, rng);
     var n2 = makeNoise(gCols,gRows, 3, rng);
+    var edgeN = makeNoise(gCols,gRows, 5, rng);
+    var drips = []; if(def.vertical){ for(var d=0; d<Math.round(gCols/6); d++) drips.push({ c: Math.floor(rng()*gCols), w: 1 + Math.floor(rng()*2), len: 0.3 + rng()*0.7 }); }
     var layers = type.layers;
+    var margin = def.ragged === false ? 0 : Math.max(3, Math.round(Math.min(gCols, gRows) * 0.16));
     grimeTotal = 0;
     for(var cy=0; cy<gRows; cy++){
       for(var cx=0; cx<gCols; cx++){
@@ -1786,6 +1815,19 @@ body{
         if(def.mask && !def.mask(px,py,a)){ grime[i] = 0; continue; }
         var v = n1[i]*0.74 + n2[i]*0.26;
         var hp = 0.70 + v * (layers - 0.30);
+        /* ragged edge: near the border the dirt thins out and breaks up instead of stopping on a line */
+        if(margin){
+          var ed = Math.min(cx, cy, gCols-1-cx, gRows-1-cy) / margin;
+          var keep = Math.min(1, ed) + (edgeN[i]-0.5)*0.9;
+          if(keep < 0.35){ grime[i] = 0; continue; }
+          hp *= Math.min(1, keep + 0.35);
+        }
+        /* gravity: a wall or window carries more at the bottom, with a few drip streaks */
+        if(def.vertical){
+          var ny = cy/(gRows-1);
+          hp *= 0.55 + 0.7*ny;
+          for(var k=0;k<drips.length;k++){ var dr=drips[k]; if(cx>=dr.c && cx<dr.c+dr.w && ny <= dr.len) hp += 0.9; }
+        }
         hp = Math.min(layers, Math.max(0.40, hp));
         grime[i] = hp;
         grimeTotal += hp;
@@ -1971,9 +2013,14 @@ body{
     if(son.flash > 0) son.flash -= dt;
     if(son.acc < sonIntervalMs()) return;
     son.acc = 0;
-    var a = job.area;
-    var tx = clamp(aim.x + (Math.random()*2-1)*18, a.x+2, a.x+a.w-2);
-    var ty = clamp(aim.y + (Math.random()*2-1)*14, a.y+2, a.y+a.h-2);
+    /* he looks for dirt on his own: a handful of random cells, the dirtiest wins */
+    var a = job.area, best = null, bestHp = 0.2;
+    for(var s=0; s<24 && grime; s++){
+      var ci = Math.floor(Math.random()*grime.length);
+      if(grime[ci] > bestHp){ bestHp = grime[ci]; best = ci; }
+    }
+    if(best === null) return;
+    var tx = a.x + (best % gCols)*CELL + 1, ty = a.y + Math.floor(best/gCols)*CELL + 1;
     son.target = { x:tx, y:ty }; son.flash = 420;
     var removed = sprayGrime(tx, ty, sonRadius(), 0.32*degreaserMult());
     if(removed > 0.2) splash(tx, ty, job.grime.splash, 2);
@@ -2050,9 +2097,10 @@ body{
     return JOBS[key];
   }
   function pickGrime(){
-    var r = regionDef();
-    var idx = Math.min(r.grimes.length-1, rigTier() + (state.jobsCompleted % 3 === 2 ? 1 : 0));
-    return GRIME_TYPES[r.grimes[Math.min(r.grimes.length-1, idx)]];
+    var r = regionDef(), def = pickJobDef();
+    var list = def.grimes || r.grimes;
+    var idx = Math.min(list.length-1, rigTier() + (state.jobsCompleted % 3 === 2 ? 1 : 0));
+    return GRIME_TYPES[list[Math.min(list.length-1, idx)]];
   }
 
   function startJob(){
@@ -2235,7 +2283,7 @@ body{
   function updateClean(){
     var c = cleanliness();
     setClean(c);
-    if(c >= 0.985) endJob("complete");
+    if(cellsTotal && cellsClear >= cellsTotal) endJob("complete");
   }
 
   /* pointer control — a mouse washes wherever it hovers; a finger or pen washes while held */
@@ -2346,9 +2394,10 @@ body{
     if(mode === "complete" && stars === 3){ burst(CW/2, CH/2, P.sunHi); shakeStage(); }
     fx.clearRect(0,0,CW,CH); drawParticles();
 
+    state.recentPays.push(pay); if(state.recentPays.length > 6) state.recentPays = state.recentPays.slice(-6);
     var heads = mode === "timeout"
       ? ["Out of time","Out of time","So close!"]
-      : ["Job done","Nice work!","Spotless!"];
+      : (mode === "early" ? ["Packed up","Packed up","Packed up","Packed up"] : ["Job done","Nice work!","Spotless!","Spotless!"]);
     var icon = mode === "timeout" ? "clock" : (stars === 3 ? "sparkle" : "wand");
     var rows = [
       mRow(ic("sparkle")+"Cleanliness", pct+"%"),
@@ -2360,7 +2409,7 @@ body{
     if(cut>0) rows.push(mRow(ic("coin")+LENDER.name+"’s cut", "−"+money(cut)+(state.loan>0 ? " · "+money(state.loan)+" left" : " · square"), "pw-stats__val--down"));
     if(pay === 0) rows.push(mRow(ic("bill")+"Under 30% clean", "no pay", "pw-stats__val--down"));
 
-    var body = mHead(icon, heads[stars] || heads[0], null, mode === "timeout" ? "Time's up" : "Job complete") +
+    var body = mHead(icon, heads[stars] || heads[0], null, mode === "timeout" ? "Time's up" : (mode === "early" ? "Called it" : "100% clean")) +
       starsHTML(stars) + mRows(rows) +
       (mode==="timeout" ? mNote(pct >= 75 ? "Not finished, but good enough to keep the streak." : "Under 75% — streak broken, back to zero.") : '');
 
@@ -2721,7 +2770,7 @@ body{
       mRow(ic("coin")+"Pay bonus", "+"+Math.round((payMult()-1)*100)+"%"),
       mRow(ic("flask")+"Degreaser", "×"+degreaserMult().toFixed(2)),
       mRow(ic("hardhat")+"Crew per job", money(crewIncome())),
-      mRow(ic("sparkle")+"Dirt on this route", "×"+progressToughness().toFixed(2), progressToughness() > 1.5 ? "pw-stats__val--down" : "")
+      mRow('<span title="How stubborn the dirt is on this route right now — it grows with every job you finish and with the route, and the rig has to keep up.">'+ic("sparkle")+"Dirt toughness</span>", "×"+progressToughness().toFixed(2), progressToughness() > 1.5 ? "pw-stats__val--down" : "")
     ]);
     $("regionName").textContent = regionDef().name;
 
@@ -2767,14 +2816,14 @@ body{
     /* the river, from the hills down to the sea, with a bridge on the road */
     for(var ry=30; ry<100; ry++){ var rx = 84 + Math.round(Math.sin(ry/9)*3) + Math.round((ry-30)*0.12); R(rx, ry, 8, 1, ry%7===0 ? P.w4 : P.w3); R(rx, ry, 1, 1, P.w1); R(rx+7, ry, 1, 1, P.w1); }
     /* suburb (a house is ~22 px, a car 10, a tree 12) */
-    houseFacade(14, 40, 22, 16, P.parch, P.coral); winPane(18, 50, 5, 4); doorway(28, 50, 5, 6, P.p2);
-    houseFacade(46, 44, 18, 14, P.parchLo, P.berry); winPane(50, 53, 5, 4);
-    houseFacade(28, 64, 20, 14, P.parchHi, "#4d7f6f"); doorway(36, 72, 5, 6, P.water);
-    picketFence(6, 84, 44); miniTree(10, 62); miniTree(70, 60); miniTree(58, 82); bush(20, 96, 0.5);
-    miniCar(64, 90, P.coral); miniCar(70, 72, P.water);
-    /* downtown, on land east of the river */
-    towerSlab(104, 40, 12, 32, P.c3, P.waterHi); towerSlab(118, 48, 8, 24, P.c4, P.waterHi); towerSlab(130, 28, 12, 44, P.c2, P.waterHi); towerSlab(144, 46, 10, 26, P.c3, P.waterHi);
-    R(140, 14, 1, 14, P.ink); R(136, 14, 9, 1, P.ink); R(144, 15, 1, 6, P.coral); R(134, 12, 4, 3, P.ink);
+    miniHouse(14, 44, 14, 8, P.parch, P.coral); miniHouse(40, 40, 12, 7, P.parchLo, P.berry);
+    miniHouse(24, 62, 14, 8, P.parchHi, "#4d7f6f"); miniHouse(54, 58, 12, 7, P.parch, P.coral);
+    for(var fx=8; fx<40; fx+=3){ R(fx, 80, 2, 3, P.parchHi); } R(8,81,32,1,P.parchLo);
+    miniTree(8, 60); miniTree(70, 52); miniTree(48, 78); bush(66, 82, 0.5);
+    miniCar(56, 96, P.coral); miniCar(30, 96, P.water);
+    /* downtown, on land east of the river — towers dwarf the houses */
+    towerSlab(102, 22, 12, 50, P.c3, P.waterHi); towerSlab(116, 34, 9, 38, P.c4, P.waterHi); towerSlab(128, 10, 13, 62, P.c2, P.waterHi); towerSlab(144, 30, 10, 42, P.c3, P.waterHi);
+    antenna(134, 10, 9);
     R(100, 74, 60, 4, P.c3); R(100, 74, 60, 1, P.c4); crosswalk(108, 74, 20); miniCar(126, 80, P.sun);
     /* harbour: quay, pier into the sea, boats, lighthouse */
     R(160, 60, 40, 4, P.c3); R(160, 60, 40, 1, P.c4);
@@ -3152,7 +3201,9 @@ body{
   });
   $("btnSettings").onclick = openSettings;
   $("btnTitleSettings").onclick = openSettings;
+  /* packing up ends the job as it stands: paid for what's clean */
   $("btnQuitJob").onclick = function(){
+    if(job && job.started && !job.ended){ endJob("early"); return; }
     stopJobLoop();
     if(job) job.ended = true;
     job = null;

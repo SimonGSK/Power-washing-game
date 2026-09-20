@@ -482,6 +482,13 @@ body{
 /* meters that sit directly on the ground (job screen) use the ground text colours */
 #screen-job .pw-meter__row{color:var(--text-ground-soft);}
 #screen-job .pw-meter__row > .pw-label{color:var(--text-ground);}
+
+/* job header extras */
+.job-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.contract-line{color:var(--text-ground);margin-top:4px;}
+.contract-line.is-done{color:var(--leaf-lo);}
+.contract-line b{color:var(--sun-text);}
+.contract-line.is-done b{color:var(--leaf-lo);}
 </style>
 </head>
 <body class="pw">
@@ -571,8 +578,12 @@ body{
   <!-- ============ JOB ============ -->
   <div id="screen-job" class="screen hidden">
     <div class="pw-screen-head">
-      <div><h2 class="pw-title" id="jobName">Driveway</h2><p class="pw-small" id="jobSub">Everyday Dirt · Maple Grove</p></div>
-      <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnQuitJob">Call it done</button>
+      <div><h2 class="pw-title" id="jobName">Driveway</h2><p class="pw-small" id="jobSub">Everyday Dirt · Maple Grove</p>
+        <p class="pw-small contract-line hidden" id="contractLine"><span class="ico" data-ic="bill"></span> Contract: leave the marked patch spotless for +30% pay — <b id="contractVal">0%</b></p></div>
+      <div class="job-right">
+        <div class="pw-counter pw-counter--cash hidden" id="tipBadge" title="Tip for speed"><span class="ico" data-ic="jar"></span><span id="tipVal">$0</span></div>
+        <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnQuitJob">Call it done</button>
+      </div>
     </div>
     <div class="pw-meter">
       <div class="pw-meter__row"><span><span class="ico" data-ic="clock"></span>Customer's patience</span><span class="pw-label" id="timeLabel">0:40</span></div>
@@ -848,7 +859,7 @@ body{
     foamcannon:{ title:"Foam Cannon", icon:"foam", costs:[260,540],
       desc:["Auto-cleans a random spot every 1.35 s","Auto-cleans every 0.8 s, with a wider blast"] },
     tipjar:    { title:"Tip Jar", icon:"jar", costs:[190],
-      desc:["35% chance of a $10–27 tip after every job"] },
+      desc:["Customers tip for speed: the jar starts full and empties as the timer runs. Needs an 80% clean."] },
     permit:    { title:"Business Permit", icon:"bill", costs:[340],
       desc:["+1 job between overhead bills (3 → 4)"] },
     lease:     { title:"Cheaper Lease", icon:"book", costs:[300,700,1500],
@@ -1143,8 +1154,8 @@ body{
     var t = rigTier(), p = TIER_PAINT[t];
     var tw = 30 + lvl("tank")*6 + (lvl("bigrig")?6:0);
     var hasPro = lvl("prowasher")>0, hasTip = lvl("tipjar")>0, hasFoam = lvl("foamcannon")>0, hasDeg = lvl("degreaser")>0, hasPermit = lvl("permit")>0;
-    var Gy = 37, bedX = 8, tankX = 10, unitX = tankX + tw + 3, cabX = unitX + 15, front = cabX + 34;
-    var W = front + 8, H = 44, G = [];
+    var Gy = 44, bedX = 8, tankX = 10, unitX = tankX + tw + 3, cabX = unitX + 15, front = cabX + 34;
+    var W = front + 8, H = 56, G = [];
     for(var y=0;y<H;y++){ G.push(new Array(W).fill(null)); }
     function px(x,y,w,h,c){ for(var yy=Math.round(y); yy<Math.round(y+h); yy++) for(var xx=Math.round(x); xx<Math.round(x+w); xx++) if(yy>=0&&yy<H&&xx>=0&&xx<W) G[yy][xx]=c; }
     function get(x,y){ return (y>=0&&y<H&&x>=0&&x<W) ? G[y][x] : null; }
@@ -1498,6 +1509,17 @@ body{
   /* map-scale props: a house is ~22 px on the map, so a car is 10 and a tree 12 */
   function miniCar(x,y,col){ R(x-5,y-2,10,3,col); R(x-3,y-4,6,2,col); R(x-2,y-4,2,2,P.waterHi); R(x+1,y-4,2,2,P.waterHi); R(x-4,y+1,2,1,P.ink); R(x+2,y+1,2,1,P.ink); R(x-5,y-2,10,1,mix(col,"#ffffff",0.35)); }
   function miniBoat(x,y,col){ R(x-10,y+3,20,1,P.w1); R(x-11,y-1,22,4,P.ink); R(x-10,y-1,20,3,col); R(x-10,y-1,20,1,mix(col,"#ffffff",0.35)); R(x-4,y-5,10,4,P.parch); R(x-4,y-6,10,1,P.ink); R(x-2,y-4,2,2,P.waterHi); R(x+2,y-4,2,2,P.waterHi); R(x+5,y-9,1,4,P.ink); R(x+6,y-9,3,2,P.coral); }
+  /* a pier seen from the side: a plank deck on poles that go down into the water */
+  function pier(x,y,w,h){
+    R(x,y,w,h,P.p3); R(x,y,w,1,P.p4); for(var px=x+7; px<x+w; px+=8) R(px,y,1,h,P.p2);
+    R(x,y+h-1,w,1,P.p1); R(x,y+h,w,1,P.ink); R(x,y-1,w,1,P.ink);
+    for(var pole=x+6; pole<x+w-2; pole+=24){
+      R(pole,y+h+1,4,CH-(y+h+1),P.p1); R(pole,y+h+1,1,CH-(y+h+1),P.p2); R(pole+3,y+h+1,1,CH-(y+h+1),P.ink);
+      R(pole-1,y+h+9,6,2,P.c3); R(pole-1,y+h+11,6,1,P.g1);          /* tide line + weed */
+      for(var ry=y+h+16; ry<CH; ry+=4) R(pole+1,ry,2,2,P.w1);          /* reflection */
+    }
+  }
+  function foamLine(x,y,w){ for(var i=0;i<w;i+=5){ R(x+i,y,3,1,"#ffffff"); R(x+i+2,y+1,2,1,P.w4); } }
   function miniHouse(x,y,w,h,wall,roof){
     R(x-2,y-1,w+4,1,P.ink); R(x-1,y,w+2,3,roof); R(x-1,y,w+2,1,mix(roof,"#ffffff",0.35)); R(x-2,y+3,w+4,1,mix(roof,"#000000",0.35));
     R(x,y+4,w,h,wall); R(x-1,y+4,1,h,P.ink); R(x+w,y+4,1,h,P.ink); R(x,y+4+h,w,1,P.ink);
@@ -1658,9 +1680,7 @@ body{
     R(0,107,CW,1,P.ink);
     R(100,20,40,9,P.sun); R(100,20,40,1,P.sunHi); R(101,23,4,3,P.ink); R(107,23,4,3,P.ink); R(113,23,4,3,P.ink); R(119,23,4,3,P.ink); R(127,22,6,5,P.ink); R(129,24,2,1,P.sun);
     pillar(12, 16, 16, 92); pillar(212, 16, 16, 92);
-    /* the wall section you wash is just more wall; the yellow line runs right through it */
-    paintArea(a, P.c2);
-    for(var wy=a.y; wy<a.y+a.h; wy+=8){ R(a.x,wy,a.w,1,P.c1); var o2=((wy/8)&1)*10; for(var wx=a.x+o2; wx<a.x+a.w; wx+=20) R(wx,wy,1,8,P.c1); }
+    /* the wash section is just more of the same wall; the yellow line runs right through it */
     R(0,60,CW,3,P.sun); R(0,63,CW,1,P.sunLo);
     /* floor with bay lines */
     pavement(0, 108, CW, 42, P.c3);
@@ -1673,58 +1693,59 @@ body{
   }
 
   function sceneHull(a, rng){
-    regionSky(100); clouds(rng, 60, 3);
-    lighthouse(214, 100, 36); sailboat(40, 96); sailboat(180, 98);
-    waterField(0, 121, CW, 29, rng);
-    pavement(0, 100, CW, 22, P.c3); R(0,100,CW,1,P.c4); R(0,120,CW,1,P.w1);
-    for(var b=6; b<CW; b+=40) bollard(b, 120);
-    [a.x+24, a.x+Math.round(a.w*0.55)].forEach(function(sx){ box(sx, a.y+a.h-2, 8, 26, P.p2, P.p3, P.p1); R(sx+2, a.y+a.h+4, 4, 1, P.p1); R(sx+2, a.y+a.h+12, 4, 1, P.p1); });
+    /* the boat floats alongside a pier; you work from the deck */
+    regionSky(70); clouds(rng, 50, 3);
+    lighthouse(216, 70, 26); sailboat(150, 68); sailboat(34, 69);
+    waterField(0, 70, CW, 80, rng);
+    /* cabin + mast behind the hull */
     box(a.x+Math.round(a.w*0.30), a.y-26, Math.round(a.w*0.30), 26, P.parch, P.parchHi, P.parchLo);
     winPane(a.x+Math.round(a.w*0.34), a.y-21, 12, 8); winPane(a.x+Math.round(a.w*0.48), a.y-21, 10, 8);
     lifeRing(a.x+Math.round(a.w*0.30)+4, a.y-5);
     R(a.x+Math.round(a.w*0.42), a.y-56, 2, 31, P.ink);
     for(var i=0;i<11;i++){ R(a.x+Math.round(a.w*0.42)+2, a.y-55+i, Math.round(22 - Math.abs(i-5)*4.4)+2, 1, P.coral); }
     R(a.x+Math.round(a.w*0.42)+2, a.y-50, 8, 1, P.coralHi);
+    /* hull body: stepped silhouette from the mask, deck rail, waterline stripe */
     for(var py=a.y; py<a.y+a.h; py++) for(var px=a.x; px<a.x+a.w; px++){
       if(!maskHull(px+0.5,py+0.5,a)) continue;
       var edge = !maskHull(px+0.5,py+1.5,a) || !maskHull(px-0.5,py+0.5,a) || !maskHull(px+1.5,py+0.5,a) || py===a.y;
       R(px,py,1,1, edge ? P.ink : (py < a.y+6 ? P.water : (py > a.y+Math.round(a.h*0.62) && py < a.y+Math.round(a.h*0.62)+3 ? P.berry : P.c4)));
     }
     for(var pl=a.y+8; pl<a.y+a.h-6; pl+=6) for(var px2=a.x+4; px2<a.x+a.w-8; px2+=2) if(maskHull(px2+0.5,pl+0.5,a) && maskHull(px2+8,pl+0.5,a)) R(px2,pl,1,1,P.c3);
-    box(a.x-5, a.y+Math.round(a.h*0.55), 4, 14, P.stone, P.c4, P.stoneLo);
-    R(a.x-1, a.y+Math.round(a.h*0.84)-2, 4, 4, P.p4); R(a.x, a.y+Math.round(a.h*0.84)-1, 2, 2, P.ink);
-    crate(16, 124, 10); crate(28, 128, 8); lobsterTrap(80, 118);
-    barrel(220, 118); buoy(206, 104); ropeCoil(58, 128); ladder(a.x+a.w+10, 106, 16);
+    /* the water meets the keel: foam and the hull's reflection */
+    foamLine(a.x-4, a.y+a.h, a.w+8);
+    for(var rr=a.y+a.h+3; rr<a.y+a.h+14; rr+=3) R(a.x+20+(rr%2)*3, rr, a.w-40-(rr-a.y-a.h)*4, 1, mix(P.w2, P.c4, 0.35));
+    /* the pier you stand on, and the far end of the quay */
+    pier(0, 104, 72, 6); pier(196, 104, 44, 6);
+    bollard(64, 104); crate(54, 102, 8); ropeCoil(10, 102);
+    barrel(212, 104); buoy(228, 92); lobsterTrap(224, 106);
     seagull(48, 24); seagull(64, 18); seagull(192, 28); seagull(120, 12);
   }
 
   function sceneDock(a, rng){
-    waterField(0,0,CW,CH,rng,P.w3,P.w2);
-    sailboat(120, 20);
+    /* a fishing pier from the side: the moss-green railing boards are the job */
+    regionSky(64); clouds(rng, 44, 2); sun(20, 6);
+    lighthouse(222, 64, 22); sailboat(120, 62); sailboat(60, 63);
+    waterField(0, 64, CW, 86, rng);
+    boatSide(200, 84, P.coral);
+    /* railing: vertical boards with a top rail and a bottom rail */
+    R(a.x-4, a.y-4, a.w+8, 4, P.p2); R(a.x-4, a.y-4, a.w+8, 1, P.p4); R(a.x-5, a.y-5, a.w+10, 1, P.ink);
     paintArea(a, P.p3);
-    for(var py=a.y+7; py<a.y+a.h; py+=8){ R(a.x,py,a.w,1,P.p2); R(a.x,py+1,a.w,1,P.p4); }
-    for(var px=a.x+22; px<a.x+a.w; px+=44){ R(px,a.y,1,a.h,P.p2); }
-    R(a.x-1,a.y+a.h+1,a.w+2,2,P.w1); R(a.x-3,a.y-3,1,a.h+6,P.w1);
-    [a.x-7, a.x+a.w+1].forEach(function(px){
-      box(px, a.y-8, 6, 15, P.p2, P.p3, P.p1); box(px, a.y+a.h-8, 6, 15, P.p2, P.p3, P.p1);
-      R(px+1, a.y-10, 4, 2, P.p1); R(px, a.y+a.h+8, 6, 1, P.w1);
-    });
-    /* the side jetty you and your son stand on */
-    jetty(6, 110, 62, 12); jetty(6, 78, 24, 34);
-    ladder(a.x+a.w+2, a.y+30, 14); lifeRing(a.x-12, a.y+42);
-    boatSide(190, 36, P.coral);
-    boatSide(56, 140, "#4d7f6f");
-    crate(16, 86, 9); barrel(26, 96); lobsterTrap(14, 106);
-    ropeCoil(210, 118); buoy(220, 90); buoy(14, 60);
+    for(var bx0=a.x+5; bx0<a.x+a.w; bx0+=6){ R(bx0, a.y, 1, a.h, P.p1); R(bx0+1, a.y, 1, a.h, P.p4); }
+    R(a.x, a.y+Math.round(a.h*0.5), a.w, 2, P.p2);
+    R(a.x-4, a.y+a.h, a.w+8, 3, P.p2); R(a.x-4, a.y+a.h, a.w+8, 1, P.p4);
+    /* the deck across the whole pier, on poles */
+    pier(0, 104, CW, 7);
+    lifeRing(a.x-14, a.y+8); R(a.x-15, a.y+2, 1, 6, P.ink);
+    ropeCoil(14, 102); bollard(28, 104); lobsterTrap(216, 106); crate(232, 102, 8);
     seagull(105, 16); seagull(125, 24); seagull(70, 10);
   }
 
   function sceneShack(a, rng){
-    regionSky(108); clouds(rng, 40, 2);
-    lighthouse(226, 108, 40);
-    waterField(0, 125, CW, 25, rng);
-    pavement(0, 108, CW, 20, P.c3); R(0,108,CW,1,P.c4); R(0,124,CW,1,P.w1);
-    for(var b=10; b<CW; b+=44) bollard(b, 124);
+    /* the shack stands on the pier over the water */
+    regionSky(74); clouds(rng, 40, 2);
+    lighthouse(226, 74, 30); sailboat(30, 72);
+    waterField(0, 74, CW, 76, rng);
+    /* roof: stepped gable with shingle rows */
     for(var i=0;i<14;i++){ var rw = Math.round((a.w+36) * (i+1)/14); var rx0 = a.x + Math.round(a.w/2) - Math.round(rw/2); R(rx0, a.y-28+i*2, rw, 2, i===0 ? P.ink : "#4d7f6f"); if(i>0 && (i&1)) for(var sx=rx0+2; sx<rx0+rw-2; sx+=5) R(sx, a.y-28+i*2, 2, 1, "#3c6a5c"); }
     R(a.x-18, a.y-1, a.w+36, 1, P.ink); R(a.x-16, a.y-3, a.w+32, 1, "#3c6a5c");
     R(a.x+Math.round(a.w/2)-1, a.y-32, 2, 5, P.c1); R(a.x+Math.round(a.w/2)-2, a.y-33, 4, 1, P.ink);
@@ -1734,9 +1755,8 @@ body{
     netHang(a.x+8, a.y+10, 30, 38);
     buoy(a.x+a.w-18, a.y+22); buoy(a.x+a.w-30, a.y+35); lifeRing(a.x+a.w-12, a.y+50);
     sign(a.x+a.w/2-20, a.y+4, 40, P.parchHi);
-    lobsterTrap(88, 118); lobsterTrap(100, 124); lobsterTrap(94, 112);
-    crate(218, 118, 10); ropeCoil(190, 130); barrel(204, 120);
-    buoy(60, 138); buoy(140, 142);
+    pier(0, 106, CW, 6);
+    bollard(12, 106); lobsterTrap(228, 108); crate(214, 104, 9); ropeCoil(24, 104);
     seagull(a.x+Math.round(a.w*0.5), a.y-40); seagull(60, 30); seagull(200, 40);
   }
 
@@ -1782,18 +1802,85 @@ body{
     garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:59,y:30,w:118,h:76}, hero:{x:46,y:138}, son:{x:74,y:132}, hose:{x:-8,y:146}, vertical:true, patchChance:0.3,
                  grimes:["grease","soot","grease","soot"], graffitiChance:0.45,
                  props:function(a){ cone(a.x+18, a.y+a.h+2); bin(a.x+a.w-16, a.y+a.h+2); } },
-    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:59,y:52,w:128,h:46}, hero:{x:36,y:112}, son:{x:66,y:108}, hose:{x:-8,y:122}, mask:maskHull, vertical:true, ragged:false,
+    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:59,y:52,w:128,h:46}, hero:{x:36,y:104}, son:{x:14,y:104}, hose:{x:-8,y:106}, mask:maskHull, vertical:true, ragged:false,
                  grimes:["moss","rust","rust","salt","rust"],
                  props:function(a){ ladder(a.x+a.w-34, a.y+6, 32); } },
-    dock:      { name:"Dock Planks",     region:"harbor", scene:sceneDock,       area:{x:75,y:54,w:90,h:78},  hero:{x:40,y:112}, son:{x:60,y:110}, hose:{x:-8,y:118}, patchChance:0.3,
+    dock:      { name:"Pier Railing",    region:"harbor", scene:sceneDock,       area:{x:60,y:60,w:120,h:44}, hero:{x:40,y:104}, son:{x:204,y:104}, hose:{x:-8,y:106}, vertical:true, patchChance:0.3,
                  grimes:["moss","salt","moss","salt"],
-                 props:function(a){ ropeCoil(a.x+16, a.y+a.h-8); lobsterTrap(a.x+a.w-18, a.y+12); } },
-    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:60,y:40,w:120,h:66}, hero:{x:38,y:118}, son:{x:64,y:112}, hose:{x:-8,y:130}, vertical:true, patchChance:0.3,
+                 props:function(a){ lobsterTrap(a.x+14, a.y+a.h+2); ropeCoil(a.x+a.w-14, a.y+a.h+2); } },
+    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:60,y:40,w:120,h:66}, hero:{x:38,y:106}, son:{x:194,y:106}, hose:{x:-8,y:108}, vertical:true, patchChance:0.3,
                  grimes:["salt","grease","salt","salt"],
                  props:function(a){ crate(a.x+16, a.y+a.h-6, 9); barrel(a.x+a.w-12, a.y+a.h-5); } }
   };
 
 
+
+  /* =========================================================
+     SOUND — tiny synthesized effects, no files (Web Audio)
+     ========================================================= */
+  var SFX = (function(){
+    var ctx = null, on = true, sprayNode = null, sprayGain = null;
+    try{ on = localStorage.getItem("pwco_sound") !== "off"; }catch(e){}
+    function ac(){
+      if(!ctx){ try{ ctx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ ctx = null; } }
+      if(ctx && ctx.state === "suspended") ctx.resume();
+      return ctx;
+    }
+    function tone(freq, dur, type, vol, slideTo, delay){
+      var c = ac(); if(!c || !on) return;
+      var t0 = c.currentTime + (delay||0);
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = type || "square"; o.frequency.setValueAtTime(freq, t0);
+      if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+      g.gain.setValueAtTime(vol || 0.06, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + dur + 0.02);
+    }
+    function noiseBurst(dur, vol, freq){
+      var c = ac(); if(!c || !on) return;
+      var n = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+      for(var i=0;i<n;i++) d[i] = (Math.random()*2-1) * (1 - i/n);
+      var s = c.createBufferSource(); s.buffer = buf;
+      var f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = freq || 1800; f.Q.value = 0.8;
+      var g = c.createGain(); g.gain.value = vol || 0.08;
+      s.connect(f); f.connect(g); g.connect(c.destination); s.start();
+    }
+    return {
+      isOn: function(){ return on; },
+      setOn: function(v){ on = !!v; try{ localStorage.setItem("pwco_sound", on ? "on" : "off"); }catch(e){} if(!on) this.sprayOff(); },
+      click: function(){ tone(520, 0.05, "square", 0.04, 380); },
+      buy:   function(){ tone(660, 0.08, "square", 0.05); tone(990, 0.12, "square", 0.05, null, 0.07); },
+      nope:  function(){ tone(220, 0.12, "square", 0.05, 160); },
+      coin:  function(){ tone(1320, 0.07, "square", 0.04); tone(1760, 0.1, "square", 0.04, null, 0.06); },
+      star:  function(i){ tone(880 * Math.pow(1.25, i||0), 0.16, "triangle", 0.07, null, 0); },
+      bill:  function(){ noiseBurst(0.12, 0.12, 400); tone(140, 0.18, "square", 0.06, 90); },
+      done:  function(){ [523, 659, 784, 1047].forEach(function(f, i){ tone(f, 0.16, "square", 0.05, null, i*0.09); }); },
+      fail:  function(){ tone(330, 0.2, "square", 0.05, 220); tone(220, 0.3, "square", 0.05, 150, 0.18); },
+      blip:  function(){ tone(900 + Math.random()*200, 0.03, "square", 0.025); },
+      empty: function(){ tone(200, 0.18, "square", 0.06, 120); noiseBurst(0.15, 0.06, 600); },
+      refill:function(){ tone(440, 0.08, "triangle", 0.05, 660); tone(660, 0.12, "triangle", 0.05, 880, 0.08); },
+      splash:function(){ noiseBurst(0.06, 0.05, 2600); },
+      sprayOn: function(){
+        var c = ac(); if(!c || !on || sprayNode) return;
+        var n = c.sampleRate * 2, buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+        for(var i=0;i<n;i++) d[i] = Math.random()*2-1;
+        sprayNode = c.createBufferSource(); sprayNode.buffer = buf; sprayNode.loop = true;
+        var f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 2400; f.Q.value = 0.6;
+        sprayGain = c.createGain(); sprayGain.gain.setValueAtTime(0.0001, c.currentTime); sprayGain.gain.exponentialRampToValueAtTime(0.045, c.currentTime + 0.08);
+        sprayNode.connect(f); f.connect(sprayGain); sprayGain.connect(c.destination); sprayNode.start();
+      },
+      sprayOff: function(){
+        if(!sprayNode) return;
+        var c = ctx, n = sprayNode, g = sprayGain; sprayNode = null; sprayGain = null;
+        try{ g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.12); n.stop(c.currentTime + 0.15); }catch(e){}
+      }
+    };
+  })();
+  /* every button clicks; a disabled one thuds */
+  document.addEventListener("click", function(ev){
+    var b = ev.target.closest && ev.target.closest(".pw-btn, .pw-node");
+    if(!b) return;
+    if(b.disabled) SFX.nope(); else if(!b.classList.contains("pw-node")) SFX.click();
+  }, true);
 
   /* =========================================================
      GRIME ENGINE — layered, cell based (2×2 scene pixels per cell)
@@ -1834,8 +1921,11 @@ body{
     /* scattered patches instead of one field: always on the tower, sometimes elsewhere */
     var nPatches = def.patches || (def.patchChance && rng() < def.patchChance ? 3 + Math.floor(rng()*3) : 0);
     var patches = [];
-    for(var pi=0; pi<nPatches; pi++) patches.push({ x: 0.1 + rng()*0.8, y: 0.1 + rng()*0.8, r: 0.12 + rng()*0.16, sx: 0.7 + rng()*0.8 });
+    for(var pi=0; pi<nPatches; pi++) patches.push({ x: 0.1 + rng()*0.8, y: 0.1 + rng()*0.8, r: 0.14 + rng()*0.16, sx: 0.7 + rng()*0.8 });
     var patchN = nPatches ? makeNoise(gCols,gRows, 4, rng) : null;
+    var pass = 0;
+    while(true){
+    grimeTotal = 0;
     for(var cy=0; cy<gRows; cy++){
       for(var cx=0; cx<gCols; cx++){
         var i = cy*gCols+cx;
@@ -1868,6 +1958,18 @@ body{
         grime[i] = hp;
         grimeTotal += hp;
       }
+    }
+    /* the same amount of work every time, wherever the dirt sits: too little coverage → grow
+       the patches; still short → thicken what's there (capped at the layer count) */
+    var target = gCols*gRows * 0.78 * (0.7 + 0.5*(layers-0.3));
+    var covered = 0; for(var cc=0; cc<grime.length; cc++) if(grime[cc] > 0) covered++;
+    if(nPatches && covered < gCols*gRows*0.42 && pass < 3){ pass++; patches.forEach(function(pq){ pq.r *= 1.3; }); continue; }
+    if(grimeTotal < target){
+      var scale = Math.min(1.7, target/Math.max(1, grimeTotal));
+      grimeTotal = 0;
+      for(var sc=0; sc<grime.length; sc++){ if(grime[sc] > 0){ grime[sc] = Math.min(layers, grime[sc]*scale); grimeTotal += grime[sc]; } }
+    }
+    break;
     }
     grimeLeft = grimeTotal;
     cellsTotal = 0; cellsClear = 0;
@@ -1989,6 +2091,29 @@ body{
   }
 
   var cellsTotal = 0, cellsClear = 0;
+  /* the contract zone: cells inside it, and how many are clear */
+  function contractProgress(){
+    if(!job || !job.contract || !grime) return 0;
+    var z = job.contract, clear = 0;
+    for(var cy=z.cy; cy<z.cy+z.ch; cy++) for(var cx=z.cx; cx<z.cx+z.cw; cx++){ if(z.mask[(cy-z.cy)*z.cw+(cx-z.cx)] && grime[cy*gCols+cx] <= 0.03) clear++; }
+    return z.total ? clear/z.total : 1;
+  }
+  function makeContract(rng){
+    var cw = Math.round(gCols*(0.32 + rng()*0.18)), ch = Math.round(gRows*(0.32 + rng()*0.18));
+    var cx = Math.floor(rng()*(gCols-cw)), cy = Math.floor(rng()*(gRows-ch));
+    var mask = [], total = 0;
+    for(var y=cy; y<cy+ch; y++) for(var x=cx; x<cx+cw; x++){ var dirty = grime[y*gCols+x] > 0.03; mask.push(dirty ? 1 : 0); if(dirty) total++; }
+    if(total < 12) return null;
+    var a = job.area;
+    return { cx:cx, cy:cy, cw:cw, ch:ch, mask:mask, total:total, x:a.x+cx*CELL, y:a.y+cy*CELL, w:cw*CELL, h:ch*CELL, bonus:0.30 };
+  }
+  function drawContract(){
+    var z = job.contract; if(!z) return;
+    var done = contractProgress() >= 0.999, col = done ? P.leafHi : P.sunHi;
+    for(var x=z.x; x<z.x+z.w; x+=4){ FX(x, z.y-1, 2, 1, col); FX(x, z.y+z.h, 2, 1, col); }
+    for(var y=z.y; y<z.y+z.h; y+=4){ FX(z.x-1, y, 1, 2, col); FX(z.x+z.w, y, 1, 2, col); }
+    FX(z.x-2, z.y-2, 3, 3, col); FX(z.x+z.w-1, z.y-2, 3, 3, col); FX(z.x-2, z.y+z.h-1, 3, 3, col); FX(z.x+z.w-1, z.y+z.h-1, 3, 3, col);
+  }
   function cleanliness(){
     if(!grimeTotal) return 1;
     var byHp = clamp(1 - grimeLeft/grimeTotal, 0, 1);
@@ -2219,6 +2344,8 @@ body{
     bx.clearRect(0,0,CW,CH);
     def.scene(def.area, rng);
     buildGrime(rng);
+    job.contract = (!type.graffiti && rng() < 0.45) ? makeContract(rng) : null;
+    job.tipMax = tipJarMax();
     drawAllGrime();
     fx.clearRect(0,0,CW,CH);
     particles = [];
@@ -2272,7 +2399,7 @@ body{
       var t = clamp(refillT / refillMs(), 0, 1);
       job.tank = lerp(refillFrom, tankMax(), t);
       setTank(job.tank);
-      if(t >= 1){ refilling = false; job.tank = tankMax(); setTank(job.tank); $("stageOverlay").classList.add("hidden"); }
+      if(t >= 1){ refilling = false; job.tank = tankMax(); setTank(job.tank); $("stageOverlay").classList.add("hidden"); SFX.refill(); }
     }
 
     if(spraying && !refilling && job.tank > 0){
@@ -2308,11 +2435,15 @@ body{
 
     fx.clearRect(0,0,CW,CH);
     if(job.def.over) job.def.over();
+    drawContract();
+    renderJobHud(left);
     if(job.def.props){ var keepBx = bx; bx = fx; job.def.props(job.area); bx = keepBx; }
     drawParticles();
     drawSon();
     var tip = drawWasher();
-    if(spraying && !refilling && job.tank > 0) drawSprayCone(tip);
+    var sprayingNow = spraying && !refilling && job.tank > 0;
+    if(sprayingNow) drawSprayCone(tip);
+    syncSpraySound(sprayingNow);
 
     rafId = requestAnimationFrame(frame);
   }
@@ -2346,7 +2477,7 @@ body{
     refilling = true; refillT = 0; refillFrom = job.tank;
     $("overlayText").textContent = "Refilling tank…";
     $("stageOverlay").classList.remove("hidden");
-    shakeStage();
+    shakeStage(); SFX.empty();
   }
   function shakeStage(){
     stage.classList.remove("is-shake");
@@ -2373,6 +2504,20 @@ body{
     var secs = Math.max(0, Math.ceil(ms/1000));
     $("timeLabel").textContent = Math.floor(secs/60) + ":" + (secs%60 < 10 ? "0" : "") + (secs%60);
   }
+  /* the tip you'd get right now: it shrinks as the customer waits */
+  function tipJarMax(){ return 12 + Math.round(state.jobsCompleted*1.5) + Math.round(regionDef().pay*8); }
+  function tipNow(msLeft){ if(lvl("tipjar") <= 0) return 0; return Math.round(job.tipMax * clamp(msLeft/job.duration, 0, 1)); }
+  function renderJobHud(msLeft){
+    var tipEl = $("tipBadge");
+    if(lvl("tipjar") > 0){ tipEl.classList.remove("hidden"); $("tipVal").textContent = money(tipNow(msLeft)); }
+    else tipEl.classList.add("hidden");
+    if(job.contract){
+      var pr = contractProgress();
+      $("contractLine").classList.remove("hidden");
+      $("contractVal").textContent = pr >= 0.999 ? "done" : Math.floor(pr*100) + "%";
+      $("contractLine").classList.toggle("is-done", pr >= 0.999);
+    } else $("contractLine").classList.add("hidden");
+  }
   function updateClean(){
     var c = cleanliness();
     setClean(c);
@@ -2395,6 +2540,8 @@ body{
     if(!on) lastSprayPt = null;
     spraying = on;
   }
+  var sprayWasOn = false;
+  function syncSpraySound(on){ if(on !== sprayWasOn){ sprayWasOn = on; if(on) SFX.sprayOn(); else SFX.sprayOff(); } }
   var lastPointerType = "mouse";
   stage.addEventListener("pointerenter", function(e){ lastPointerType = e.pointerType || "mouse"; hovering = true; aim = stagePoint(e); updateSpraying(); });
   stage.addEventListener("pointerleave", function(){ hovering = false; pressed = false; updateSpraying(); });
@@ -2416,6 +2563,7 @@ body{
   function stopJobLoop(){
     if(rafId && window.cancelAnimationFrame) cancelAnimationFrame(rafId);
     rafId = null; spraying = false; hovering = false; pressed = false; refilling = false;
+    syncSpraySound(false);
   }
 
   /* =========================================================
@@ -2429,6 +2577,7 @@ body{
     return 0;
   }
   function starsHTML(n){
+    for(var si=0; si<n; si++) (function(k){ setTimeout(function(){ SFX.star(k); }, 250 + k*150); })(si);
     var s = '<div class="pw-stars">';
     for(var i=0;i<3;i++) s += ic("star", i < n ? "is-on" : "is-off");
     return s + '</div>';
@@ -2465,7 +2614,11 @@ body{
     if(state.perks.sunday && job.weather.sun) pay *= 1.06;
     pay = Math.round(pay);
 
-    var tip = (Math.random() < tipChance()) ? 10 + Math.floor(Math.random()*18) : 0;
+    var leftMs = Math.max(0, job.duration - elapsed);
+    var tip = (lvl("tipjar") > 0 && pct >= 80) ? tipNow(leftMs) : 0;
+    var contractMet = !!(job.contract && contractProgress() >= 0.999);
+    var contractBonus = contractMet ? Math.round(pay * job.contract.bonus) : 0;
+    pay += contractBonus;
     var crew = crewIncome();
     var cut = state.loan > 0 ? Math.min(state.loan, Math.round(pay * LENDER.cut)) : 0;
     if(cut > 0 && state.loan - cut <= 0) lenderJustPaid = true;
@@ -2485,6 +2638,8 @@ body{
     save(); renderTop();
 
     if(mode === "complete" && stars === 3){ burst(CW/2, CH/2, P.sunHi); shakeStage(); }
+    if(mode === "timeout" && pct < 60) SFX.fail(); else SFX.done();
+    if(contractMet) state.rep += 2;
     fx.clearRect(0,0,CW,CH); drawParticles();
 
     state.recentPays.push(pay); if(state.recentPays.length > 6) state.recentPays = state.recentPays.slice(-6);
@@ -2496,7 +2651,10 @@ body{
       mRow(ic("sparkle")+"Cleanliness", pct+"%"),
       mRow(ic("coin")+"Job pay", "+"+money(pay), "pw-stats__val--up")
     ];
-    if(tip>0)  rows.push(mRow(ic("jar")+"Tip", "+"+money(tip), "pw-stats__val--up"));
+    if(contractMet) rows.push(mRow(ic("bill")+"Contract met", "+"+money(contractBonus), "pw-stats__val--up"));
+    else if(job.contract) rows.push(mRow(ic("bill")+"Contract", Math.floor(contractProgress()*100)+"% — no bonus", "pw-stats__val--down"));
+    if(tip>0)  rows.push(mRow(ic("jar")+"Tip for speed", "+"+money(tip), "pw-stats__val--up"));
+    else if(lvl("tipjar") > 0) rows.push(mRow(ic("jar")+"Tip", pct >= 80 ? "too slow — nothing" : "under 80% — nothing", "pw-stats__val--down"));
     if(crew>0) rows.push(mRow(ic("hardhat")+"Crew jobs", "+"+money(crew), "pw-stats__val--up"));
     if(state.streak>1) rows.push(mRow(ic("flame")+"Streak", "×"+state.streak+(state.streak>=STREAK_MAX ? " (max)" : "")+" · pay +"+Math.round((streakMult()-1)*100)+"%"));
     if(cut>0) rows.push(mRow(ic("coin")+LENDER.name+"’s cut", "−"+money(cut)+(state.loan>0 ? " · "+money(state.loan)+" left" : " · square"), "pw-stats__val--down"));
@@ -2569,7 +2727,7 @@ body{
     if(state.cash >= amount){
       state.cash -= amount;
       state.rep += gain;
-      save(); renderTop();
+      save(); renderTop(); SFX.bill();
       var go = function(){
         showModal(
           mHead("bill", "Overhead paid", "Handled. Every bill buys a little reputation.", "Bill") +
@@ -2682,7 +2840,8 @@ body{
   function openSettings(){
     var night = document.documentElement.getAttribute("data-theme") === "night";
     showModal(mHead("wrench", "Settings", null, "Options"),
-      [ { label: night ? "Switch to day mode" : "Switch to night mode", cls:"pw-btn--ghost", action:function(){ applyTheme(night ? "day" : "night"); if(!$("screen-home").classList.contains("hidden")) renderHome(); } },
+      [ { label: SFX.isOn() ? "Sound: on" : "Sound: off", cls:"pw-btn--ghost", action:function(){ SFX.setOn(!SFX.isOn()); openSettings(); } },
+        { label: night ? "Switch to day mode" : "Switch to night mode", cls:"pw-btn--ghost", action:function(){ applyTheme(night ? "day" : "night"); if(!$("screen-home").classList.contains("hidden")) renderHome(); } },
         { label:"Replay the story", cls:"pw-btn--ghost", icon:"book", action:function(){ runDialogue(STORY.intro, null); } },
         { label:"Back to the title screen", cls:"pw-btn--ghost", action:function(){ showScreen("screen-title"); renderTitle(); } },
         { label:"Reset save", cls:"pw-btn--ghost", action:function(){
@@ -2793,6 +2952,7 @@ body{
     if(dlgTimer) clearInterval(dlgTimer);
     dlgTimer = setInterval(function(){
       dlgShown = Math.min(dlgFull.length, dlgShown + 2);
+      if(dlgShown % 6 === 0) SFX.blip();
       $("dlgText").textContent = dlgFull.slice(0, dlgShown);
       if(dlgShown >= dlgFull.length){ clearInterval(dlgTimer); dlgTimer = null; }
     }, 16);
@@ -2827,6 +2987,7 @@ body{
     $("cashBadge").textContent = money(state.cash);
     if(lastCash !== null && lastCash !== state.cash){
       var c = $("cashBadge").parentNode; c.classList.remove("is-bump"); void c.offsetWidth; c.classList.add("is-bump");
+      SFX.coin();
     }
     lastCash = state.cash;
     $("repBadge").textContent = state.rep;
@@ -2913,22 +3074,28 @@ body{
     miniHouse(24, 62, 14, 8, P.parchHi, "#4d7f6f"); miniHouse(54, 58, 12, 7, P.parch, P.coral);
     for(var fx=8; fx<40; fx+=3){ R(fx, 80, 2, 3, P.parchHi); } R(8,81,32,1,P.parchLo);
     miniTree(8, 60); miniTree(70, 52); miniTree(48, 78); bush(66, 82, 0.5);
-    miniCar(56, 96, P.coral); miniCar(30, 96, P.water);
+
     /* downtown, on land east of the river — towers dwarf the houses */
     towerSlab(102, 22, 12, 50, P.c3, P.waterHi); towerSlab(116, 34, 9, 38, P.c4, P.waterHi); towerSlab(128, 10, 13, 62, P.c2, P.waterHi); towerSlab(144, 30, 10, 42, P.c3, P.waterHi);
     antenna(134, 10, 9);
-    R(100, 74, 60, 4, P.c3); R(100, 74, 60, 1, P.c4); crosswalk(108, 74, 20); miniCar(126, 80, P.sun);
+    R(100, 74, 56, 4, P.c3); R(100, 74, 56, 1, P.c4); crosswalk(108, 74, 20);
     /* harbour: quay, pier into the sea, boats, lighthouse */
     R(160, 60, 40, 4, P.c3); R(160, 60, 40, 1, P.c4);
     box(196, 62, 30, 3, P.p3, P.p4, P.p1); R(200,65,2,7,P.p1); R(210,65,2,7,P.p1); R(220,65,2,7,P.p1);
     miniBoat(224, 78, P.coral); miniBoat(186, 92, "#4d7f6f"); sailboat(206, 96); sailboat(170, 84);
     lighthouse(232, 60, 18); buoy(164, 90); seagull(170, 44); seagull(190, 40); seagull(224, 36);
-    /* the road: suburb → bridge → downtown → up to the quay, where it ends */
-    for(var rx2=8; rx2<=198; rx2++){
-      var ry2 = rx2 < 150 ? 90 - Math.round(Math.sin(rx2/38)*5) : 90 - Math.round((rx2-150)*0.55);
+    /* the road: suburb → bridge → downtown, then it bends up and follows the shore to the quay */
+    function roadY(x){
+      if(x < 128) return 90 - Math.round(Math.sin(x/38)*5);
+      if(x < 156) return 88 - Math.round((x-128)*1.0);       /* climbing along the shore */
+      return 60 - Math.round(Math.sin((x-156)/12)*2);        /* the quay road */
+    }
+    for(var rx2=8; rx2<=196; rx2++){
+      var ry2 = roadY(rx2);
       R(rx2, ry2, 1, 4, P.c3); R(rx2, ry2, 1, 1, P.c4); R(rx2, ry2+3, 1, 1, P.c1); if((rx2 % 8) < 4) R(rx2, ry2+2, 1, 1, P.parchHi);
     }
     box(82, 86, 14, 6, P.p3, P.p4, P.p1); R(82,84,14,1,P.p1); R(82,93,14,1,P.p1);
+    miniCar(40, roadY(40)+1, P.coral); miniCar(112, roadY(112)+1, P.sun); miniCar(176, roadY(176)+1, P.water);
     bx = keep;
   }
   function renderMap(){
@@ -3003,7 +3170,7 @@ body{
         if(touch && n !== lastTapped){ lastTapped = n; show(); return; }   /* first tap on touch: read, second: buy */
         var gate = treeGate(key, level), cost = costOf(key, level);
         if(lvl(key) > level || gate || state.cash < cost){ show(); n.classList.remove("is-nope"); void n.offsetWidth; n.classList.add("is-nope"); return; }
-        buyGear(key, cost);
+        buyGear(key, cost); SFX.buy();
         var again = wrap.querySelector('[data-key="'+key+'"][data-level="'+level+'"]');
         if(again){ again.classList.add("is-bought"); }
       };

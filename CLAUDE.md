@@ -7,7 +7,7 @@ A single-file browser game: everything lives in `index.html` (styles, markup, sc
 - Never work directly on `main`. At the start of a task, create a branch from `main` named for the task (e.g. `harbor-night-scenes`, `fix-tank-refill`).
 - Commit as you go: after each self-contained change that runs without errors, commit with a clear message (what changed and why).
 - When the task is done and verified in the browser, push the branch and open a ready-for-review pull request with `gh pr create` (title = summary, body = what changed, why, anything to check). Do not open drafts.
-- Report the PR URL when done. If a PR already exists for the branch, push to it instead of opening another.
+- Merge the PR yourself once it's open (`gh pr merge --merge --delete-branch`), then pull `main`. Report the PR URL when done. If a PR already exists for the branch, push to it instead of opening another.
 - Don't force-push or rewrite `main`.
 
 ## Design system

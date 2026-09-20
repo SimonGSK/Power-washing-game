@@ -375,7 +375,7 @@ body{
 /* skill tree */
 .tree-scroll{overflow-x:auto;padding:6px 0 12px;}
 .tree-wrap{position:relative;width:100%;min-width:560px;max-width:640px;aspect-ratio:1.18/1;margin:0 auto;}
-.tree-wrap.is-4{min-width:660px;max-width:720px;}
+.tree-wrap{min-width:660px;max-width:720px;}
 .tree-wrap .pw-node{position:absolute;margin:-21px 0 0 -21px;}
 .tree-wrap .pw-node--core{margin:-27px 0 0 -27px;}
 .tree-wrap .pw-tree__edge{margin-left:-1px;}
@@ -698,11 +698,11 @@ body{
     { core:"powercore", label:"Water",    twigs:["pressure","nozzle"],  leaf:"surge" },
     { core:"tankcore",  label:"Tank",     twigs:["tank","refill"],      leaf:"bigrig" },
     { core:"bizcore",   label:"Business", twigs:["pay","patience"],     leaf:"empire" },
-    { core:"crewcore",  label:"Crew",     twigs:["morale","watergun"],  leaf:"family", needs:function(){ return crewUnlocked(); } }
+    { core:"crewcore",  label:"Crew",     twigs:["morale","watergun"],  leaf:"family", needs:function(){ return crewUnlocked(); }, gateText:"Hire someone on the Crew screen first." }
   ];
   function crewUnlocked(){ return Object.keys(state.crew).length > 0 || state.son > 0; }
   function limbsNow(){
-    var defs = LIMB_DEFS.filter(function(d){ return !d.needs || d.needs(); });
+    var defs = LIMB_DEFS;
     var n = defs.length, span = 100/n, off = span*0.30;
     return defs.map(function(d, i){
       var x = Math.round((i+0.5)*span*10)/10;
@@ -857,6 +857,11 @@ body{
   function sprayRadius(){
     return 5.5 + lvl("nozzle")*1.25 + (lvl("prowasher")>0 ? 2 : 0) + (lvl("surge")>0 ? 1.5 : 0);
   }
+  /* how much harder each pass has to work: grows with jobs done and with the region */
+  var REGION_TOUGH = { grove:1.0, city:1.15, harbor:1.35 };
+  function grimeToughness(){
+    return (1 + Math.min(3.0, state.jobsCompleted * 0.06)) * (REGION_TOUGH[state.region] || 1);
+  }
   function sonHired(){ return state.son > 0; }
   function sonRadius(){ return 3 + lvl("watergun")*1.2; }
   function sonIntervalMs(){ return lvl("family")>0 ? 450 : 900; }
@@ -935,7 +940,7 @@ body{
   function treeGate(key, level){
     for(var i=0;i<LIMB_DEFS.length;i++){
       var L = LIMB_DEFS[i];
-      if(L.core === key) return (L.needs && !L.needs()) ? "Hire someone first." : null;
+      if(L.core === key) return (L.needs && !L.needs()) ? L.gateText : null;
       if(L.leaf === key){
         if(lvl(L.twigs[0]) >= 3 && lvl(L.twigs[1]) >= 3) return null;
         return "Needs " + GEAR[L.twigs[0]].title + " and " + GEAR[L.twigs[1]].title +
@@ -943,6 +948,7 @@ body{
       }
       for(var t=0;t<L.twigs.length;t++){
         if(L.twigs[t] === key){
+          if(L.needs && !L.needs()) return L.gateText;
           if(lvl(L.core) === 0) return "Install " + GEAR[L.core].title + " on the trunk first.";
           if(lvl(key) !== level) return "Install level " + level + " of this branch first.";
           return null;
@@ -1650,7 +1656,7 @@ body{
         var dx = px-x, dy = py-y, d2 = dx*dx + dy*dy;
         if(d2 > rr2) continue;
         var fall = 1 - (Math.sqrt(d2)/radius)*0.5;
-        var take = Math.min(hp, power*fall);
+        var take = Math.min(hp, power*fall / job.tough);
         grime[i] = hp - take;
         removed += take;
         paintCell(cx,cy);
@@ -1850,14 +1856,14 @@ body{
 
     var deep1 = mix(type.shades[2], PAL_FALLBACK.ink, 0.28), deep2 = mix(type.shades[2], PAL_FALLBACK.ink, 0.5);
     job = {
-      def: def, area: def.area, grime: type, weather: weather, shades: type.shades.concat([deep1, deep2]),
+      def: def, area: def.area, grime: type, weather: weather, shades: type.shades.concat([deep1, deep2]), tough: grimeToughness(),
       duration: jobMs(), start: 0, tank: tankMax(), ended: false, started: false,
       region: state.region
     };
 
     showScreen("screen-job");
     $("jobName").textContent = def.name;
-    $("jobSub").textContent = type.name + " · " + regionDef().name + " · " + weather.name;
+    $("jobSub").textContent = type.name + " · " + regionDef().name + " · " + weather.name + " · dirt ×" + grimeToughness().toFixed(1);
     var night = document.documentElement.getAttribute("data-theme") === "night";
     $("stageTint").style.background = night ? (getComputedStyle(document.documentElement).getPropertyValue("--scene-night") || "rgba(24,42,94,0.55)") : weather.tint;
 
@@ -2123,7 +2129,7 @@ body{
     state.jobsCompleted += 1;
     state.jobsSinceBill += 1;
     state.stats[job.region] = (state.stats[job.region]||0) + 1;
-    if(mode === "complete"){ state.streak += 1; } else { state.streak = 0; }
+    if(mode === "complete" || pct >= 80){ state.streak += 1; } else { state.streak = 0; }
     if(pct > state.stats.bestClean) state.stats.bestClean = pct;
     if(state.streak > state.stats.longestStreak) state.stats.longestStreak = state.streak;
     save(); renderTop();
@@ -2145,7 +2151,7 @@ body{
 
     var body = mHead(icon, heads[stars] || heads[0], null, mode === "timeout" ? "Time's up" : "Job complete") +
       starsHTML(stars) + mRows(rows) +
-      (mode==="timeout" ? mNote("Streak broken — back to zero.") : '');
+      (mode==="timeout" ? mNote(pct >= 80 ? "Not finished, but good enough to keep the streak." : "Under 80% — streak broken, back to zero.") : '');
 
     showModal(body, [{ label:"Continue", cls:"pw-btn--primary pw-btn--big", icon:"arrow-right", action: afterJob }]);
   }
@@ -2611,7 +2617,8 @@ body{
     });
     limbsNow().forEach(function(limb){
       var coreOwned = lvl(limb.core) > 0;
-      addNode(limb.x, limb.y, "pw-node--core " + (coreOwned ? "pw-node--owned" : "pw-node--available"), limb.core, 0, null);
+      var coreGated = !!treeGate(limb.core, 0);
+      addNode(limb.x, limb.y, "pw-node--core " + (coreOwned ? "pw-node--owned" : (coreGated ? "pw-node--locked" : "pw-node--available")), limb.core, 0, null);
       addLabel(limb.x, limb.y + 9, limb.label);
       limb.twigs.forEach(function(twig){
         twig.pts.forEach(function(pt, i){
@@ -2625,7 +2632,7 @@ body{
       addNode(limb.leaf.x, limb.leaf.y, leafOwned ? "pw-node--maxed" : (maxed ? "pw-node--available" : "pw-node--locked"), limb.leaf.key, 0, null);
     });
     wrap.appendChild(treeTip);
-    $("treeHint").textContent = crewUnlocked() ? "Hover a node to see what it does." : "Hover a node to see what it does. Hire someone to open the Crew limb.";
+    $("treeHint").textContent = crewUnlocked() ? "Hover a node to see what it does. Dirt gets tougher with every job — keep the rig ahead of it." : "Hover a node to see what it does. The Crew limb opens once you hire someone.";
   }
 
 

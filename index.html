@@ -6,11 +6,18 @@
 <title>Power Wash Co.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
+/* One composed pixel face: Pixelify Sans for letters, Jersey 20 for digits (its 5 reads as a 5). */
+@font-face{font-family:"PW Pixel";font-style:normal;font-weight:400 700;font-display:swap;
+  src:url(https://fonts.gstatic.com/s/pixelifysans/v3/CHylV-3HFUT7aC4iv1TxGDR9Jn0Ei0tSaJ0.woff2) format("woff2");
+  unicode-range:U+0000-002F,U+003A-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:"PW Pixel";font-style:normal;font-weight:400 700;font-display:swap;
+  src:url(https://fonts.gstatic.com/s/jersey20/v4/ZgNRjP1ON6jeW4D12z3sq0XrHYqHuA.woff2) format("woff2");
+  unicode-range:U+0030-0039;}
 :root, [data-theme="day"]{--ground:#8fcbe4;--ground-deep:#cfe6c9;--parchment:#f8dc9c;--parchment-hi:#fff0c4;--parchment-lo:#e9c274;--track:#4e2f19;--wood:#b46a2c;--wood-hi:#d98d47;--wood-lo:#7e451a;--ink:#3a2010;--ink-soft:#74461f;--text-ground:#3a2010;--text-ground-soft:#3f4a52;--link:var(--ink-soft);--scrim:#1a0e06b3;--sun:#f6c744;--sun-hi:#ffe08a;--sun-lo:#c8901a;--sun-text:#7d5404;--coral:#e8744c;--coral-hi:#f5a07e;--coral-lo:#a03a1c;--water:#58a6d8;--water-hi:#a5dcf3;--water-lo:#26668f;--leaf:#74b247;--leaf-hi:#cfe6a8;--leaf-lo:#386a1b;--berry:#d980a4;--berry-lo:#8a2d52;--ember:#f39a52;--stone:#b9b4a6;--stone-lo:#6f6a60;--danger:#d9503c;--danger-text:#b02e1c;--sky-grove-top:#a8dcef;--sky-grove-bottom:#e9f4da;--sky-city-top:#9dc6e6;--sky-city-bottom:#f1e2ca;--sky-harbor-top:#8fd2e2;--sky-harbor-bottom:#fce8bf;--grime-dust-1:#b09a6b;--grime-dust-2:#8b7449;--grime-dust-3:#665430;--grime-dust-splash:#e6d8b4;--grime-mud-1:#9c7a52;--grime-mud-2:#70522f;--grime-mud-3:#4a351d;--grime-mud-splash:#dcc5a2;--grime-moss-1:#93b166;--grime-moss-2:#61883b;--grime-moss-3:#3d6425;--grime-moss-splash:#c9e4a6;--grime-grease-1:#7f776a;--grime-grease-2:#524c43;--grime-grease-3:#2d2a24;--grime-grease-splash:#d2ccbe;--grime-soot-1:#8c8c93;--grime-soot-2:#5d5d65;--grime-soot-3:#34343b;--grime-soot-splash:#d6d6de;--grime-salt-1:#c0cdc5;--grime-salt-2:#93a79d;--grime-salt-3:#657a70;--grime-salt-splash:#eaf3ed;--weather-overcast:rgba(92,102,112,0.12);--weather-golden:rgba(240,150,70,0.14);--weather-drizzle:rgba(70,92,104,0.18);--scene-night:rgba(24,42,94,0.55);--rig-0-body:#d8d2c4;--rig-0-trim:#a89d80;--rig-1-body:#8fc4d8;--rig-1-trim:#4a9cc4;--rig-2-body:#4a9cc4;--rig-2-trim:#2d7096;--rig-3-body:#e8794a;--rig-3-trim:#bb5527;--rig-4-body:#f5c451;--rig-4-trim:#cc9721;--scene-grass-1:#2f6b2a;--scene-grass-2:#4a8f34;--scene-grass-3:#6fb043;--scene-grass-4:#9ad35c;--scene-soil-1:#4a2f1a;--scene-soil-2:#6e4a2b;--scene-soil-3:#9a6b3e;--scene-soil-4:#c49560;--scene-plank-1:#5a3416;--scene-plank-2:#8a5a2b;--scene-plank-3:#b8813f;--scene-plank-4:#d9a962;--scene-sea-1:#1f5a86;--scene-sea-2:#2f7fb3;--scene-sea-3:#4fa6d6;--scene-sea-4:#8ed3f0;--scene-concrete-1:#6f6b66;--scene-concrete-2:#9a948c;--scene-concrete-3:#c2bcb2;--scene-concrete-4:#e6e1d8;--scene-concrete-5:#f4f0e8;--ring-ink:0 -3px 0 0 #3a2010, 0 3px 0 0 #3a2010, -3px 0 0 0 #3a2010, 3px 0 0 0 #3a2010;--bevel-parchment:inset 0 3px 0 0 #fff0c4, inset 0 -3px 0 0 #e9c274;--bevel-wood:inset 0 3px 0 0 #d98d47, inset 0 -3px 0 0 #7e451a;--lift-sun:0 6px 0 0 #c8901a;--lift-coral:0 6px 0 0 #a03a1c;--lift-water:0 6px 0 0 #26668f;--lift-leaf:0 6px 0 0 #386a1b;--lift-ghost:0 6px 0 0 #c8901a;--drop-hard:6px 6px 0 0 #1a0e0640;--focus-ring:0 0 0 3px #3a2010, 0 0 0 6px #fff0c4}
 [data-theme="night"]{--ground:#161c3a;--ground-deep:#0d1128;--parchment:#f8dc9c;--parchment-hi:#fff0c4;--parchment-lo:#e9c274;--track:#4e2f19;--wood:#c07636;--wood-hi:#e09a52;--wood-lo:#7e451a;--ink:#3a2010;--ink-soft:#74461f;--text-ground:#f3e2b8;--text-ground-soft:#b9b3d9;--link:var(--ink-soft);--scrim:#05071ab3;--sun:#f6c744;--sun-hi:#ffe08a;--sun-lo:#c8901a;--sun-text:#7d5404;--coral:#e8744c;--coral-hi:#f5a07e;--coral-lo:#a03a1c;--water:#58a6d8;--water-hi:#a5dcf3;--water-lo:#26668f;--leaf:#74b247;--leaf-hi:#cfe6a8;--leaf-lo:#386a1b;--berry:#d980a4;--berry-lo:#8a2d52;--ember:#f39a52;--stone:#b9b4a6;--stone-lo:#6f6a60;--danger:#d9503c;--danger-text:#b02e1c;--sky-grove-top:#a8dcef;--sky-grove-bottom:#e9f4da;--sky-city-top:#9dc6e6;--sky-city-bottom:#f1e2ca;--sky-harbor-top:#8fd2e2;--sky-harbor-bottom:#fce8bf;--grime-dust-1:#b09a6b;--grime-dust-2:#8b7449;--grime-dust-3:#665430;--grime-dust-splash:#e6d8b4;--grime-mud-1:#9c7a52;--grime-mud-2:#70522f;--grime-mud-3:#4a351d;--grime-mud-splash:#dcc5a2;--grime-moss-1:#93b166;--grime-moss-2:#61883b;--grime-moss-3:#3d6425;--grime-moss-splash:#c9e4a6;--grime-grease-1:#7f776a;--grime-grease-2:#524c43;--grime-grease-3:#2d2a24;--grime-grease-splash:#d2ccbe;--grime-soot-1:#8c8c93;--grime-soot-2:#5d5d65;--grime-soot-3:#34343b;--grime-soot-splash:#d6d6de;--grime-salt-1:#c0cdc5;--grime-salt-2:#93a79d;--grime-salt-3:#657a70;--grime-salt-splash:#eaf3ed;--weather-overcast:rgba(92,102,112,0.12);--weather-golden:rgba(240,150,70,0.14);--weather-drizzle:rgba(70,92,104,0.18);--scene-night:rgba(24,42,94,0.55);--rig-0-body:#d8d2c4;--rig-0-trim:#a89d80;--rig-1-body:#8fc4d8;--rig-1-trim:#4a9cc4;--rig-2-body:#4a9cc4;--rig-2-trim:#2d7096;--rig-3-body:#e8794a;--rig-3-trim:#bb5527;--rig-4-body:#f5c451;--rig-4-trim:#cc9721;--scene-grass-1:#2f6b2a;--scene-grass-2:#4a8f34;--scene-grass-3:#6fb043;--scene-grass-4:#9ad35c;--scene-soil-1:#4a2f1a;--scene-soil-2:#6e4a2b;--scene-soil-3:#9a6b3e;--scene-soil-4:#c49560;--scene-plank-1:#5a3416;--scene-plank-2:#8a5a2b;--scene-plank-3:#b8813f;--scene-plank-4:#d9a962;--scene-sea-1:#1f5a86;--scene-sea-2:#2f7fb3;--scene-sea-3:#4fa6d6;--scene-sea-4:#8ed3f0;--scene-concrete-1:#6f6b66;--scene-concrete-2:#9a948c;--scene-concrete-3:#c2bcb2;--scene-concrete-4:#e6e1d8;--scene-concrete-5:#f4f0e8;--ring-ink:0 -3px 0 0 #3a2010, 0 3px 0 0 #3a2010, -3px 0 0 0 #3a2010, 3px 0 0 0 #3a2010;--bevel-parchment:inset 0 3px 0 0 #fff0c4, inset 0 -3px 0 0 #e9c274;--bevel-wood:inset 0 3px 0 0 #e09a52, inset 0 -3px 0 0 #7e451a;--lift-sun:0 6px 0 0 #c8901a;--lift-coral:0 6px 0 0 #a03a1c;--lift-water:0 6px 0 0 #26668f;--lift-leaf:0 6px 0 0 #386a1b;--lift-ghost:0 6px 0 0 #c8901a;--drop-hard:6px 6px 0 0 #00000080;--focus-ring:0 0 0 3px #3a2010, 0 0 0 6px #fff0c4}
-:root{--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:48px;--radius-none:0px;--px-unit:3px;--px-line:3px;--px-band:6px;--px-lift:6px;--px-scene-scale:4;--font-pixel:"Pixelify Sans", "Trebuchet MS", sans-serif}
+:root{--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:48px;--radius-none:0px;--px-unit:3px;--px-line:3px;--px-band:6px;--px-lift:6px;--px-scene-scale:4;--font-pixel:"PW Pixel", "Pixelify Sans", "Trebuchet MS", sans-serif}
 /* Power Wash Co. — pixel UI. Classes are prefixed pw-.
    Rules: no border-radius, no blur, no opacity, no diagonal edges. Every edge is a whole
    number of --px-unit (3px). Frames are box-shadow copies; bevels are flat gradient bands. */
@@ -353,7 +360,12 @@ body{
 .pw-topbar{min-height:38px;}
 
 /* home */
-#truckStage{text-align:center;overflow:hidden;}
+#truckStage{overflow:hidden;}
+.rig-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:12px;align-items:center;}
+.rig-grid > div:first-child{text-align:center;}
+@media (max-width:640px){ .rig-grid{grid-template-columns:1fr;} }
+#rigStats .pw-stats__row{padding:4px 0;font-size:14px;line-height:18px;}
+#rigStats .pw-stats__key{font-size:13px;}
 #truckArt{width:100%;max-width:400px;margin:0 auto;display:block;}
 #truckArt svg{width:100%;height:auto;display:block;}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -438,9 +450,14 @@ body{
       </div>
     </div>
     <div class="pw-panel" id="truckStage">
-      <div id="truckArt"></div>
-      <p class="pw-heading" id="tierName">Rookie Rig</p>
-      <p class="pw-small pw-soft" id="tierSub">A hose, a dream and a little elbow grease.</p>
+      <div class="rig-grid">
+        <div>
+          <div id="truckArt"></div>
+          <p class="pw-heading" id="tierName">Rookie Rig</p>
+          <p class="pw-small pw-soft" id="tierSub">A hose, a dream and a little elbow grease.</p>
+        </div>
+        <div class="pw-panel pw-panel--plain pw-panel--tight" id="rigStats"></div>
+      </div>
     </div>
     <div class="pw-panel pw-panel--tight pw-row pw-row--spread" id="regionBar">
       <span class="pw-chip"><span class="ico" data-ic="map"></span><span id="regionName">Maple Grove</span></span>
@@ -698,9 +715,9 @@ body{
     { core:"powercore", label:"Water",    twigs:["pressure","nozzle"],  leaf:"surge" },
     { core:"tankcore",  label:"Tank",     twigs:["tank","refill"],      leaf:"bigrig" },
     { core:"bizcore",   label:"Business", twigs:["pay","patience"],     leaf:"empire" },
-    { core:"crewcore",  label:"Crew",     twigs:["morale","watergun"],  leaf:"family", needs:function(){ return crewUnlocked(); }, gateText:"Hire someone on the Crew screen first." }
+    { core:"crewcore",  label:"Crew",     twigs:["morale","watergun"],  leaf:"family", needs:function(){ return crewUnlocked(); }, gateText:"Hire your first crew member (Jordan, Mimi or Rex) to open this limb." }
   ];
-  function crewUnlocked(){ return Object.keys(state.crew).length > 0 || state.son > 0; }
+  function crewUnlocked(){ return Object.keys(state.crew).length > 0; }
   function limbsNow(){
     var defs = LIMB_DEFS;
     var n = defs.length, span = 100/n, off = span*0.30;
@@ -716,7 +733,7 @@ body{
     pressure:{ title:"Water Pressure", icon:"bolt", costs:[110,290,640],
       desc:["Spray power +0.3 (0.5 → 0.8): grime strips 60% faster","Spray power +0.3 (0.8 → 1.1)","Spray power +0.3 (1.1 → 1.4)"] },
     nozzle:  { title:"Nozzle Width",   icon:"wand", costs:[90,240,520],
-      desc:["Nozzle +1.25 px: spray area +50%","Nozzle +1.25 px: spray area +40%","Nozzle +1.25 px: spray area +34%"] },
+      desc:["Nozzle +1.25 px: spray area +46%","Nozzle +1.25 px: spray area +37%","Nozzle +1.25 px: spray area +32%"] },
     tank:    { title:"Tank Capacity",  icon:"barrel", costs:[80,210,480],
       desc:["Tank +110 L (260 → 370 L)","Tank +130 L (370 → 500 L)","Tank +160 L (500 → 660 L)"] },
     refill:  { title:"Refill Speed",   icon:"clock", costs:[90,230,470],
@@ -752,7 +769,7 @@ body{
   };
   var SHOP = {
     prowasher: { title:"Pro Pressure Washer", icon:"wand", costs:[900],
-      desc:["Spray power +0.42 and nozzle +2 px (spray area roughly doubles)"] },
+      desc:["Spray power +0.42 and nozzle +2 px (spray area +55% or more)"] },
     degreaser: { title:"Chemical Degreaser", icon:"flask", costs:[220,460],
       desc:["Grime gives way 18% easier","Grime gives way 32% easier in total"] },
     foamcannon:{ title:"Foam Cannon", icon:"foam", costs:[260,540],
@@ -854,17 +871,27 @@ body{
       + (lvl("surge")>0 ? 0.40 : 0);
   }
   /* scene pixels: the first nozzle is narrow on purpose — early jobs are a race against the timer */
+  var BASE_RADIUS = 6;
   function sprayRadius(){
-    return 5.5 + lvl("nozzle")*1.25 + (lvl("prowasher")>0 ? 2 : 0) + (lvl("surge")>0 ? 1.5 : 0);
+    return BASE_RADIUS + lvl("nozzle")*1.25 + (lvl("prowasher")>0 ? 2 : 0) + (lvl("surge")>0 ? 1.5 : 0);
   }
-  /* how much harder each pass has to work: grows with jobs done and with the region */
-  var REGION_TOUGH = { grove:1.0, city:1.15, harbor:1.35 };
-  function grimeToughness(){
-    return (1 + Math.min(3.0, state.jobsCompleted * 0.06)) * (REGION_TOUGH[state.region] || 1);
+  /* How much harder each pass has to work. Two parts:
+     - progress: a training ramp (0.85 → 1.0 by job 8) rising to 1.9 by job 52, times the region;
+     - the rig itself: dirt keeps pace with most of the rig's cleaning multiplier, so a job is
+       never a walk, but the player keeps RIG_KEEPS of every upgrade as felt progress.
+     Tuned with a simulator and scripted playtests: a perfect sweep with the starting rig ends
+     job 1 at ~84%; a human lands 10–15 points lower. RIG_KEEPS is the one knob to turn:
+     higher = upgrades feel stronger and good players finish early more often. */
+  var RIG_KEEPS = 0.35;
+  var REGION_TOUGH = { grove:1.0, city:1.1, harbor:1.2 };
+  function rigMult(){
+    return (sprayPower()/0.5) * Math.pow(sprayRadius()/BASE_RADIUS, 2) * degreaserMult() * (jobMs()/40000);
   }
+  function progressToughness(){ return Math.min(1.9, 0.85 + state.jobsCompleted * 0.02) * (REGION_TOUGH[state.region] || 1); }
+  function grimeToughness(){ return progressToughness() * Math.pow(rigMult(), 1 - RIG_KEEPS); }
   function sonHired(){ return state.son > 0; }
-  function sonRadius(){ return 3 + lvl("watergun")*1.2; }
-  function sonIntervalMs(){ return lvl("family")>0 ? 450 : 900; }
+  function sonRadius(){ return 3.5 + lvl("watergun")*1.2; }
+  function sonIntervalMs(){ return lvl("family")>0 ? 350 : 700; }
   function crewMult(){ return 1 + lvl("crewcore")*0.10 + lvl("morale")*0.15 + lvl("family")*0.30; }
   /* wages drawn on every overhead bill */
   function crewSalary(){
@@ -889,14 +916,17 @@ body{
     var m = 1 + lvl("pay")*0.12 + (lvl("bizcore")>0 ? 0.06 : 0) + (lvl("empire")>0 ? 0.20 : 0);
     return m * (state.perks.basepay ? 1.2 : 1);
   }
-  function streakMult(){ return 1 + Math.min(0.30, state.streak*0.012); }
+  var STREAK_MAX = 10;
+  function streakMult(){ return 1 + Math.min(STREAK_MAX, state.streak)*0.03; }
+  /* pay falls away fast below a full clean: nothing under 30%, half at ~70%, all of it at 100% */
+  function cleanPayFactor(c){ return c < 0.30 ? 0 : Math.pow((c-0.30)/0.70, 1.15); }
   function regionDef(){ return REGIONS[state.region] || REGIONS.grove; }
 
+  /* the bill follows the route you work (a downtown lease costs more) and creeps 4% a bill */
+  var REGION_OVERHEAD = { grove:95, city:190, harbor:340 };
   function overheadBase(n){
     if(state.ownedOutright) return 25;
-    var capped = Math.min(n, OVERHEAD_CAP);
-    var amt = 95 * Math.pow(1.15, capped-1);
-    if(n > OVERHEAD_CAP) amt += (n - OVERHEAD_CAP) * 45;
+    var amt = (REGION_OVERHEAD[state.region] || 95) * Math.pow(1.04, Math.min(n, 25)-1);
     return Math.round(amt * overheadMult());
   }
   function overheadAmount(n){ return overheadBase(n) + crewSalary(); }
@@ -1147,9 +1177,11 @@ body{
     R(x,y+h-1,w,1,P.g1);
   }
   function tree(cx,cy,s){
-    s=s||1; var th=Math.round(8*s), r=Math.round(9*s), H=Math.round(16*s);
+    s=s||1; var th=Math.round(13*s), r=Math.round(13*s), H=Math.round(28*s);
     R(cx-r+2, cy+1, 2*r-4, 1, P.g1);
-    R(cx-3,cy-th,6,1,P.ink); R(cx-2,cy-th,4,th,P.p2); R(cx-2,cy-th,1,th,P.p1); R(cx+1,cy-th,1,th,P.p3); R(cx-3,cy-th,1,th,P.ink); R(cx+2,cy-th,1,th,P.ink);
+    var tw = Math.max(4, Math.round(5*s));
+    R(cx-tw/2-1,cy-th,tw+2,1,P.ink); R(cx-tw/2,cy-th,tw,th,P.p2); R(cx-tw/2,cy-th,1,th,P.p1); R(cx+tw/2-1,cy-th,1,th,P.p3); R(cx-tw/2-1,cy-th,1,th,P.ink); R(cx+tw/2,cy-th,1,th,P.ink);
+    R(cx-tw/2-2, cy-1, tw+4, 1, P.p1); R(cx-tw/2-2, cy, tw+4, 1, P.ink);
     var top = cy-th-H+2, rows = ellipseRows(2*r, H, false);
     blob(cx, top, rows, function(row, dx){
       if(row > H*0.66) return (dx + row) % 5 === 0 ? P.g2 : P.g1;
@@ -1223,12 +1255,13 @@ body{
     for(var j=0;j<Math.round(w/30);j++){ var rx=x+Math.floor(rng()*(w-8)), ry=y+Math.floor(rng()*(h-2)); R(rx,ry,6,1,P.w1); }
   }
   function car(x,y,col){
-    R(x-13,y+9,26,1,P.g1);
-    box(x-14,y-1,28,9,col,mix(col,"#ffffff",0.35),mix(col,"#000000",0.3));
-    box(x-8,y-7,16,7,col,mix(col,"#ffffff",0.35),null);
-    R(x-6,y-6,5,4,P.waterHi); R(x+1,y-6,5,4,P.waterHi); R(x-6,y-6,5,1,"#ffffff"); R(x+1,y-6,5,1,"#ffffff");
-    [x-9,x+5].forEach(function(wx){ R(wx-1,y+5,6,5,P.ink); R(wx,y+6,4,3,"#4a3a30"); R(wx+1,y+7,2,1,P.parchLo); });
-    R(x-14,y+2,2,2,P.sun); R(x+12,y+2,2,2,P.coral); R(x-3,y+2,6,1,mix(col,"#000000",0.3));
+    R(x-20,y+8,40,1,P.g1);
+    box(x-22,y-2,44,8,col,mix(col,"#ffffff",0.35),mix(col,"#000000",0.3));
+    box(x-12,y-9,24,7,col,mix(col,"#ffffff",0.35),null);
+    R(x-10,y-8,8,5,P.waterHi); R(x+2,y-8,8,5,P.waterHi); R(x-10,y-8,8,1,"#ffffff"); R(x+2,y-8,8,1,"#ffffff"); R(x-1,y-8,2,5,mix(col,"#000000",0.3));
+    R(x-13,y-3,26,1,mix(col,"#000000",0.25)); R(x-1,y-2,1,6,mix(col,"#000000",0.25)); R(x+3,y+1,2,1,P.stoneLo);
+    [x-14,x+13].forEach(function(wx){ R(wx-4,y+4,9,5,P.ink); R(wx-3,y+5,7,3,"#4a3a30"); R(wx-1,y+6,3,1,P.parchLo); });
+    R(x-22,y+1,2,2,P.sun); R(x+20,y+1,2,2,P.coral); R(x-21,y+6,42,1,mix(col,"#000000",0.3));
   }
   function towerSlab(x,y,w,h,col,winCol){
     col = col||P.c3;
@@ -1237,10 +1270,10 @@ body{
     for(var wy=y+3; wy<y+h-5; wy+=8){ for(var wx=x+3; wx<x+w-5; wx+=7){ var lit = ((wx*3+wy)%5)===0; R(wx,wy,4,5,lit ? P.sunHi : (winCol||P.waterHi)); R(wx,wy,4,1,"#ffffff"); R(wx,wy+4,4,1,P.waterLo); } }
     R(x+Math.round(w/2)-2, y-4, 4, 4, P.c2); R(x+Math.round(w/2)-1, y-7, 2, 3, P.c1);
   }
-  function streetLamp(x,y){ R(x-1,y-22,2,22,P.ink); R(x-4,y-26,8,4,P.ink); R(x-3,y-25,6,2,P.sun); R(x-3,y-25,6,1,P.sunHi); R(x-3,y,6,1,P.c1); R(x-2,y-2,4,2,P.stoneLo); }
+  function streetLamp(x,y){ R(x-1,y-38,2,38,P.stoneLo); R(x-2,y-38,1,38,P.ink); R(x+1,y-38,1,38,P.ink); R(x-1,y-40,6,2,P.ink); R(x+3,y-40,1,4,P.ink); R(x,y-44,8,4,P.ink); R(x+1,y-43,6,2,P.sunHi); R(x+1,y-41,6,1,P.sun); R(x-3,y,8,1,P.c1); R(x-3,y-3,6,3,P.stoneLo); R(x-3,y-3,6,1,P.stone); }
   function hydrant(x,y){ box(x-3,y-8,6,8,P.coral,P.coralHi,P.coralLo); R(x-4,y-6,8,2,P.coralLo); R(x-2,y-10,4,2,P.coral); R(x-2,y-10,4,1,P.coralHi); R(x-3,y,6,1,P.c1); }
   function bin(x,y){ box(x-4,y-9,8,9,"#4d7f6f","#6a9c8c","#3c6a5c"); R(x-5,y-11,10,2,"#3c6a5c"); R(x-5,y-11,10,1,"#6a9c8c"); R(x-2,y-6,4,1,"#3c6a5c"); R(x-4,y,8,1,P.c1); }
-  function dumpster(x,y){ box(x-12,y-11,24,11,"#4d7f6f","#6a9c8c","#3c6a5c"); R(x-13,y-13,26,2,"#3c6a5c"); R(x-13,y-13,26,1,"#6a9c8c"); R(x-10,y-1,3,2,P.ink); R(x+7,y-1,3,2,P.ink); R(x-6,y-8,12,3,P.c4); }
+  function dumpster(x,y){ box(x-14,y-14,28,14,"#4d7f6f","#6a9c8c","#3c6a5c"); R(x-15,y-17,30,3,"#3c6a5c"); R(x-15,y-17,30,1,"#6a9c8c"); R(x-12,y,3,2,P.ink); R(x+9,y,3,2,P.ink); R(x-7,y-11,14,4,P.c4); R(x-5,y-10,10,1,P.ink); R(x-14,y-5,28,1,"#3c6a5c"); }
   function cone(x,y){ R(x-1,y-6,2,1,P.coral); R(x-2,y-5,4,2,P.coral); R(x-2,y-4,4,1,P.parchHi); R(x-3,y-3,6,2,P.coral); R(x-4,y-1,8,1,P.ink); }
   function awning(x,y,w,h,a,b){
     R(x-1,y-1,w+2,h+2,P.ink);
@@ -1278,9 +1311,9 @@ body{
   function bench(x,y){ box(x-11,y-6,22,3,P.p3,P.p4,P.p1); box(x-11,y-1,22,3,P.p3,P.p4,P.p1); R(x-9,y+2,2,4,P.p1); R(x+7,y+2,2,4,P.p1); R(x-10,y+6,20,1,P.g1); }
   function grill(x,y){ box(x-6,y-6,12,5,"#3b3b42","#5a5a63",null); R(x-7,y-8,14,2,"#5a5a63"); R(x-7,y-8,14,1,"#7a7a83"); R(x-4,y,2,5,"#3b3b42"); R(x+2,y,2,5,"#3b3b42"); R(x+5,y-10,2,2,P.coral); R(x-6,y+5,12,1,P.g1); }
   function mailbox(x,y){ R(x-1,y-4,2,10,P.p1); box(x-4,y-9,8,5,P.water,P.waterHi,P.waterLo); R(x+4,y-8,1,3,P.coral); R(x-2,y+6,4,1,P.g1); }
-  function gnome(x,y){ R(x-1,y-11,2,1,P.coral); R(x-2,y-10,4,3,P.coral); R(x-3,y-7,6,1,P.coralLo); R(x-2,y-6,4,3,P.skin); R(x-1,y-5,1,1,P.ink); R(x+1,y-5,1,1,P.ink); R(x-2,y-3,4,3,P.parchHi); R(x-1,y,2,1,P.parchLo); R(x-2,y+1,4,1,P.g1); }
+  function gnome(x,y){ R(x,y-7,1,1,P.coral); R(x-1,y-6,3,2,P.coral); R(x-2,y-4,5,1,P.coralLo); R(x-1,y-3,3,2,P.skin); R(x-1,y-2,1,1,P.ink); R(x+1,y-2,1,1,P.ink); R(x-1,y-1,3,1,P.parchHi); R(x-1,y,3,1,P.water); R(x-2,y+1,5,1,P.g1); }
   function hoseReel(x,y){ box(x-5,y-8,10,8,P.parch,P.parchHi,P.parchLo); R(x-3,y-6,6,4,P.waterLo); R(x-1,y-5,2,2,P.parchLo); R(x-6,y,12,1,P.g1); R(x+5,y-3,4,1,P.waterLo); }
-  function bike(x,y){ R(x-6,y-4,5,5,P.ink); R(x-5,y-3,3,3,P.stone); R(x+2,y-4,5,5,P.ink); R(x+3,y-3,3,3,P.stone); R(x-3,y-6,7,1,P.coral); R(x-1,y-8,1,3,P.coral); R(x+1,y-7,3,1,P.ink); R(x-6,y+1,12,1,P.g1); }
+  function bike(x,y){ R(x-9,y-7,7,7,P.ink); R(x-8,y-6,5,5,P.stone); R(x-7,y-5,3,3,P.stoneLo); R(x+2,y-7,7,7,P.ink); R(x+3,y-6,5,5,P.stone); R(x+4,y-5,3,3,P.stoneLo); R(x-5,y-9,9,1,P.coral); R(x-1,y-12,1,4,P.coral); R(x-5,y-8,1,4,P.coral); R(x+3,y-8,1,4,P.coral); R(x-3,y-13,4,1,P.ink); R(x+2,y-11,4,1,P.ink); R(x-9,y+1,18,1,P.g1); }
   function cat(x,y){ R(x-3,y-3,6,3,P.stoneLo); R(x+2,y-5,3,3,P.stoneLo); R(x+2,y-6,1,1,P.stoneLo); R(x+4,y-6,1,1,P.stoneLo); R(x+3,y-4,1,1,P.sun); R(x-5,y-4,2,1,P.stoneLo); R(x-3,y,1,1,P.ink); R(x+1,y,1,1,P.ink); }
   function stones(x,y,n){ for(var i=0;i<n;i++){ var sx=x+i*9, sy=y+((i&1)*2); R(sx,sy,6,3,P.c3); R(sx,sy,6,1,P.c4); R(sx,sy+3,6,1,P.c1); } }
   function crosswalk(x,y,w){ for(var i=0;i<w;i+=8) R(x+i,y,5,6,P.parchHi); }
@@ -1291,28 +1324,36 @@ body{
   function ladder(x,y,h){ R(x,y,1,h,P.stone); R(x+4,y,1,h,P.stone); for(var r=2;r<h;r+=3) R(x+1,y+r,3,1,P.stoneLo); }
   function lifeRing(x,y){ R(x-3,y-3,6,6,P.coral); R(x-2,y-2,4,4,P.parchHi); R(x-1,y-1,2,2,P.w2); R(x-3,y-1,1,2,P.parchHi); R(x+2,y-1,1,2,P.parchHi); }
   function parkedRig(x,y){
-    /* the player's rig, small, seen from the side */
+    /* the player's rig from the side, a real pickup's size next to a 29 px person */
     var p = TIER_PAINT[rigTier()];
-    R(x-14,y+3,32,1,P.g1);
-    box(x-15,y-2,30,3,P.p1,P.p2,null);
-    box(x-14,y-9,13,7,p.body,"#ffffff",p.trim); R(x-9,y-7,3,3,P.waterHi);
-    box(x+1,y-9,12,7,p.body,"#ffffff",p.trim); R(x+8,y-8,4,3,P.waterHi); R(x+2,y-8,4,3,P.waterHi);
-    R(x-14,y-4,27,1,p.trim);
-    [x-10,x+7].forEach(function(wx){ R(wx-1,y,5,4,P.ink); R(wx,y+1,3,2,"#4a3a30"); });
+    R(x-26,y+5,56,1,P.g1);
+    box(x-28,y-4,56,4,P.p1,P.p2,null);
+    box(x-26,y-18,24,14,p.body,"#ffffff",p.trim); R(x-19,y-16,1,12,p.trim); R(x-10,y-16,1,12,p.trim); R(x-16,y-14,5,7,P.waterHi); R(x-16,y-10,5,3,P.water);
+    box(x-2,y-13,8,9,"#d8b26a","#ffffff","#a8843e"); R(x,y-10,3,3,P.wood);
+    box(x-1,y-20,7,6,P.parch,P.parchHi,P.parchLo); R(x+1,y-18,3,2,P.waterLo);
+    box(x+7,y-17,21,13,p.body,"#ffffff",p.trim); R(x+9,y-16,7,6,P.waterHi); R(x+9,y-16,7,1,"#ffffff"); R(x+19,y-16,7,6,P.waterHi); R(x+26,y-13,2,4,P.ink);
+    R(x+17,y-16,1,12,P.ink); R(x+27,y-9,2,2,P.sun); R(x+25,y-4,4,2,P.stone);
+    R(x-26,y-7,54,2,p.trim);
+    [x-18,x+18].forEach(function(wx){ R(wx-4,y,9,6,P.ink); R(wx-3,y+1,7,4,"#4a3a30"); R(wx-1,y+2,3,2,P.parchLo); });
   }
+  /* map-scale props: a house is ~22 px on the map, so a car is 10 and a tree 12 */
+  function miniCar(x,y,col){ R(x-5,y-2,10,3,col); R(x-3,y-4,6,2,col); R(x-2,y-4,2,2,P.waterHi); R(x+1,y-4,2,2,P.waterHi); R(x-4,y+1,2,1,P.ink); R(x+2,y+1,2,1,P.ink); R(x-5,y-2,10,1,mix(col,"#ffffff",0.35)); }
+  function miniBoat(x,y,col){ R(x-10,y+3,20,1,P.w1); R(x-11,y-1,22,4,P.ink); R(x-10,y-1,20,3,col); R(x-10,y-1,20,1,mix(col,"#ffffff",0.35)); R(x-4,y-5,10,4,P.parch); R(x-4,y-6,10,1,P.ink); R(x-2,y-4,2,2,P.waterHi); R(x+2,y-4,2,2,P.waterHi); R(x+5,y-9,1,4,P.ink); R(x+6,y-9,3,2,P.coral); }
+  function miniTree(cx,cy){ R(cx-1,cy-4,2,4,P.p1); blob(cx, cy-12, [2,4,5,6,6,6,5,4], function(r,dx){ return r<3 && dx<0 ? P.g4 : (r>5 ? P.g1 : P.g2); }); }
 
   /* =========================================================
-     SCENES — each draws the world, leaving the wash area bare
+     SCENES — each draws the world, leaving the wash area bare.
+     Scale: a person is 29 px tall (≈1.8 m), so ~16 px per metre.
      ========================================================= */
   function paintArea(a, col){ R(a.x, a.y, a.w, a.h, col); }
   function areaFrame(a){ R(a.x-1,a.y-1,a.w+2,1,P.ink); R(a.x-1,a.y-1,1,a.h+2,P.ink); R(a.x+a.w,a.y-1,1,a.h+2,P.ink); R(a.x-1,a.y+a.h,a.w+2,1,P.ink); }
   function regionSky(horizon){ var r = REGIONS[job ? job.region : state.region]; sky(r.sky[0], r.sky[1], horizon); }
-  function clouds(rng, horizon, n){ for(var i=0;i<n;i++){ cloud(20 + Math.floor(rng()*200), 4 + Math.floor(rng()*Math.max(4, horizon-14)), 14 + Math.floor(rng()*14)); } }
-  function skyline(y){
-    /* distant grey blocks with lit windows */
+  function clouds(rng, horizon, n){ for(var i=0;i<n;i++){ cloud(20 + Math.floor(rng()*200), 3 + Math.floor(rng()*Math.max(3, horizon-14)), 16 + Math.floor(rng()*16)); } }
+  function skyline(y, far){
     var xs = [0,18,30,52,66,90,108,124,150,166,186,204,222];
-    for(var i=0;i<xs.length;i++){ var h = 8 + ((i*7)%14), w = 10 + ((i*5)%8); R(xs[i], y-h, w, h, i&1 ? P.c2 : P.c3); R(xs[i], y-h, w, 1, P.c4); for(var wy=y-h+2; wy<y-2; wy+=3) for(var wx=xs[i]+2; wx<xs[i]+w-1; wx+=3) if(((wx+wy)&3)===0) R(wx,wy,1,1,P.sunHi); }
+    for(var i=0;i<xs.length;i++){ var h = 8 + ((i*7)%14), w = 10 + ((i*5)%8); var c = far ? mix(P.c3, "#b0c3d0", 0.5) : (i&1 ? P.c2 : P.c3); R(xs[i], y-h, w, h, c); R(xs[i], y-h, w, 1, P.c4); for(var wy=y-h+2; wy<y-2; wy+=3) for(var wx=xs[i]+2; wx<xs[i]+w-1; wx+=3) if(((wx+wy)&3)===0) R(wx,wy,1,1,far ? "#ffffff" : P.sunHi); }
   }
+  function jetty(x,y,w,h){ box(x,y,w,h,P.p3,P.p4,P.p1); for(var px=x+6; px<x+w; px+=7) R(px,y,1,h,P.p2); R(x-1,y+h+1,w+2,1,P.w1); R(x+2,y+h,2,5,P.p1); R(x+w-4,y+h,2,5,P.p1); }
 
   function sceneDriveway(a, rng){
     regionSky(22); sun(220, 4); clouds(rng, 22, 3);
@@ -1328,12 +1369,12 @@ body{
     for(var k=0;k<5;k++){ var cx=a.x+6+Math.floor(rng()*(a.w-14)), cy=a.y+4+Math.floor(rng()*(a.h-8)); R(cx,cy,3,1,P.c2); R(cx+3,cy+1,2,1,P.c2); }
     R(a.x, a.y+a.h, a.w, CH-(a.y+a.h), P.c4); R(a.x,a.y+a.h,a.w,1,P.c2); R(a.x+a.w/2-1, a.y+a.h+2, 2, 8, P.c3);
     R(a.x-1,a.y,1,CH-a.y,P.ink); R(a.x+a.w,a.y,1,CH-a.y,P.ink);
-    tree(26, 50, 1.1); bush(40, 76, 1); rock(60, 70, 7);
-    flowerBed(12, 84, 40, 18, rng); gnome(58, 92); hoseReel(64, 66);
-    stones(14, 108, 4);
-    picketFence(186, 76, 54); cat(216, 74); bush(200, 54, 1.1); tree(224, 46, 0.9);
-    mailbox(192, 120); flowerBed(186, 96, 48, 14, rng); bike(226, 130);
-    parkedRig(30, 140);
+    tree(22, 60, 1); bush(48, 74, 0.9); rock(64, 66, 6);
+    gnome(66, 104); hoseReel(62, 82);
+    stones(4, 130, 3);
+    picketFence(186, 76, 54); cat(216, 74); bush(200, 56, 1); tree(226, 60, 0.9);
+    mailbox(190, 122); flowerBed(186, 96, 48, 14, rng); bike(226, 138);
+    parkedRig(30, 146);
     bird(120, 12, P.berry);
   }
 
@@ -1352,10 +1393,10 @@ body{
       for(var x=a.x-bw+off; x<a.x+a.w; x+=bw){ if(x>a.x) R(x, y, 1, bh, P.s2); if(x+2>a.x && x+2<a.x+a.w-2) R(x+2, y+2, 3, 1, P.s4); }
     }
     areaFrame(a);
-    pot(30, 62); pot(48, 100); bench(36, 130); hoseReel(26, 84);
-    grill(206, 64); pot(214, 104); rock(228, 126, 8);
-    tree(16, 40, 0.85); flowerBed(190, 118, 42, 16, rng); bush(176, 30, 0.9); bush(60, 132, 0.8);
-    stones(186, 88, 3); cat(20, 110);
+    pot(30, 62); pot(16, 100); bench(36, 132); hoseReel(24, 86);
+    grill(206, 64); pot(214, 106); rock(228, 128, 8);
+    tree(16, 46, 0.85); flowerBed(190, 118, 42, 16, rng); bush(178, 30, 0.9); bush(62, 134, 0.8);
+    stones(186, 88, 3); cat(18, 110);
     bird(200, 6, P.water);
   }
 
@@ -1369,13 +1410,12 @@ body{
     for(var py=a.y+7; py<a.y+a.h; py+=8){ R(a.x,py,a.w,1,P.p2); R(a.x,py+1,a.w,1,P.p4); }
     for(var px=a.x+16; px<a.x+a.w; px+=32){ R(px,a.y,1,a.h,P.p2); R(px+1,a.y+3,1,1,P.p1); }
     areaFrame(a);
-    /* railing along the bottom edge */
     R(a.x-4, a.y+a.h+1, a.w+8, 3, P.p3); R(a.x-4, a.y+a.h+1, a.w+8, 1, P.p4); R(a.x-4,a.y+a.h+4,a.w+8,1,P.ink);
     for(var rx=a.x-2; rx<a.x+a.w+4; rx+=10){ R(rx, a.y+a.h+4, 2, 8, P.p3); R(rx+1, a.y+a.h+4, 1, 8, P.p2); }
     R(a.x-4, a.y+a.h+12, a.w+8, 1, P.g1);
-    pot(30, 74); grill(30, 118); bench(208, 84); pot(216, 126);
-    tree(18, 30, 0.8); bush(220, 40, 1); rock(228, 62, 6); bush(40, 140, 0.9);
-    stones(196, 100, 3); cat(20, 96);
+    pot(16, 82); grill(30, 120); bench(208, 84); pot(216, 128);
+    tree(18, 48, 0.8); bush(222, 44, 1); rock(230, 64, 6); bush(40, 142, 0.9);
+    stones(196, 100, 3); cat(20, 98);
   }
 
   function sceneFence(a, rng){
@@ -1389,33 +1429,43 @@ body{
     for(var t=a.x+2; t<a.x+a.w; t+=6) R(t, a.y-2, 2, 2, P.p4);
     areaFrame(a);
     R(a.x-1, a.y+a.h+1, a.w+2, 1, P.g1);
-    flowerBed(14, 118, 62, 18, rng); flowerBed(166, 118, 62, 18, rng);
-    bush(106, 128, 1.1); gnome(132, 132); pot(30, 100); rock(150, 110, 6);
-    stones(90, 108, 4); bird(60, 6, P.coral); cat(70, 104);
+    flowerBed(6, 116, 30, 16, rng); flowerBed(166, 118, 62, 18, rng);
+    bush(106, 128, 1.1); gnome(132, 134); pot(26, 100); rock(150, 110, 6);
+    stones(96, 108, 4); bird(60, 6, P.coral); cat(128, 116);
   }
 
   function sceneWindows(a, rng){
-    R(0,0,CW,CH,"#9fb4c4"); dither(0,10,CW,2,"#9fb4c4","#b0c3d0"); R(0,12,CW,4,"#b0c3d0");
-    clouds(rng, 30, 2);
-    towerSlab(-8, 10, 38, 140, P.c3, P.waterHi);
-    towerSlab(210, 2, 40, 148, P.c3, P.waterHi);
-    R(32, 0, 176, CH, "#c4ccd2"); for(var cy=15; cy<CH; cy+=22) R(32,cy,176,1,P.c2);
-    acUnit(38, 40); acUnit(196, 70); acUnit(40, 120);
+    /* high on a tower: sky on both sides, the facade fills the middle */
+    sky("#8fbfdc", "#c9e3ef", CH); clouds(rng, 60, 3);
+    skyline(CH, true); skyline(CH+10, true);
+    var fx0 = 36, fw = 168;
+    R(fx0-1, 0, fw+2, CH, P.ink); R(fx0, 0, fw, CH, P.c3);
+    for(var band=4; band<CH; band+=26){
+      R(fx0, band, fw, 6, P.c4); R(fx0, band, fw, 1, "#ffffff"); R(fx0, band+5, fw, 1, P.c2);
+      R(fx0, band+6, fw, 20, P.waterHi); R(fx0, band+6, fw, 2, "#ffffff");
+      for(var mx=fx0; mx<fx0+fw; mx+=12) R(mx, band+6, 2, 20, "#6d7b86");
+      R(fx0, band+24, fw, 2, "#6d7b86");
+      for(var lit=fx0+4; lit<fx0+fw; lit+=24) if(((lit+band)&5)===0) R(lit, band+9, 6, 8, P.sunHi);
+    }
+    R(fx0, 0, 1, CH, P.c4); R(fx0+fw-1, 0, 1, CH, P.c1);
+    /* the glass section you wash, in a steel frame */
     box(a.x-4, a.y-4, a.w+8, a.h+8, "#6d7b86", "#8a98a3", "#4f5b64");
     paintArea(a, "#9fd6e8");
-    var pc=4, prow=3, fw=3;
-    for(var i=1;i<pc;i++) R(a.x + Math.round(a.w*i/pc) - 1, a.y, fw, a.h, "#6d7b86");
-    for(var j=1;j<prow;j++) R(a.x, a.y + Math.round(a.h*j/prow) - 1, a.w, fw, "#6d7b86");
+    var pc=4, prow=3, fwd=3;
+    for(var i=1;i<pc;i++) R(a.x + Math.round(a.w*i/pc) - 1, a.y, fwd, a.h, "#6d7b86");
+    for(var j=1;j<prow;j++) R(a.x, a.y + Math.round(a.h*j/prow) - 1, a.w, fwd, "#6d7b86");
     areaFrame(a);
-    /* suspended platform */
+    /* the cradle: cables from the roof, a platform, a bucket, a cone */
     var py = a.y + a.h + 12;
-    R(a.x+10, 0, 1, py, P.ink); R(a.x+a.w-10, 0, 1, py, P.ink);
+    R(a.x+12, 0, 1, py, P.ink); R(a.x+a.w-12, 0, 1, py, P.ink); R(a.x+13, 0, 1, py, P.c1); R(a.x+a.w-11, 0, 1, py, P.c1);
     box(a.x+2, py, a.w-4, 5, P.sun, P.sunHi, P.sunLo);
     for(var s=a.x+6; s<a.x+a.w-6; s+=8) R(s, py+1, 4, 1, P.ink);
     box(a.x+2, py-9, 3, 9, P.stone, P.c4, null); box(a.x+a.w-5, py-9, 3, 9, P.stone, P.c4, null);
-    seagull(190, 30); seagull(205, 22); seagull(60, 34);
-    box(a.x+a.w-20, py-7, 8, 6, P.water, P.waterHi, P.waterLo); R(a.x+a.w-19,py-9,6,1,P.ink);
-    cone(a.x+18, py);
+    R(a.x+2, py-10, a.w-4, 1, P.stoneLo);
+    box(a.x+a.w-22, py-7, 8, 6, P.water, P.waterHi, P.waterLo); R(a.x+a.w-21,py-9,6,1,P.ink);
+    cone(a.x+a.w-34, py);
+    seagull(14, 40); seagull(226, 30); seagull(20, 90);
+    acUnit(fx0+fw+4, 100); acUnit(fx0-11, 120);
   }
 
   function sceneStorefront(a, rng){
@@ -1433,27 +1483,34 @@ body{
     doorway(172, 66, 20, 42, "#4d7f6f");
     box(174, 70, 12, 8, P.parchHi, null, null); R(176,73,8,2,P.leaf);
     sign(80, 12, 80); flowerBed(36, 96, 30, 8, rng);
-    streetLamp(22, 118); hydrant(220, 118); bin(200, 122); dumpster(16, 132); cone(238, 124);
+    streetLamp(22, 118); hydrant(222, 118); bin(234, 124); dumpster(18, 134); cone(110, 128);
     R(44,118,6,12,P.p3); R(45,116,4,2,P.p3); R(44,118,1,12,P.p1); R(49,118,1,12,P.p1); R(46,121,2,3,P.parchHi);
-    bike(150, 120); cat(206, 106);
+    bike(150, 124); cat(120, 106);
     seagull(72, 30); bird(150, 6, P.sun);
   }
 
   function sceneGarage(a, rng){
-    R(0,0,CW,CH,"#8e8a84"); R(0,0,CW,40,"#a8a49c"); R(0,40,CW,1,P.c1);
-    for(var ly=44; ly<CH; ly+=14) R(0,ly,CW,1,mix("#8e8a84",P.c1,0.4));
-    pipes(0, 10, CW);
-    R(60,28,20,3,P.sunHi); R(140,28,20,3,P.sunHi); R(60,31,20,1,P.c4); R(140,31,20,1,P.c4);
-    pillar(14, 30, 16, 105); pillar(210, 30, 16, 105);
+    /* an underground level, seen from the front: ceiling, block wall, floor with bays */
+    R(0,0,CW,CH,P.c2);
+    R(0,0,CW,16,P.c1); R(0,15,CW,1,P.ink); pipes(0, 6, CW);
+    R(50,10,24,3,P.sunHi); R(50,13,24,1,P.c4); R(166,10,24,3,P.sunHi); R(166,13,24,1,P.c4); R(58,4,8,6,P.stoneLo); R(174,4,8,6,P.stoneLo);
+    /* block wall */
+    for(var by=16; by<108; by+=8){ R(0,by,CW,1,P.c1); var off = ((by/8)&1)*10; for(var bxx=off; bxx<CW; bxx+=20) R(bxx,by,1,8,P.c1); }
+    R(0,107,CW,1,P.ink);
+    R(100,20,40,9,P.sun); R(100,20,40,1,P.sunHi); R(101,23,4,3,P.ink); R(107,23,4,3,P.ink); R(113,23,4,3,P.ink); R(119,23,4,3,P.ink); R(127,22,6,5,P.ink); R(129,24,2,1,P.sun);
+    R(0,60,CW,3,P.sun); R(0,63,CW,1,P.sunLo);
+    pillar(12, 16, 16, 92); pillar(212, 16, 16, 92);
+    /* the stained wall section you wash */
     paintArea(a, P.c2);
-    R(a.x+4, a.y+4, a.w-8, 1, P.c1); R(a.x+4, a.y+a.h-5, a.w-8, 1, P.c1); R(a.x+4,a.y+4,1,a.h-8,P.c1); R(a.x+a.w-5,a.y+4,1,a.h-8,P.c1);
-    R(a.x+2, a.y+Math.round(a.h*0.5)-1, a.w-4, 2, P.sun);
-    for(var k=0;k<4;k++){ var cx=a.x+8+Math.floor(rng()*(a.w-16)), cy=a.y+6+Math.floor(rng()*(a.h-12)); R(cx,cy,4,1,P.c1); R(cx+4,cy+1,3,1,P.c1); }
+    for(var wy=a.y; wy<a.y+a.h; wy+=8){ R(a.x,wy,a.w,1,P.c1); var o2=((wy/8)&1)*10; for(var wx=a.x+o2; wx<a.x+a.w; wx+=20) R(wx,wy,1,8,P.c1); }
     areaFrame(a);
-    car(196, 56, P.water); car(44, 60, P.coral);
-    bin(40, 130); cone(52, 134); cone(190, 136); manhole(120, 144);
-    box(32, 50, 24, 9, "#4d7f6f", "#6a9c8c", "#3c6a5c"); for(var i=0;i<4;i++) R(35+i*5, 53, 3, 3, P.parchHi);
-    R(36,66,1,3,P.sunHi); R(38,66,1,3,P.sunHi); R(40,66,1,3,P.sunHi);
+    /* floor with bay lines */
+    pavement(0, 108, CW, 42, P.c3);
+    for(var bay=30; bay<CW; bay+=50){ R(bay, 112, 2, 30, P.sunHi); }
+    R(0,108,CW,1,P.c4); manhole(120, 144);
+    car(200, 130, P.water); cone(176, 140); cone(140, 132);
+    dumpster(18, 138); bin(94, 142);
+    box(32, 70, 24, 9, "#4d7f6f", "#6a9c8c", "#3c6a5c"); for(var i=0;i<4;i++) R(35+i*5, 73, 3, 3, P.parchHi); R(52,72,3,5,P.parchHi);
     R(196, 100, 24, 12, P.c1); R(198, 102, 20, 8, P.c4); for(var g=0; g<3; g++) R(200+g*6, 104, 4, 4, [P.coral, P.water, P.sun][g]);
   }
 
@@ -1463,33 +1520,29 @@ body{
     waterField(0, 121, CW, 29, rng);
     pavement(0, 100, CW, 22, P.c3); R(0,100,CW,1,P.c4); R(0,120,CW,1,P.w1);
     for(var b=6; b<CW; b+=40) bollard(b, 120);
-    /* cradle blocks */
     [a.x+24, a.x+Math.round(a.w*0.55)].forEach(function(sx){ box(sx, a.y+a.h-2, 8, 26, P.p2, P.p3, P.p1); R(sx+2, a.y+a.h+4, 4, 1, P.p1); R(sx+2, a.y+a.h+12, 4, 1, P.p1); });
-    /* cabin + mast */
     box(a.x+Math.round(a.w*0.30), a.y-26, Math.round(a.w*0.30), 26, P.parch, P.parchHi, P.parchLo);
     winPane(a.x+Math.round(a.w*0.34), a.y-21, 12, 8); winPane(a.x+Math.round(a.w*0.48), a.y-21, 10, 8);
     lifeRing(a.x+Math.round(a.w*0.30)+4, a.y-5);
     R(a.x+Math.round(a.w*0.42), a.y-56, 2, 31, P.ink);
     for(var i=0;i<11;i++){ R(a.x+Math.round(a.w*0.42)+2, a.y-55+i, Math.round(22 - Math.abs(i-5)*4.4)+2, 1, P.coral); }
     R(a.x+Math.round(a.w*0.42)+2, a.y-50, 8, 1, P.coralHi);
-    /* hull body: stepped silhouette from the mask */
     for(var py=a.y; py<a.y+a.h; py++) for(var px=a.x; px<a.x+a.w; px++){
       if(!maskHull(px+0.5,py+0.5,a)) continue;
       var edge = !maskHull(px+0.5,py+1.5,a) || !maskHull(px-0.5,py+0.5,a) || !maskHull(px+1.5,py+0.5,a) || py===a.y;
       R(px,py,1,1, edge ? P.ink : (py < a.y+6 ? P.water : (py > a.y+Math.round(a.h*0.62) && py < a.y+Math.round(a.h*0.62)+3 ? P.berry : P.c4)));
     }
     for(var pl=a.y+8; pl<a.y+a.h-6; pl+=6) for(var px2=a.x+4; px2<a.x+a.w-8; px2+=2) if(maskHull(px2+0.5,pl+0.5,a) && maskHull(px2+8,pl+0.5,a)) R(px2,pl,1,1,P.c3);
-    /* rudder + prop */
     box(a.x-5, a.y+Math.round(a.h*0.55), 4, 14, P.stone, P.c4, P.stoneLo);
     R(a.x-1, a.y+Math.round(a.h*0.84)-2, 4, 4, P.p4); R(a.x, a.y+Math.round(a.h*0.84)-1, 2, 2, P.ink);
-    crate(28, 116, 10); crate(40, 122, 8); lobsterTrap(60, 116);
+    crate(16, 124, 10); crate(28, 128, 8); lobsterTrap(80, 118);
     barrel(220, 118); buoy(206, 104); ropeCoil(58, 128); ladder(a.x+a.w+10, 106, 16);
     seagull(48, 24); seagull(64, 18); seagull(192, 28); seagull(120, 12);
   }
 
   function sceneDock(a, rng){
     waterField(0,0,CW,CH,rng,P.w3,P.w2);
-    sailboat(120, 20); sailboat(200, 130);
+    sailboat(120, 20);
     paintArea(a, P.p3);
     for(var py=a.y+7; py<a.y+a.h; py+=8){ R(a.x,py,a.w,1,P.p2); R(a.x,py+1,a.w,1,P.p4); }
     for(var px=a.x+22; px<a.x+a.w; px+=44){ R(px,a.y,1,a.h,P.p2); }
@@ -1498,21 +1551,22 @@ body{
       box(px, a.y-8, 6, 15, P.p2, P.p3, P.p1); box(px, a.y+a.h-8, 6, 15, P.p2, P.p3, P.p1);
       R(px+1, a.y-10, 4, 2, P.p1); R(px, a.y+a.h+8, 6, 1, P.w1);
     });
+    /* the side jetty you and your son stand on */
+    jetty(6, 110, 62, 12); jetty(6, 78, 24, 34);
     ladder(a.x+a.w+2, a.y+30, 14); lifeRing(a.x-12, a.y+42);
     boatSide(190, 36, P.coral);
-    boatSide(46, 126, "#4d7f6f");
-    crate(24, 44, 9); barrel(38, 62); lobsterTrap(30, 78);
-    ropeCoil(210, 118); buoy(220, 90); buoy(14, 100);
+    boatSide(56, 140, "#4d7f6f");
+    crate(16, 86, 9); barrel(26, 96); lobsterTrap(14, 106);
+    ropeCoil(210, 118); buoy(220, 90); buoy(14, 60);
     seagull(105, 16); seagull(125, 24); seagull(70, 10);
   }
 
   function sceneShack(a, rng){
     regionSky(108); clouds(rng, 40, 2);
-    lighthouse(226, 108, 40); sailboat(24, 104);
+    lighthouse(226, 108, 40);
     waterField(0, 125, CW, 25, rng);
     pavement(0, 108, CW, 20, P.c3); R(0,108,CW,1,P.c4); R(0,124,CW,1,P.w1);
     for(var b=10; b<CW; b+=44) bollard(b, 124);
-    /* roof: stepped gable with shingle rows */
     for(var i=0;i<14;i++){ var rw = Math.round((a.w+36) * (i+1)/14); var rx0 = a.x + Math.round(a.w/2) - Math.round(rw/2); R(rx0, a.y-28+i*2, rw, 2, i===0 ? P.ink : "#4d7f6f"); if(i>0 && (i&1)) for(var sx=rx0+2; sx<rx0+rw-2; sx+=5) R(sx, a.y-28+i*2, 2, 1, "#3c6a5c"); }
     R(a.x-18, a.y-1, a.w+36, 1, P.ink); R(a.x-16, a.y-3, a.w+32, 1, "#3c6a5c");
     R(a.x+Math.round(a.w/2)-1, a.y-32, 2, 5, P.c1); R(a.x+Math.round(a.w/2)-2, a.y-33, 4, 1, P.ink);
@@ -1523,8 +1577,9 @@ body{
     netHang(a.x+8, a.y+10, 30, 38);
     buoy(a.x+a.w-18, a.y+22); buoy(a.x+a.w-30, a.y+35); lifeRing(a.x+a.w-12, a.y+50);
     sign(a.x+a.w/2-20, a.y+4, 40, P.parchHi);
-    lobsterTrap(32, 118); lobsterTrap(52, 124); lobsterTrap(44, 112);
+    lobsterTrap(88, 118); lobsterTrap(100, 124); lobsterTrap(94, 112);
     crate(218, 118, 10); ropeCoil(190, 130); barrel(204, 120);
+    buoy(60, 138); buoy(140, 142);
     seagull(a.x+Math.round(a.w*0.5), a.y-40); seagull(60, 30); seagull(200, 40);
   }
 
@@ -1549,17 +1604,18 @@ body{
      JOB DEFINITIONS (scene pixels)
      ========================================================= */
   var JOBS = {
-    driveway:  { name:"Driveway",        region:"grove",  scene:sceneDriveway,   area:{x:75,y:50,w:98,h:87},  hero:{x:44,y:118}, hose:{x:-8,y:140} },
-    patio:     { name:"Brick Patio",     region:"grove",  scene:scenePatio,      area:{x:75,y:52,w:94,h:82},  hero:{x:40,y:120}, hose:{x:-8,y:142} },
-    deck:      { name:"Back Deck",       region:"grove",  scene:sceneDeck,       area:{x:72,y:50,w:100,h:76}, hero:{x:38,y:100}, hose:{x:-8,y:130} },
-    fence:     { name:"Garden Fence",    region:"grove",  scene:sceneFence,      area:{x:30,y:54,w:182,h:50}, hero:{x:48,y:132}, hose:{x:-8,y:148} },
-    windows:   { name:"Tower Windows",   region:"city",   scene:sceneWindows,    area:{x:60,y:28,w:120,h:82}, hero:{x:75,y:120}, hose:{x:62,y:132}, mask:maskWindows },
-    storefront:{ name:"Storefront Glass",region:"city",   scene:sceneStorefront, area:{x:43,y:46,w:120,h:62}, hero:{x:198,y:130}, hose:{x:248,y:140} },
-    garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:59,y:62,w:118,h:72}, hero:{x:34,y:106}, hose:{x:-8,y:118} },
-    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:59,y:52,w:128,h:46}, hero:{x:36,y:112}, hose:{x:-8,y:122}, mask:maskHull },
-    dock:      { name:"Dock Planks",     region:"harbor", scene:sceneDock,       area:{x:75,y:54,w:90,h:78},  hero:{x:42,y:108}, hose:{x:-8,y:118} },
-    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:60,y:40,w:120,h:66}, hero:{x:38,y:118}, hose:{x:-8,y:130} }
+    driveway:  { name:"Driveway",        region:"grove",  scene:sceneDriveway,   area:{x:75,y:50,w:98,h:87},  hero:{x:44,y:116}, son:{x:22,y:112}, hose:{x:-8,y:124} },
+    patio:     { name:"Brick Patio",     region:"grove",  scene:scenePatio,      area:{x:75,y:52,w:94,h:82},  hero:{x:40,y:120}, son:{x:64,y:102}, hose:{x:-8,y:142} },
+    deck:      { name:"Back Deck",       region:"grove",  scene:sceneDeck,       area:{x:72,y:50,w:100,h:76}, hero:{x:38,y:100}, son:{x:60,y:88},  hose:{x:-8,y:130} },
+    fence:     { name:"Garden Fence",    region:"grove",  scene:sceneFence,      area:{x:30,y:54,w:182,h:50}, hero:{x:48,y:132}, son:{x:76,y:132}, hose:{x:-8,y:148} },
+    windows:   { name:"Tower Windows",   region:"city",   scene:sceneWindows,    area:{x:60,y:28,w:120,h:82}, hero:{x:75,y:120}, son:{x:104,y:120}, hose:{x:62,y:132}, mask:maskWindows },
+    storefront:{ name:"Storefront Glass",region:"city",   scene:sceneStorefront, area:{x:43,y:46,w:120,h:62}, hero:{x:198,y:130}, son:{x:170,y:126}, hose:{x:248,y:140} },
+    garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:59,y:30,w:118,h:76}, hero:{x:46,y:138}, son:{x:74,y:132}, hose:{x:-8,y:146} },
+    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:59,y:52,w:128,h:46}, hero:{x:36,y:112}, son:{x:66,y:108}, hose:{x:-8,y:122}, mask:maskHull },
+    dock:      { name:"Dock Planks",     region:"harbor", scene:sceneDock,       area:{x:75,y:54,w:90,h:78},  hero:{x:40,y:112}, son:{x:60,y:110}, hose:{x:-8,y:118} },
+    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:60,y:40,w:120,h:66}, hero:{x:38,y:118}, son:{x:64,y:112}, hose:{x:-8,y:130} }
   };
+
 
   /* =========================================================
      GRIME ENGINE — layered, cell based (2×2 scene pixels per cell)
@@ -1606,6 +1662,8 @@ body{
       }
     }
     grimeLeft = grimeTotal;
+    cellsTotal = 0; cellsClear = 0;
+    for(var k=0;k<grime.length;k++) if(grime[k] > 0.03) cellsTotal++;
   }
 
   /* a cell is a flat 2×2 square in one of the three layer shades;
@@ -1659,6 +1717,7 @@ body{
         var take = Math.min(hp, power*fall / job.tough);
         grime[i] = hp - take;
         removed += take;
+        if(hp > 0.03 && grime[i] <= 0.03) cellsClear++;
         paintCell(cx,cy);
       }
     }
@@ -1666,9 +1725,12 @@ body{
     return removed;
   }
 
+  var cellsTotal = 0, cellsClear = 0;
   function cleanliness(){
     if(!grimeTotal) return 1;
-    return clamp(1 - grimeLeft/grimeTotal, 0, 1);
+    var byHp = clamp(1 - grimeLeft/grimeTotal, 0, 1);
+    var byCells = cellsTotal ? cellsClear/cellsTotal : 1;
+    return clamp(byCells*0.7 + byHp*0.3, 0, 1);
   }
 
   /* =========================================================
@@ -1725,35 +1787,43 @@ body{
     }
   }
 
-  /* The washer: a 12×20 sprite; the wand snaps to one of 8 directions */
+  /* sprites: parts are drawn twice — first grown by one pixel in ink for a single silhouette
+     outline, then in colour — so the figure reads as one body, not a pile of boxes */
+  function sprite(parts){
+    for(var i=0;i<parts.length;i++){ var p=parts[i]; FX(p[0]-1, p[1]-1, p[2]+2, p[3]+2, P.ink); }
+    for(var j=0;j<parts.length;j++){ var q=parts[j]; FX(q[0], q[1], q[2], q[3], q[4]); }
+  }
+  /* The washer: 14×29, feet at (x,y); the wand snaps to one of 8 directions */
   function drawWasher(){
-    var h = job.def.hero, ax = aim.x, ay = aim.y;
-    var facing = ax >= h.x ? 1 : -1;
-    var handX = h.x + facing*5, handY = h.y - 11;
+    var h = job.def.hero, x = h.x, y = h.y, ax = aim.x, ay = aim.y;
+    var facing = ax >= x ? 1 : -1;
+    var handX = x + facing*7, handY = y - 13;
     var ang = Math.atan2(ay - handY, ax - handX);
     ang = Math.round(ang / (Math.PI/4)) * (Math.PI/4);
     var hs = job.def.hose;
-    /* hose: horizontal run from off-stage, then up into the hands */
-    var hx = h.x - facing*4;
-    FX(Math.min(hs.x, hx), h.y+1, Math.abs(hx-hs.x)+1, 2, P.waterLo);
-    FX(hx, h.y-10, 2, 12, P.waterLo);
-    /* shadow line */
-    FX(h.x-6, h.y+1, 12, 1, P.g1);
-    /* legs + boots */
-    FX(h.x-5, h.y-6, 4, 6, P.waterLo); FX(h.x+1, h.y-6, 4, 6, P.waterLo);
-    FX(h.x-6, h.y-1, 5, 2, P.ink); FX(h.x+1, h.y-1, 5, 2, P.ink);
-    /* body */
-    FX(h.x-7, h.y-15, 14, 10, P.ink); FX(h.x-6, h.y-14, 12, 8, P.water); FX(h.x-6, h.y-14, 12, 1, P.waterHi);
-    FX(h.x-6, h.y-9, 12, 2, P.coral);
-    /* head + cap */
-    FX(h.x-4, h.y-21, 8, 6, P.ink); FX(h.x-3, h.y-20, 6, 5, P.skin);
-    FX(h.x-4, h.y-23, 8, 3, P.ink); FX(h.x-3, h.y-22, 6, 2, P.coral); FX(h.x-3, h.y-22, 6, 1, P.coralHi);
-    FX(h.x + (facing>0 ? 3 : -8), h.y-21, 5, 1, P.coralLo);
-    FX(h.x + facing*1, h.y-18, 1, 1, P.ink);
-    /* arms toward the wand */
-    pxLine(h.x, h.y-12, handX, handY, P.skin, 2);
-    /* wand */
-    var wandLen = 9;
+    var hx = x - facing*5;
+    FX(Math.min(hs.x, hx), y+1, Math.abs(hx-hs.x)+1, 2, P.waterLo);
+    FX(hx, y-12, 2, 14, P.waterLo);
+    FX(x-7, y+2, 14, 1, P.g1);
+    sprite([
+      [x-6, y-2, 5, 2, P.ink],  [x+1, y-2, 5, 2, P.ink],
+      [x-5, y-9, 4, 7, P.waterLo], [x+1, y-9, 4, 7, P.waterLo],
+      [x-5, y-18, 10, 9, P.water],
+      [x-6, y-17, 2, 6, P.water], [x+4, y-17, 2, 6, P.water],
+      [x-6, y-11, 2, 2, P.skin], [x+4, y-11, 2, 2, P.skin],
+      [x-2, y-20, 4, 2, P.skin],
+      [x-4, y-27, 8, 7, P.skin],
+      [x-4, y-29, 8, 3, P.coral],
+      [x + (facing>0 ? 3 : -8), y-27, 5, 1, P.coralLo]
+    ]);
+    FX(x-5, y-18, 10, 1, P.waterHi); FX(x-5, y-11, 10, 1, P.coral);
+    FX(x-3, y-25, 1, 3, P.p1); FX(x+2, y-25, 1, 3, P.p1);
+    FX(x + (facing>0 ? 2 : -3), y-24, 1, 1, P.ink);
+    FX(x + (facing>0 ? 1 : -2), y-22, 2, 1, P.coralLo);
+    FX(x-4, y-29, 8, 1, P.coralHi);
+    pxLine(x + facing*3, y-15, handX, handY, P.water, 2);
+    pxLine(handX, handY, handX + facing, handY, P.skin, 2);
+    var wandLen = 10;
     var tipX = handX + Math.cos(ang)*wandLen, tipY = handY + Math.sin(ang)*wandLen;
     pxLine(handX, handY, tipX, tipY, P.ink, 2);
     pxLine(handX + Math.cos(ang), handY + Math.sin(ang), tipX - Math.cos(ang), tipY - Math.sin(ang), P.stone, 1);
@@ -1763,11 +1833,7 @@ body{
 
   /* Your son stands a few steps from you and plinks at the dirt near your aim */
   var son = { x:0, y:0, target:null, flash:0, acc:0 };
-  function sonPos(){
-    var h = job.def.hero, a = job.area;
-    var left = h.x > a.x + a.w/2;               /* stand on the side away from the wash area */
-    return { x: h.x + (left ? 14 : -14), y: h.y };
-  }
+  function sonPos(){ return job.def.son || { x: job.def.hero.x - 24, y: job.def.hero.y - 16 }; }
   function sonTick(dt){
     if(!sonHired()) return;
     son.acc += dt;
@@ -1777,36 +1843,41 @@ body{
     var a = job.area;
     var tx = clamp(aim.x + (Math.random()*2-1)*18, a.x+2, a.x+a.w-2);
     var ty = clamp(aim.y + (Math.random()*2-1)*14, a.y+2, a.y+a.h-2);
-    son.target = { x:tx, y:ty }; son.flash = 220;
-    var removed = sprayGrime(tx, ty, sonRadius(), 0.25*degreaserMult());
+    son.target = { x:tx, y:ty }; son.flash = 420;
+    var removed = sprayGrime(tx, ty, sonRadius(), 0.32*degreaserMult());
     if(removed > 0.2) splash(tx, ty, job.grime.splash, 2);
     updateClean();
   }
   function drawSon(){
     if(!sonHired()) return;
-    var p = sonPos(), tx = son.target ? son.target.x : aim.x, ty = son.target ? son.target.y : aim.y;
-    var facing = tx >= p.x ? 1 : -1;
-    FX(p.x-4, p.y+1, 8, 1, P.g1);
-    /* legs, shorts, shirt */
-    FX(p.x-3, p.y-4, 2, 4, P.skin); FX(p.x+1, p.y-4, 2, 4, P.skin);
-    FX(p.x-4, p.y-1, 3, 2, P.ink); FX(p.x+1, p.y-1, 3, 2, P.ink);
-    FX(p.x-4, p.y-7, 8, 3, P.waterLo);
-    FX(p.x-5, p.y-13, 10, 7, P.ink); FX(p.x-4, p.y-12, 8, 5, P.leaf); FX(p.x-4, p.y-12, 8, 1, P.leafHi);
-    /* head + cap */
-    FX(p.x-3, p.y-18, 6, 5, P.ink); FX(p.x-2, p.y-17, 4, 4, P.skin);
-    FX(p.x-3, p.y-20, 6, 2, P.ink); FX(p.x-2, p.y-19, 4, 1, P.sun);
-    FX(p.x + (facing>0 ? 2 : -6), p.y-18, 4, 1, P.sunLo);
-    FX(p.x + facing*1, p.y-16, 1, 1, P.ink);
-    /* water gun */
-    var gx0 = p.x + facing*3, gy0 = p.y-10;
+    var p = sonPos(), x = p.x, y = p.y, tx = son.target ? son.target.x : aim.x, ty = son.target ? son.target.y : aim.y;
+    var facing = tx >= x ? 1 : -1;
+    FX(x-5, y+2, 10, 1, P.g1);
+    sprite([
+      [x-4, y-1, 3, 1, P.ink], [x+1, y-1, 3, 1, P.ink],
+      [x-3, y-6, 3, 5, P.skin], [x+1, y-6, 3, 5, P.skin],
+      [x-4, y-9, 8, 3, P.waterLo],
+      [x-4, y-15, 8, 6, P.leaf],
+      [x-5, y-14, 1, 4, P.leaf], [x+4, y-14, 1, 4, P.leaf],
+      [x-5, y-10, 1, 2, P.skin], [x+4, y-10, 1, 2, P.skin],
+      [x-1, y-16, 2, 1, P.skin],
+      [x-3, y-22, 6, 6, P.skin],
+      [x-3, y-24, 6, 2, P.sun],
+      [x + (facing>0 ? 2 : -6), y-22, 4, 1, P.sunLo]
+    ]);
+    FX(x-4, y-15, 8, 1, P.leafHi);
+    FX(x + (facing>0 ? 1 : -2), y-20, 1, 1, P.ink);
+    FX(x + (facing>0 ? -1 : 0), y-18, 1, 1, P.coralLo);
+    FX(x-2, y-21, 1, 1, P.coral); FX(x+1, y-19, 1, 1, P.coral);
+    var gx0 = x + facing*4, gy0 = y-12;
     FX(facing>0 ? gx0 : gx0-5, gy0, 6, 2, P.ink);
     FX(facing>0 ? gx0+1 : gx0-4, gy0, 4, 1, P.coral);
-    FX(gx0, gy0+2, 2, 2, P.ink);
+    FX(gx0, gy0+2, 2, 2, P.ink); FX(gx0, gy0+2, 1, 1, P.waterHi);
     if(son.flash > 0 && son.target){
       var sx = facing>0 ? gx0+6 : gx0-6, sy = gy0;
-      var dx = tx - sx, dy = ty - sy, len = Math.sqrt(dx*dx+dy*dy) || 1;
-      for(var i=0;i<6;i++){ var t = Math.random(); FX(sx + dx*t + (Math.random()*2-1), sy + dy*t + (Math.random()*2-1), 1, 1, i&1 ? P.waterHi : "#ffffff"); }
-      for(var k=0;k<4;k++){ var an = Math.random()*Math.PI*2, rr = sonRadius()*(0.4+Math.random()*0.5); FX(tx + Math.cos(an)*rr, ty + Math.sin(an)*rr, 1, 1, P.waterHi); }
+      var dx = tx - sx, dy = ty - sy;
+      for(var i=0;i<26;i++){ var t = i/26, arc = -Math.sin(t*Math.PI)*8; FX(sx + dx*t, sy + dy*t + arc, 2, 2, i%3===0 ? "#ffffff" : P.waterHi); }
+      for(var k=0;k<8;k++){ var an = Math.random()*Math.PI*2, rr = sonRadius()*(0.4+Math.random()*0.6); FX(tx + Math.cos(an)*rr, ty + Math.sin(an)*rr, 1, 1, k&1 ? P.waterHi : "#ffffff"); }
     }
   }
 
@@ -1863,7 +1934,7 @@ body{
 
     showScreen("screen-job");
     $("jobName").textContent = def.name;
-    $("jobSub").textContent = type.name + " · " + regionDef().name + " · " + weather.name + " · dirt ×" + grimeToughness().toFixed(1);
+    $("jobSub").textContent = type.name + " · " + regionDef().name + " · " + weather.name + " · dirt ×" + progressToughness().toFixed(2);
     var night = document.documentElement.getAttribute("data-theme") === "night";
     $("stageTint").style.background = night ? (getComputedStyle(document.documentElement).getPropertyValue("--scene-night") || "rgba(24,42,94,0.55)") : weather.tint;
 
@@ -2110,13 +2181,13 @@ body{
     var pct = Math.round(c*100);
     var stars = starsFor(mode, elapsed, pct);
 
-    var base = 55 + state.jobsCompleted*3;
-    var pay = base * c * payMult() * job.grime.pay * REGIONS[job.region].pay * streakMult();
+    var base = 140 + state.jobsCompleted*6;
+    var pay = base * cleanPayFactor(c) * payMult() * job.grime.pay * REGIONS[job.region].pay * streakMult();
     if(mode === "complete"){
       var leftFrac = Math.max(0, (job.duration-elapsed)/job.duration);
       pay *= 1 + Math.min(0.35, leftFrac*0.35);
     }
-    pay = Math.max(1, Math.round(pay));
+    pay = Math.round(pay);
 
     var tip = (Math.random() < tipChance()) ? 10 + Math.floor(Math.random()*18) : 0;
     var crew = crewIncome();
@@ -2129,7 +2200,7 @@ body{
     state.jobsCompleted += 1;
     state.jobsSinceBill += 1;
     state.stats[job.region] = (state.stats[job.region]||0) + 1;
-    if(mode === "complete" || pct >= 80){ state.streak += 1; } else { state.streak = 0; }
+    if(mode === "complete" || pct >= 75){ state.streak = Math.min(STREAK_MAX, state.streak + 1); } else { state.streak = 0; }
     if(pct > state.stats.bestClean) state.stats.bestClean = pct;
     if(state.streak > state.stats.longestStreak) state.stats.longestStreak = state.streak;
     save(); renderTop();
@@ -2147,11 +2218,12 @@ body{
     ];
     if(tip>0)  rows.push(mRow(ic("jar")+"Tip", "+"+money(tip), "pw-stats__val--up"));
     if(crew>0) rows.push(mRow(ic("hardhat")+"Crew jobs", "+"+money(crew), "pw-stats__val--up"));
-    if(mode==="complete" && state.streak>1) rows.push(mRow(ic("flame")+"Streak", "×"+state.streak+" (+"+Math.round((streakMult()-1)*100)+"%)"));
+    if(state.streak>1) rows.push(mRow(ic("flame")+"Streak", "×"+state.streak+(state.streak>=STREAK_MAX ? " (max)" : "")+" · pay +"+Math.round((streakMult()-1)*100)+"%"));
+    if(pay === 0) rows.push(mRow(ic("bill")+"Under 30% clean", "no pay", "pw-stats__val--down"));
 
     var body = mHead(icon, heads[stars] || heads[0], null, mode === "timeout" ? "Time's up" : "Job complete") +
       starsHTML(stars) + mRows(rows) +
-      (mode==="timeout" ? mNote(pct >= 80 ? "Not finished, but good enough to keep the streak." : "Under 80% — streak broken, back to zero.") : '');
+      (mode==="timeout" ? mNote(pct >= 75 ? "Not finished, but good enough to keep the streak." : "Under 75% — streak broken, back to zero.") : '');
 
     showModal(body, [{ label:"Continue", cls:"pw-btn--primary pw-btn--big", icon:"arrow-right", action: afterJob }]);
   }
@@ -2442,6 +2514,18 @@ body{
     $("tierSub").textContent = t[1];
     $("truckArt").innerHTML = truckSVG();
     $("heroMascot").innerHTML = mascotSVG();
+    var areaMult = Math.pow(sprayRadius()/BASE_RADIUS, 2);
+    $("rigStats").innerHTML = mRows([
+      mRow(ic("bolt")+"Spray power", sprayPower().toFixed(2)),
+      mRow(ic("wand")+"Spray area", "×"+areaMult.toFixed(1)),
+      mRow(ic("barrel")+"Tank", tankMax()+" L"),
+      mRow(ic("clock")+"Refill", (refillMs()/1000).toFixed(2)+" s"),
+      mRow(ic("hourglass")+"Patience", Math.round(jobMs()/1000)+" s"),
+      mRow(ic("coin")+"Pay bonus", "+"+Math.round((payMult()-1)*100)+"%"),
+      mRow(ic("flask")+"Degreaser", "×"+degreaserMult().toFixed(2)),
+      mRow(ic("hardhat")+"Crew per job", money(crewIncome())),
+      mRow(ic("sparkle")+"Dirt on this route", "×"+progressToughness().toFixed(2), progressToughness() > 1.5 ? "pw-stats__val--down" : "")
+    ]);
     $("regionName").textContent = regionDef().name;
 
     var interval = billEvery(), due = overheadAmount(state.billNumber);
@@ -2469,41 +2553,43 @@ body{
   }
 
   /* ---- the route map: a 240×100 pixel painting + chip markers ---- */
-  var MARKERS = { grove:[17,54], city:[50,90], harbor:[83,50] };
+  var MARKERS = { grove:[15,58], city:[52,88], harbor:[84,50] };
   function paintMap(){
     var mc = $("mapCanvas").getContext("2d"); mc.imageSmoothingEnabled = false;
     var keep = bx; bx = mc;
     var rng = makeRng(99);
     sky("#bfe6f4", "#e9f4da", 34); sun(214, 4);
     cloud(40, 8, 22); cloud(120, 12, 16); cloud(176, 6, 18);
-    /* distant hills */
     blob(30, 24, ellipseRows(70, 22, true), function(r){ return r < 3 ? P.g3 : P.g2; }, P.g1);
     blob(96, 26, ellipseRows(56, 18, true), function(r){ return r < 3 ? P.g3 : P.g2; }, P.g1);
     blob(150, 28, ellipseRows(50, 14, true), function(r){ return r < 2 ? P.g3 : P.g2; }, P.g1);
     grassField(0, 34, 240, 66, rng);
-    /* river + bridge */
-    for(var ry=34; ry<100; ry++){ var rx = 118 + Math.round(Math.sin(ry/9)*4) + Math.round((ry-34)*0.25); R(rx, ry, 9, 1, ry%7===0 ? P.w4 : P.w3); R(rx, ry, 1, 1, P.w1); R(rx+8, ry, 1, 1, P.w1); }
-    /* sea in the bottom right */
-    R(150,62,90,38,P.w3); dither(150,60,90,2,P.g3,P.w3); dither(150,80,90,2,P.w3,P.w2); R(150,82,90,18,P.w2);
-    for(var w=0;w<14;w++){ var wx=152+Math.floor(rng()*84), wy=64+Math.floor(rng()*30); R(wx,wy,4,1,P.w4); R(wx+1,wy-1,2,1,P.w4); }
-    for(var sx=150; sx<240; sx+=6) R(sx+((sx/6)&1)*2, 61, 3, 1, P.c4);
-    /* suburb */
-    houseFacade(16, 40, 22, 16, P.parch, P.coral); winPane(20, 50, 5, 4); doorway(30, 50, 5, 6, P.p2);
-    houseFacade(48, 46, 18, 14, P.parchLo, P.berry); winPane(52, 55, 5, 4);
-    houseFacade(30, 66, 20, 14, P.parchHi, "#4d7f6f"); doorway(38, 74, 5, 6, P.water);
-    picketFence(8, 88, 40); tree(12, 60, 0.6); tree(70, 66, 0.7); bush(58, 84, 0.7); bush(20, 100, 0.6);
-    car(88, 78, P.coral); stones(50, 90, 3);
-    /* downtown */
-    towerSlab(96, 40, 12, 32, P.c3, P.waterHi); towerSlab(110, 48, 8, 24, P.c4, P.waterHi); towerSlab(130, 28, 12, 44, P.c2, P.waterHi); towerSlab(144, 44, 10, 28, P.c3, P.waterHi);
+    /* the sea: bottom right, with a shoreline */
+    for(var sy=64; sy<100; sy++){ var sx0 = 150 + Math.round(Math.sin(sy/6)*2) - Math.round((sy-64)*0.4); R(sx0, sy, 240-sx0, 1, sy < 80 ? P.w3 : P.w2); R(sx0, sy, 1, 1, P.c4); }
+    for(var w=0;w<14;w++){ var wx=156+Math.floor(rng()*80), wy=68+Math.floor(rng()*28); R(wx,wy,4,1,P.w4); R(wx+1,wy-1,2,1,P.w4); }
+    /* the river, from the hills down to the sea, with a bridge on the road */
+    for(var ry=30; ry<100; ry++){ var rx = 84 + Math.round(Math.sin(ry/9)*3) + Math.round((ry-30)*0.12); R(rx, ry, 8, 1, ry%7===0 ? P.w4 : P.w3); R(rx, ry, 1, 1, P.w1); R(rx+7, ry, 1, 1, P.w1); }
+    /* suburb (a house is ~22 px, a car 10, a tree 12) */
+    houseFacade(14, 40, 22, 16, P.parch, P.coral); winPane(18, 50, 5, 4); doorway(28, 50, 5, 6, P.p2);
+    houseFacade(46, 44, 18, 14, P.parchLo, P.berry); winPane(50, 53, 5, 4);
+    houseFacade(28, 64, 20, 14, P.parchHi, "#4d7f6f"); doorway(36, 72, 5, 6, P.water);
+    picketFence(6, 84, 44); miniTree(10, 62); miniTree(70, 60); miniTree(58, 82); bush(20, 96, 0.5);
+    miniCar(64, 90, P.coral); miniCar(70, 72, P.water);
+    /* downtown, on land east of the river */
+    towerSlab(104, 40, 12, 32, P.c3, P.waterHi); towerSlab(118, 48, 8, 24, P.c4, P.waterHi); towerSlab(130, 28, 12, 44, P.c2, P.waterHi); towerSlab(144, 46, 10, 26, P.c3, P.waterHi);
     R(140, 14, 1, 14, P.ink); R(136, 14, 9, 1, P.ink); R(144, 15, 1, 6, P.coral); R(134, 12, 4, 3, P.ink);
-    R(96, 74, 60, 4, P.c3); R(96, 74, 60, 1, P.c4); crosswalk(104, 74, 20);
-    /* harbour */
-    box(180, 66, 30, 3, P.p3, P.p4, P.p1); R(184,69,2,8,P.p1); R(202,69,2,8,P.p1); R(192,69,2,8,P.p1);
-    boatSide(224, 60, P.coral); sailboat(170, 84); sailboat(200, 92);
-    lighthouse(232, 60, 18); buoy(160, 90); seagull(170, 44); seagull(190, 40); seagull(224, 36);
-    /* road with dashes, up the middle */
-    for(var rx2=8; rx2<232; rx2++){ var ry2 = 94 - Math.round(Math.sin(rx2/38)*6) - (rx2>150 ? Math.round((rx2-150)*0.12) : 0); R(rx2, ry2, 1, 4, P.c3); R(rx2, ry2, 1, 1, P.c4); R(rx2, ry2+3, 1, 1, P.c1); if((rx2 % 8) < 4) R(rx2, ry2+2, 1, 1, P.parchHi); }
-    box(112, 88, 22, 6, P.p3, P.p4, P.p1); R(112,86,22,1,P.p1); R(112,95,22,1,P.p1);
+    R(100, 74, 60, 4, P.c3); R(100, 74, 60, 1, P.c4); crosswalk(108, 74, 20); miniCar(126, 80, P.sun);
+    /* harbour: quay, pier into the sea, boats, lighthouse */
+    R(160, 60, 40, 4, P.c3); R(160, 60, 40, 1, P.c4);
+    box(196, 62, 30, 3, P.p3, P.p4, P.p1); R(200,65,2,7,P.p1); R(210,65,2,7,P.p1); R(220,65,2,7,P.p1);
+    miniBoat(224, 78, P.coral); miniBoat(186, 92, "#4d7f6f"); sailboat(206, 96); sailboat(170, 84);
+    lighthouse(232, 60, 18); buoy(164, 90); seagull(170, 44); seagull(190, 40); seagull(224, 36);
+    /* the road: suburb → bridge → downtown → up to the quay, where it ends */
+    for(var rx2=8; rx2<=198; rx2++){
+      var ry2 = rx2 < 150 ? 90 - Math.round(Math.sin(rx2/38)*5) : 90 - Math.round((rx2-150)*0.55);
+      R(rx2, ry2, 1, 4, P.c3); R(rx2, ry2, 1, 1, P.c4); R(rx2, ry2+3, 1, 1, P.c1); if((rx2 % 8) < 4) R(rx2, ry2+2, 1, 1, P.parchHi);
+    }
+    box(82, 86, 14, 6, P.p3, P.p4, P.p1); R(82,84,14,1,P.p1); R(82,93,14,1,P.p1);
     bx = keep;
   }
   function renderMap(){

@@ -489,6 +489,23 @@ body{
 .contract-line.is-done{color:var(--leaf-lo);}
 .contract-line b{color:var(--sun-text);}
 .contract-line.is-done b{color:var(--leaf-lo);}
+
+/* calendar */
+.calendar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.cal-week{margin-right:6px;color:var(--ink);}
+.cal-day{display:inline-flex;align-items:center;gap:2px;padding:2px 6px;font-size:13px;line-height:16px;font-weight:700;background:var(--parchment-lo);color:var(--ink-soft);box-shadow:var(--ring-ink);}
+.cal-day.is-weekend{background:var(--stone);color:var(--ink);}
+.cal-day.is-payday{background:var(--coral-hi);}
+.cal-day.is-today{background:var(--sun);color:var(--ink);transform:translateY(-3px);}
+.cal-day.is-past{color:var(--stone-lo);}
+.cal-day svg{width:12px;height:12px;}
+/* chemicals */
+.chem-row{display:flex;flex-direction:column;gap:6px;align-items:center;}
+.chem.is-active{--lift:0px;transform:translateY(var(--px-lift));box-shadow:0 0 0 3px var(--ink), 0 0 0 6px var(--parchment-hi);}
+/* truck tooltip */
+#truckStage{position:relative;}
+.truck-tip{position:absolute;left:50%;transform:translateX(-50%);top:10px;width:max-content;max-width:90%;font-size:14px;line-height:18px;z-index:5;pointer-events:none;text-align:center;}
+#truckArt .hit{cursor:help;}
 </style>
 </head>
 <body class="pw">
@@ -541,12 +558,14 @@ body{
       <div class="home-col">
         <div class="pw-panel" id="truckStage">
           <div id="truckArt"></div>
+          <div class="pw-panel pw-panel--plain pw-panel--tight truck-tip hidden" id="truckTip"></div>
           <p class="pw-heading" id="tierName">Rookie Rig</p>
           <p class="pw-small pw-soft" id="tierSub">A hose, a dream and a little elbow grease.</p>
           <div class="pw-panel pw-panel--plain pw-panel--tight" id="rigStats"></div>
         </div>
       </div>
       <div class="home-col">
+        <div class="pw-panel pw-panel--tight calendar" id="calendar"></div>
         <div class="pw-panel" id="routePanel">
           <div class="route-art"><canvas id="routeCanvas" width="240" height="150"></canvas></div>
           <div class="pw-row pw-row--spread" style="margin-top:10px">
@@ -600,6 +619,10 @@ body{
           <div class="pw-label" id="overlayText">Refilling tank…</div>
         </div>
       </div>
+    </div>
+    <div class="chem-row">
+      <div class="pw-row pw-row--wrap" id="chemBar"></div>
+      <p class="pw-small pw-on-ground-soft" id="chemHint"></p>
     </div>
     <div class="pw-meters">
       <div class="pw-meter">
@@ -707,11 +730,14 @@ body{
               pressure:0, nozzle:0, tank:0, refill:0, pay:0, patience:0,
               surge:0, bigrig:0, empire:0,
               tipjar:0, prowasher:0, foamcannon:0, degreaser:0, permit:0, lease:0,
-              crewcore:0, morale:0, watergun:0, family:0 },
+              crewcore:0, morale:0, watergun:0, family:0,
+              cone:0, flow:0, contracts:0, overtime:0,
+              mosskiller:0, rustremover:0, stripper:0 },
       perks: {},
       crew: {},
       son: 0,
       recentPays: [],
+      day: 0, week: 1, activeChem: "water", info: {},
       stats: { bestClean:0, longestStreak:0, repoCount:0, crewEarnings:0, grove:0, city:0, harbor:0 },
       story: {}
     };
@@ -731,6 +757,7 @@ body{
       parsed.crew   = Object.assign(d.crew,   parsed.crew   || {});
       parsed.story  = Object.assign(d.story,  parsed.story  || {});
       if(!Array.isArray(parsed.recentPays)) parsed.recentPays = [];
+      parsed.info = Object.assign({}, parsed.info || {});
       return Object.assign(d, parsed);
     }catch(e){ return defaultState(); }
   }
@@ -776,15 +803,25 @@ body{
   /* Grime types: shades go [thin film, mid, deep crust]; layers 4 and 5 paint in darker
      versions of the crust shade. Layers are what the timer fights. */
   var GRIME_TYPES = {
-    dust:   { name:"Dust & Pollen",     layers:3, pay:1.00, shades:["#b09a6b","#8b7449","#665430"], splash:"#e6d8b4" },
-    mud:    { name:"Caked Mud",         layers:4, pay:1.14, shades:["#9c7a52","#70522f","#4a351d"], splash:"#dcc5a2" },
-    moss:   { name:"Moss & Algae",      layers:4, pay:1.24, shades:["#93b166","#61883b","#3d6425"], splash:"#c9e4a6" },
-    grease: { name:"Grease & Grime",    layers:4, pay:1.36, shades:["#7f776a","#524c43","#2d2a24"], splash:"#d2ccbe" },
-    soot:   { name:"City Soot",         layers:4, pay:1.42, shades:["#8c8c93","#5d5d65","#34343b"], splash:"#d6d6de" },
-    salt:   { name:"Salt & Barnacles",  layers:5, pay:1.58, shades:["#c0cdc5","#93a79d","#657a70"], splash:"#eaf3ed" },
-    rust:   { name:"Rust & Weed",       layers:5, pay:1.62, shades:["#c98a5a","#9a5a2e","#6a3a18"], splash:"#e9c9a8" },
-    graffiti:{ name:"Graffiti",         layers:3, pay:1.50, shades:["#d43d6a","#2f7fd8","#f2c12e"], splash:"#ffffff", graffiti:true }
+    dust:   { id:"dust",   name:"Dust & Pollen",     layers:3, pay:1.00, shades:["#b09a6b","#8b7449","#665430"], splash:"#e6d8b4", chem:null,          icon:"sparkle", blurb:"Plain water does the job. Thin coat, comes off with a steady pass." },
+    mud:    { id:"mud",    name:"Caked Mud",         layers:4, pay:1.14, shades:["#9c7a52","#70522f","#4a351d"], splash:"#dcc5a2", chem:null,          icon:"drop",    blurb:"Plain water, but it's thick — thick patches need several passes." },
+    moss:   { id:"moss",   name:"Moss & Algae",      layers:4, pay:1.24, shades:["#93b166","#61883b","#3d6425"], splash:"#c9e4a6", chem:"mosskiller",  icon:"flask",   blurb:"Green growth that laughs at water. Switch to Moss Killer (Shop) or it barely moves." },
+    grease: { id:"grease", name:"Grease & Grime",    layers:4, pay:1.36, shades:["#7f776a","#524c43","#2d2a24"], splash:"#d2ccbe", chem:"degreaser",   icon:"flask",   blurb:"Oily film. Degreaser cuts it; water just smears it around." },
+    soot:   { id:"soot",   name:"City Soot",         layers:4, pay:1.42, shades:["#8c8c93","#5d5d65","#34343b"], splash:"#d6d6de", chem:"degreaser",   icon:"flask",   blurb:"Greasy black soot from the traffic. Degreaser." },
+    salt:   { id:"salt",   name:"Salt & Barnacles",  layers:5, pay:1.58, shades:["#c0cdc5","#93a79d","#657a70"], splash:"#eaf3ed", chem:"rustremover", icon:"anchor",  blurb:"Crusted salt and shell. Rust Remover dissolves it." },
+    rust:   { id:"rust",   name:"Rust & Weed",       layers:5, pay:1.62, shades:["#c98a5a","#9a5a2e","#6a3a18"], splash:"#e9c9a8", chem:"rustremover", icon:"anchor",  blurb:"Rust bloom and weed. Rust Remover, and plenty of it." },
+    graffiti:{ id:"graffiti", name:"Graffiti",       layers:3, pay:1.50, shades:["#d43d6a","#2f7fd8","#f2c12e"], splash:"#ffffff", chem:"stripper",    icon:"jar",     blurb:"Spray paint. Paint Stripper lifts it; water only fades it a shade.", graffiti:true }
   };
+  var CHEMS = {
+    water:       { name:"Water",         icon:"drop",  color:"#58a6d8", cuts:[] },
+    mosskiller:  { name:"Moss Killer",   icon:"flask", color:"#74b247", cuts:["moss"] },
+    degreaser:   { name:"Degreaser",     icon:"flask", color:"#f6c744", cuts:["grease","soot"] },
+    rustremover: { name:"Rust Remover",  icon:"flask", color:"#f39a52", cuts:["rust","salt"] },
+    stripper:    { name:"Paint Stripper",icon:"flask", color:"#8f5fb5", cuts:["graffiti"] }
+  };
+  var WRONG_CHEM = 0.22;
+  /* when each dirt starts turning up (jobs completed) */
+  var DIRT_UNLOCK = { dust:0, mud:0, moss:6, grease:12, soot:12, graffiti:16, salt:30, rust:30 };   /* how much of a pass gets through when the chemical doesn't match */
 
   var WEATHERS = [
     { name:"Sunny",    tint:"transparent",           sun:true  },
@@ -796,20 +833,19 @@ body{
   /* Skill tree: trunks that fork into two straight branches which rejoin at a capstone.
      Positions are computed at render time so a fourth limb (Crew) can slot in once you hire. */
   var LIMB_DEFS = [
-    { core:"powercore", label:"Water",    twigs:["pressure","nozzle"],  leaf:"surge" },
-    { core:"tankcore",  label:"Tank",     twigs:["tank","refill"],      leaf:"bigrig" },
-    { core:"bizcore",   label:"Business", twigs:["pay","patience"],     leaf:"empire" },
-    { core:"crewcore",  label:"Crew",     twigs:["morale","watergun"],  leaf:"family", needs:function(){ return crewUnlocked(); }, gateText:"Hire your first crew member (Jordan, Mimi or Rex) to open this limb." }
+    { core:"powercore", label:"Water",    twigs:["pressure","nozzle","cone"],       leaf:"surge" },
+    { core:"tankcore",  label:"Tank",     twigs:["tank","refill","flow"],           leaf:"bigrig" },
+    { core:"bizcore",   label:"Business", twigs:["pay","patience","contracts"],     leaf:"empire" },
+    { core:"crewcore",  label:"Crew",     twigs:["morale","watergun","overtime"],   leaf:"family", needs:function(){ return crewUnlocked(); }, gateText:"Hire your first crew member (Jordan, Mimi or Rex) to open this limb." }
   ];
   function crewUnlocked(){ return Object.keys(state.crew).length > 0; }
   function limbsNow(){
     var defs = LIMB_DEFS;
-    var n = defs.length, span = 100/n, off = span*0.30;
+    var n = defs.length, span = 100/n, gap = span*0.30;
     return defs.map(function(d, i){
-      var x = Math.round((i+0.5)*span*10)/10;
+      var x = Math.round((i+0.5)*span*10)/10, m = (d.twigs.length-1)/2;
       return { core:d.core, label:d.label, x:x, y:82,
-        twigs:[ { key:d.twigs[0], x:x-off, pts:[[x-off,64],[x-off,47],[x-off,30]] },
-                { key:d.twigs[1], x:x+off, pts:[[x+off,64],[x+off,47],[x+off,30]] } ],
+        twigs: d.twigs.map(function(key, ti){ var tx = Math.round((x + (ti-m)*gap)*10)/10; return { key:key, x:tx, pts:[[tx,64],[tx,47],[tx,30]] }; }),
         leaf:{ key:d.leaf, x:x, y:12 } };
     });
   }
@@ -830,6 +866,14 @@ body{
       desc:["Crew income +15%","Crew income +15% more (+30% in total)","Crew income +15% more (+45% in total)"] },
     watergun:{ title:"Water Gun",      icon:"drop", costs:[120,300,650],
       desc:["Your son's water gun +1.2 px: his spray area +95%","+1.2 px: spray area +65% more","+1.2 px: spray area +50% more"] },
+    cone:    { title:"Even Cone",      icon:"wand", costs:[130,320,700],
+      desc:["A flatter spray: the edge of the cone strips 60% as hard as the centre (was 50%)","Edge at 70%","Edge at 80% — the whole cone works"] },
+    flow:    { title:"Flow Control",   icon:"barrel", costs:[100,260,560],
+      desc:["Water use −15% per pass","−30% in total","−45% in total — the tank lasts nearly twice as long"] },
+    contracts:{ title:"Contracts",     icon:"bill", costs:[200,450,900],
+      desc:["Customers start offering contracts: leave a marked patch spotless for +30% pay","Contract bonus +40%","Contract bonus +50%, and they come more often"] },
+    overtime:{ title:"Overtime",       icon:"clock", costs:[300,700,1500],
+      desc:["Crew work Saturdays","Crew work Sundays too","Weekend crew income +20%"] },
 
     /* trunks - each one opens the two branches above it */
     powercore:{ title:"Pump Core",    icon:"drop", costs:[150],
@@ -843,7 +887,7 @@ body{
 
     /* capstones - each needs BOTH branches of its trunk maxed */
     surge:    { title:"Surge Lance",  icon:"sparkle", costs:[1500],
-      desc:["Spray power +0.4 and nozzle +1.5 px (spray area +36%)."] },
+      desc:["Spray power +0.4 and nozzle +1.5 px (spray area +36%). Needs all three water branches maxed."] },
     bigrig:   { title:"Big Rig Tank", icon:"truck", costs:[1500],
       desc:["Tank +200 L and every refill 30% faster."] },
     empire:   { title:"Franchise",    icon:"crown", costs:[1700],
@@ -852,18 +896,24 @@ body{
       desc:["Crew income +30%, and your son fires twice as often."] }
   };
   var SHOP = {
+    mosskiller: { title:"Moss Killer",  icon:"flask", costs:[260], chem:true,
+      desc:["A chemical for the wand: cuts moss and algae at full strength. Switch to it mid-job (or press 2)."] },
+    degreaser:  { title:"Degreaser",    icon:"flask", costs:[340], chem:true,
+      desc:["Cuts grease and city soot at full strength. Switch to it mid-job (or press 3)."] },
+    rustremover:{ title:"Rust Remover", icon:"flask", costs:[520], chem:true,
+      desc:["Dissolves rust, salt crust and barnacles. Switch to it mid-job (or press 4)."] },
+    stripper:   { title:"Paint Stripper", icon:"flask", costs:[600], chem:true,
+      desc:["Lifts spray paint. Switch to it mid-job (or press 5)."] },
     prowasher: { title:"Pro Pressure Washer", icon:"wand", costs:[900],
       desc:["Spray power +0.42 and nozzle +2 px (spray area +55% or more)"] },
-    degreaser: { title:"Chemical Degreaser", icon:"flask", costs:[220,460],
-      desc:["Grime gives way 18% easier","Grime gives way 32% easier in total"] },
     foamcannon:{ title:"Foam Cannon", icon:"foam", costs:[260,540],
       desc:["Auto-cleans a random spot every 1.35 s","Auto-cleans every 0.8 s, with a wider blast"] },
     tipjar:    { title:"Tip Jar", icon:"jar", costs:[190],
       desc:["Customers tip for speed: the jar starts full and empties as the timer runs. Needs an 80% clean."] },
     permit:    { title:"Business Permit", icon:"bill", costs:[340],
-      desc:["+1 job between overhead bills (3 → 4)"] },
+      desc:["The weekly payment is 8% smaller"] },
     lease:     { title:"Cheaper Lease", icon:"book", costs:[300,700,1500],
-      desc:["Overhead bills −10%","Overhead bills −20% in total","Overhead bills −30% in total"] }
+      desc:["Weekly payments −10%","−20% in total","−30% in total"] }
   };
   /* Legacy perks: bought with reputation stars (earned on every bill you pay), permanent. */
   var PERKS = {
@@ -879,7 +929,8 @@ body{
     franchise:   { title:"Franchise Van",  icon:"truck",   cost:40,  desc:"Every new rig starts with Pump Core and Plumbing installed." },
     oldmoney:    { title:"Old Money",      icon:"trophy",  cost:60,  desc:"After a repossession you restart with at least $1,000." },
     goldenhose:  { title:"Golden Hose",    icon:"wand",    cost:80,  desc:"Spray power +0.15, forever." },
-    legend:      { title:"Local Legend",   icon:"crown",   cost:120, desc:"Crew income +25% and +10 s customer patience." }
+    legend:      { title:"Local Legend",   icon:"crown",   cost:120, desc:"Crew income +25% and +10 s customer patience." },
+    washbot:     { title:"WashBot 3000",   icon:"truck",   cost:400, desc:"A robot that rides along and blasts the dirtiest spot every third of a second with any chemical. The retirement plan." }
   };
   /* Crew work their own jobs (income per job you finish) and draw wages on every overhead bill. */
   var CREW = [
@@ -992,19 +1043,35 @@ body{
     if(sonHired()) s += SON.wage;
     return s;
   }
-  function waterPerTick(){ return 0.85; }
+
   function refillMs(){
     var t = Math.max(550, 1700 - lvl("refill")*400);
     if(lvl("bigrig")>0) t *= 0.7;
     return state.perks.coffee ? t*0.9 : t;
   }
   function jobMs(){ return 40000 + lvl("patience")*10000 + (lvl("empire")>0 ? 12000 : 0) + (state.perks.legend ? 10000 : 0); }
-  function degreaserMult(){ return [1, 1.18, 1.32][Math.min(2, lvl("degreaser"))]; }
+  function degreaserMult(){ return 1; }
+  function chemOwned(id){ return id === "water" || lvl(id) > 0; }
+  function chemList(){ return Object.keys(CHEMS).filter(chemOwned); }
+  /* how much of a pass gets through on this dirt with the chemical in the wand */
+  function chemFactor(type, chemId){
+    if(!type.chem) return 1;
+    return chemId === type.chem ? 1 : WRONG_CHEM;
+  }
+  function coneEdge(){ return 0.5 - lvl("cone")*0.1; }             /* the cone's edge strips (1 - this) of the centre */
+  function waterPerTick(){ return 1.2 * (1 - lvl("flow")*0.15); }
+  function contractsUnlocked(){ return lvl("contracts") > 0; }
+  function contractBonus(){ return [0, 0.30, 0.40, 0.50][Math.min(3, lvl("contracts"))]; }
+  function contractChance(){ return lvl("contracts") >= 3 ? 0.65 : 0.45; }
   function foamLevel(){ return lvl("foamcannon"); }
   function tipChance(){ return lvl("tipjar")>0 ? 0.35 : 0; }
-  function billEvery(){ return 3 + (lvl("permit")>0 ? 1 : 0); }
+  function billEvery(){ return 5; }   /* five working days a week */
+  var DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  function isWeekend(d){ return d >= 5; }
+  function crewWorksToday(){ var d = state.day; if(!isWeekend(d)) return true; if(d === 5) return lvl("overtime") >= 1; return lvl("overtime") >= 2; }
+  function weekendCrewMult(){ return isWeekend(state.day) && lvl("overtime") >= 3 ? 1.2 : 1; }
   function leaseMult(){ return [1, 0.90, 0.80, 0.70][Math.min(3, lvl("lease"))]; }
-  function overheadMult(){ return leaseMult() * (state.perks.lowoverhead ? 0.85 : 1); }
+  function overheadMult(){ return leaseMult() * (state.perks.lowoverhead ? 0.85 : 1) * (lvl("permit")>0 ? 0.92 : 1); }
   function payMult(){
     var m = 1 + lvl("pay")*0.12 + (lvl("bizcore")>0 ? 0.06 : 0) + (lvl("empire")>0 ? 0.20 : 0);
     return m * (state.perks.basepay ? 1.2 : 1);
@@ -1060,8 +1127,9 @@ body{
       if(!crewHired(c.id)) return;
       total += c.rate * (1 + crewLevel(c.id)*0.6);
     });
-    return Math.round(total * regionDef().pay * crewMult());
+    return Math.round(total * regionDef().pay * crewMult() * weekendCrewMult());
   }
+  function crewIncomeToday(){ return crewWorksToday() ? crewIncome() : 0; }
   function regionUnlocked(id){
     return state.jobsCompleted >= REGIONS[id].unlock;
   }
@@ -1074,9 +1142,9 @@ body{
       var L = LIMB_DEFS[i];
       if(L.core === key) return (L.needs && !L.needs()) ? L.gateText : null;
       if(L.leaf === key){
-        if(lvl(L.twigs[0]) >= 3 && lvl(L.twigs[1]) >= 3) return null;
-        return "Needs " + GEAR[L.twigs[0]].title + " and " + GEAR[L.twigs[1]].title +
-               " both at level 3 \u2014 the two branches have to meet.";
+        var allMax = L.twigs.every(function(t){ return lvl(t) >= 3; });
+        if(allMax) return null;
+        return "Needs " + L.twigs.map(function(t){ return GEAR[t].title; }).join(", ") + " all at level 3 \u2014 the branches have to meet.";
       }
       for(var t=0;t<L.twigs.length;t++){
         if(L.twigs[t] === key){
@@ -1186,7 +1254,10 @@ body{
     px(unitX+3, Gy-24, 6, 5, hasPro ? P.berry : P.coral); px(unitX+3, Gy-24, 6, 1, mix(hasPro ? P.berry : P.coral, "#ffffff", 0.35)); px(unitX+5, Gy-22, 2, 1, P.ink);
     for(var k=0;k<lvl("pressure");k++) px(unitX+1+k*3, Gy-19, 2, 1, P.coral);
     disc(unitX+6, Gy-33, 5, P.parch); disc(unitX+6, Gy-33, 2, P.waterLo); px(unitX+6, Gy-35, 1, 1, P.parchHi);
-    if(hasDeg){ px(unitX+13, Gy-22, 5, 6, P.leaf); px(unitX+13, Gy-22, 5, 1, P.leafHi); px(unitX+14, Gy-24, 3, 2, P.leafLo); }
+    /* a rack of bottles for the chemicals you own */
+    var chems = chemList().filter(function(id){ return id !== "water"; });
+    if(chems.length){ px(unitX+12, Gy-16, 3+chems.length*4, 1, P.p1); }
+    chems.forEach(function(id, i){ var bxp = unitX+13+i*4; px(bxp, Gy-22, 3, 6, CHEMS[id].color); px(bxp, Gy-22, 3, 1, mix(CHEMS[id].color,"#ffffff",0.4)); px(bxp+1, Gy-24, 1, 2, P.ink); });
     /* the wand, clipped to the bed side */
     px(bedX+4, Gy-11, 14, 1, P.stone); px(bedX+18, Gy-12, 2, 2, P.sun); px(bedX+3, Gy-12, 2, 2, P.ink);
     /* cab: roof, slanted windscreen, door, hood, grille, lights, bumper */
@@ -1213,6 +1284,16 @@ body{
     /* emit run-length rects */
     var out = [];
     for(var y=0;y<H;y++){ var x=0; while(x<W){ var c=G[y][x]; if(!c){ x++; continue; } var x0=x; while(x<W && G[y][x]===c) x++; out.push('<rect x="'+x0+'" y="'+y+'" width="'+(x-x0)+'" height="1" fill="'+c+'"/>'); } }
+    /* invisible hit areas for the tooltips */
+    function hit(part,x,y,w,h){ out.push('<rect class="hit" data-part="'+part+'" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="transparent"/>'); }
+    hit("tank", tankX-2, ty-4, tw+4, th+6);
+    hit("pump", unitX-1, Gy-29, 14, 14);
+    hit("reel", unitX, Gy-39, 13, 11);
+    if(chems.length) hit("chems", unitX+11, Gy-25, 5+chems.length*4, 11);
+    if(hasTip) hit("tipjar", tankX+tw-10, ty-8, 8, 8);
+    if(hasFoam) hit("foam", tankX-7, ty+2, 8, 7);
+    hit("cab", cabX, Gy-32, front-cabX, 24);
+    if(t>=3) hit("bar", cabX+3, Gy-36, 12, 5);
     var VW = 8 + 10 + (30+18+6) + 3 + 15 + 34 + 8;   /* the longest possible rig */
     return '<svg viewBox="0 0 '+VW+' '+H+'" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">' + out.join('') + '</svg>';
   }
@@ -1913,11 +1994,14 @@ body{
     var n2 = makeNoise(gCols,gRows, 3, rng);
     var edgeN = makeNoise(gCols,gRows, 5, rng);
     var drips = []; if(def.vertical){ for(var d=0; d<Math.round(gCols/6); d++) drips.push({ c: Math.floor(rng()*gCols), w: 1 + Math.floor(rng()*2), len: 0.3 + rng()*0.7 }); }
-    var layers = type.layers;
+    var types = job.types.filter(function(t){ return !t.graffiti; }), hasGraffiti = job.types.some(function(t){ return t.graffiti; });
+    cellType = new Uint8Array(gCols*gRows);
+    cellColor = null;
+    var typeNoise = types.map(function(){ return makeNoise(gCols,gRows, 7, rng); });
+    var layers = types.length ? Math.max.apply(null, types.map(function(t){ return t.layers; })) : type.layers;
     var margin = def.ragged === false ? 0 : Math.max(3, Math.round(Math.min(gCols, gRows) * 0.16));
     grimeTotal = 0;
-    cellColor = null;
-    if(type.graffiti){ buildGraffiti(rng); return; }
+    if(!types.length){ buildGraffiti(rng, job.types.indexOf(job.types.filter(function(t){ return t.graffiti; })[0])); return; }
     /* scattered patches instead of one field: always on the tower, sometimes elsewhere */
     var nPatches = def.patches || (def.patchChance && rng() < def.patchChance ? 3 + Math.floor(rng()*3) : 0);
     var patches = [];
@@ -1933,7 +2017,12 @@ body{
         var px = a.x + cx*CELL + CELL/2, py = a.y + cy*CELL + CELL/2;
         if(def.mask && !def.mask(px,py,a)){ grime[i] = 0; continue; }
         var v = n1[i]*0.74 + n2[i]*0.26;
-        var hp = 0.70 + v * (layers - 0.30);
+        /* which dirt sits here: the strongest of the type fields, first type favoured a little */
+        var tBest = 0, tVal = -1;
+        for(var tt=0; tt<types.length; tt++){ var tv = typeNoise[tt][i] * (tt === 0 ? 1.08 : 1); if(tv > tVal){ tVal = tv; tBest = tt; } }
+        cellType[i] = job.types.indexOf(types[tBest]);
+        var tLayers = types[tBest].layers;
+        var hp = 0.70 + v * (tLayers - 0.30);
         if(nPatches){
           var inside = 0;
           for(var q=0;q<patches.length;q++){ var pq=patches[q]; var dd = Math.hypot((cx/gCols - pq.x)*pq.sx, (cy/gRows - pq.y)/pq.sx); inside = Math.max(inside, 1 - dd/pq.r); }
@@ -1954,7 +2043,7 @@ body{
           hp *= 0.55 + 0.7*ny;
           for(var k=0;k<drips.length;k++){ var dr=drips[k]; if(cx>=dr.c && cx<dr.c+dr.w && ny <= dr.len) hp += 0.9; }
         }
-        hp = Math.min(layers, Math.max(0.40, hp));
+        hp = Math.min(tLayers, Math.max(0.40, hp));
         grime[i] = hp;
         grimeTotal += hp;
       }
@@ -1971,18 +2060,24 @@ body{
     }
     break;
     }
+    if(hasGraffiti) buildGraffiti(rng, job.types.indexOf(job.types.filter(function(t){ return t.graffiti; })[0]), true);
     grimeLeft = grimeTotal;
     cellsTotal = 0; cellsClear = 0;
     for(var k=0;k<grime.length;k++) if(grime[k] > 0.03) cellsTotal++;
   }
 
-  var cellColor = null;
+  var cellColor = null, cellType = null;
   var GRAFFITI_WORDS = ["WASH","YO","SAL","PWC","BOO","ZAP","WOW","ACE","MAX","RAD","FLY","HI","SUDS","NOPE"];
   var GRAFFITI_INK = ["#d43d6a","#2f7fd8","#f2c12e","#3fbf6b","#f26d3d","#ffffff","#8f5fb5"];
-  function buildGraffiti(rng){
-    cellColor = new Array(gCols*gRows);
-    var layers = job.grime.layers;
-    function setCell(cx,cy,col,hp){ if(cx<0||cy<0||cx>=gCols||cy>=gRows) return; var i=cy*gCols+cx; if(grime[i]>0) return; grime[i]=hp; cellColor[i]=col; grimeTotal+=hp; }
+  function buildGraffiti(rng, typeIdx, overTop){
+    cellColor = cellColor || new Array(gCols*gRows);
+    var layers = GRIME_TYPES.graffiti.layers, stamped = {};
+    function setCell(cx,cy,col,hp){
+      if(cx<0||cy<0||cx>=gCols||cy>=gRows) return; var i=cy*gCols+cx;
+      if(stamped[i]) return;
+      if(grime[i]>0){ if(!overTop) return; grimeTotal -= grime[i]; }
+      grime[i]=hp; cellColor[i]=col; cellType[i]=typeIdx; stamped[i]=1; grimeTotal+=hp;
+    }
     function tag(word, x0, y0, s, col, shadow){
       /* letters from the 3×5 font, s cells per pixel, with a one-cell drop shadow */
       for(var li=0; li<word.length; li++){
@@ -1994,7 +2089,7 @@ body{
       for(var li2=0; li2<word.length; li2++){
         var g2 = FONT[word[li2]]; if(!g2) continue;
         for(var k2=0;k2<15;k2++){ if(g2[k2]!=="1") continue; var gx1 = x0 + li2*4*s + (k2%3)*s, gy1 = y0 + Math.floor(k2/3)*s;
-          for(var dy2=0;dy2<s;dy2++) for(var dx2=0;dx2<s;dx2++){ var i2=(gy1+dy2)*gCols+(gx1+dx2); if(gx1+dx2>=0&&gx1+dx2<gCols&&gy1+dy2>=0&&gy1+dy2<gRows){ if(grime[i2]>0){ grimeTotal -= grime[i2]; grime[i2]=0; } setCell(gx1+dx2, gy1+dy2, col, layers); } }
+          for(var dy2=0;dy2<s;dy2++) for(var dx2=0;dx2<s;dx2++){ var i2=(gy1+dy2)*gCols+(gx1+dx2); if(gx1+dx2>=0&&gx1+dx2<gCols&&gy1+dy2>=0&&gy1+dy2<gRows){ if(stamped[i2]){ grimeTotal -= grime[i2]; grime[i2]=0; delete stamped[i2]; } setCell(gx1+dx2, gy1+dy2, col, layers); } }
         }
       }
     }
@@ -2016,9 +2111,11 @@ body{
       if(rng() < 0.5) ring(4+Math.floor(rng()*(gCols-8)), 4+Math.floor(rng()*(gRows-8)), 3+Math.floor(rng()*5), col2);
       else { var sx=Math.floor(rng()*gCols), sy=Math.floor(rng()*gRows); stroke(sx, sy, clamp(sx+Math.floor((rng()-0.5)*30),0,gCols-1), clamp(sy+Math.floor((rng()-0.5)*20),0,gRows-1), col2); }
     }
-    grimeLeft = grimeTotal;
-    cellsTotal = 0; cellsClear = 0;
-    for(var k3=0;k3<grime.length;k3++) if(grime[k3] > 0.03) cellsTotal++;
+    if(!overTop){
+      grimeLeft = grimeTotal;
+      cellsTotal = 0; cellsClear = 0;
+      for(var k3=0;k3<grime.length;k3++) if(grime[k3] > 0.03) cellsTotal++;
+    }
   }
 
   /* a cell is a flat 2×2 square in one of the three layer shades;
@@ -2030,9 +2127,10 @@ body{
     if(w<=0||h<=0) return;
     gx.clearRect(px,py,w,h);
     if(hp <= 0.03) return;
-    if(cellColor){
+    var ct = job.types[cellType ? cellType[i] : 0] || job.grime;
+    if(ct.graffiti && cellColor && cellColor[i]){
       /* graffiti fades: the paint lightens and breaks up as it comes off */
-      var f = hp / job.grime.layers, gcol = mix(cellColor[i], "#ffffff", (1-f)*0.55);
+      var f = hp / ct.layers, gcol = mix(cellColor[i], "#ffffff", (1-f)*0.55);
       gx.fillStyle = gcol;
       if(f > 0.75){ gx.fillRect(px, py, w, h); }
       else if(f > 0.5){ gx.fillRect(px, py, w, 1); gx.fillRect(px, py+1, 1, 1); }
@@ -2040,7 +2138,7 @@ body{
       else { gx.fillRect(px, py, 1, 1); }
       return;
     }
-    var shades = job.shades;
+    var shades = job.shadesByType[cellType ? cellType[i] : 0] || job.shadesByType[0];
     var idx = Math.min(4, Math.floor(hp)), f = hp - Math.floor(hp);
     var ca = shades[idx], cb = shades[Math.min(4, idx+1)];
     var odd = jitter[i] < 0.5 ? 0 : 1;
@@ -2063,8 +2161,9 @@ body{
     }
   }
 
-  function sprayGrime(x, y, radius, power){
+  function sprayGrime(x, y, radius, power, chemId){
     if(!grime) return 0;
+    chemId = chemId || state.activeChem;
     var a = job.area;
     var c0 = Math.floor((x-radius-a.x)/CELL), c1 = Math.floor((x+radius-a.x)/CELL);
     var r0 = Math.floor((y-radius-a.y)/CELL), r1 = Math.floor((y+radius-a.y)/CELL);
@@ -2078,11 +2177,15 @@ body{
         var px = a.x + cx*CELL + CELL/2, py = a.y + cy*CELL + CELL/2;
         var dx = px-x, dy = py-y, d2 = dx*dx + dy*dy;
         if(d2 > rr2) continue;
-        var fall = 1 - (Math.sqrt(d2)/radius)*0.5;
-        var take = Math.min(hp, power*fall / job.tough);
-        grime[i] = hp - take;
+        var fall = 1 - (Math.sqrt(d2)/radius)*coneEdge();
+        var ct = job.types[cellType ? cellType[i] : 0] || job.grime;
+        var eff = chemId === "auto" ? 1 : chemFactor(ct, chemId);
+        var take = Math.min(hp, power*fall*eff / job.tough);
+        var left = hp - take;
+        if(left <= 0.2){ take = hp; left = 0; }          /* the last smear comes off with the pass */
+        grime[i] = left;
         removed += take;
-        if(hp > 0.03 && grime[i] <= 0.03) cellsClear++;
+        if(hp > 0.03 && left <= 0.03) cellsClear++;
         paintCell(cx,cy);
       }
     }
@@ -2238,7 +2341,7 @@ body{
     if(best === null) return;
     var tx = a.x + (best % gCols)*CELL + 1, ty = a.y + Math.floor(best/gCols)*CELL + 1;
     son.target = { x:tx, y:ty }; son.flash = 420;
-    var removed = sprayGrime(tx, ty, sonRadius(), 0.32*degreaserMult());
+    var removed = sprayGrime(tx, ty, sonRadius(), 0.32, state.activeChem);
     if(removed > 0.2) splash(tx, ty, job.grime.splash, 2);
     updateClean();
   }
@@ -2281,6 +2384,44 @@ body{
     }
   }
 
+  /* WashBot 3000: rides along, blasts the dirtiest spot it can find, any chemical */
+  var bot = { target:null, flash:0, acc:0 };
+  function botPos(){ var h = job.def.hero, a = job.area; var side = h.x > a.x + a.w/2 ? -1 : 1; return { x: clamp(h.x + side*26, 10, CW-10), y: h.y }; }
+  function botTick(dt){
+    if(!state.perks.washbot) return;
+    bot.acc += dt; if(bot.flash > 0) bot.flash -= dt;
+    if(bot.acc < 350) return;
+    bot.acc = 0;
+    var best = null, bestHp = 0.2;
+    for(var s=0; s<40 && grime; s++){ var ci = Math.floor(Math.random()*grime.length); if(grime[ci] > bestHp){ bestHp = grime[ci]; best = ci; } }
+    if(best === null) return;
+    var a = job.area, tx = a.x + (best % gCols)*CELL + 1, ty = a.y + Math.floor(best/gCols)*CELL + 1;
+    bot.target = { x:tx, y:ty }; bot.flash = 200;
+    var removed = sprayGrime(tx, ty, 6, 1.4, "auto");
+    if(removed > 0.2) splash(tx, ty, P.waterHi, 3);
+    updateClean();
+  }
+  function drawBot(){
+    if(!state.perks.washbot) return;
+    var p = botPos(), x = p.x, y = p.y, tx = bot.target ? bot.target.x : x, ty = bot.target ? bot.target.y : y-8;
+    FX(x-6, y+1, 12, 1, P.g1);
+    sprite([
+      [x-6, y-3, 12, 3, P.ink],                       /* tracks */
+      [x-5, y-11, 10, 8, P.waterHi],                  /* body */
+      [x-3, y-15, 6, 4, P.stone],                     /* dome */
+      [x-1, y-19, 1, 4, P.stoneLo]                    /* antenna */
+    ]);
+    FX(x-5, y-11, 10, 1, "#ffffff"); FX(x-3, y-9, 2, 2, P.ink); FX(x+1, y-9, 2, 2, P.ink);   /* eyes */
+    FX(x-2, y-15, 4, 1, P.c4); FX(x-1, y-20, 1, 1, P.coral);
+    for(var k=0;k<5;k++) FX(x-5+k*2, y-2, 1, 1, P.stoneLo);
+    var facing = tx >= x ? 1 : -1;
+    FX(facing>0 ? x+5 : x-8, y-8, 3, 2, P.ink); FX(facing>0 ? x+8 : x-9, y-8, 1, 2, P.sun);
+    if(bot.flash > 0 && bot.target){
+      var sx = facing>0 ? x+9 : x-9, sy = y-7, dx = tx-sx, dy = ty-sy;
+      for(var i=1;i<24;i++){ var t = i/24; FX(sx+dx*t, sy+dy*t + (i%2), 1, 1, i%3===0 ? "#ffffff" : P.waterHi); }
+    }
+  }
+
   function drawSprayCone(tip){
     var dx = aim.x - tip.tipX, dy = aim.y - tip.tipY;
     var len = Math.sqrt(dx*dx+dy*dy) || 1;
@@ -2312,31 +2453,40 @@ body{
     var key = pick(r.jobs, state.jobsCompleted);
     return JOBS[key];
   }
-  function pickGrime(){
-    var r = regionDef(), def = pickJobDef();
-    if(def.graffitiChance && Math.random() < def.graffitiChance) return GRIME_TYPES.graffiti;
-    var list = def.grimes || r.grimes;
-    var idx = Math.min(list.length-1, rigTier() + (state.jobsCompleted % 3 === 2 ? 1 : 0));
-    return GRIME_TYPES[list[Math.min(list.length-1, idx)]];
+  function pickGrimes(rng){
+    var def = pickJobDef(), jobs = state.jobsCompleted;
+    var pool = (def.grimes || regionDef().grimes).filter(function(id, i, arr){ return arr.indexOf(id) === i && DIRT_UNLOCK[id] <= jobs; });
+    if(!pool.length) pool = ["dust"];
+    var count = jobs < 6 ? 1 : (rng() < 0.45 ? 1 : (rng() < 0.6 ? 2 : 3));
+    count = Math.min(count, pool.length);
+    /* the newest dirt on the route is the most likely, so a new chemical matters right away */
+    var picks = [], bag = pool.slice();
+    while(picks.length < count && bag.length){
+      var weights = bag.map(function(id){ return 1 + DIRT_UNLOCK[id]/10; }), sum = weights.reduce(function(a,b){ return a+b; }, 0), r = rng()*sum, k = 0;
+      while(k < bag.length-1 && (r -= weights[k]) > 0) k++;
+      picks.push(bag[k]); bag.splice(k,1);
+    }
+    if(def.graffitiChance && DIRT_UNLOCK.graffiti <= jobs && rng() < def.graffitiChance && picks.indexOf("graffiti") < 0) picks.push("graffiti");
+    return picks.map(function(id){ return GRIME_TYPES[id]; });
   }
 
   function startJob(){
     var def = pickJobDef();
-    var type = pickGrime();
     var weather = WEATHERS[Math.floor(Math.random()*WEATHERS.length)];
     var seed = (state.jobsCompleted+1) * 2654435761 % 4294967296;
     var rng = makeRng(seed);
-
-    var deep1 = mix(type.shades[2], PAL_FALLBACK.ink, 0.14), deep2 = mix(type.shades[2], PAL_FALLBACK.ink, 0.28);
+    var types = pickGrimes(rng);
+    var type = types.reduce(function(best, t){ return t.pay > best.pay ? t : best; }, types[0]);   /* the dirtiest sets the pay */
+    var shadesByType = types.map(function(t){ return t.shades.concat([mix(t.shades[2], PAL_FALLBACK.ink, 0.14), mix(t.shades[2], PAL_FALLBACK.ink, 0.28)]); });
     job = {
-      def: def, area: def.area, grime: type, weather: weather, shades: type.shades.concat([deep1, deep2]), tough: grimeToughness(),
+      def: def, area: def.area, grime: type, types: types, shadesByType: shadesByType, weather: weather, tough: grimeToughness(),
       duration: jobMs(), start: 0, tank: tankMax(), ended: false, started: false,
       region: state.region
     };
 
     showScreen("screen-job");
     $("jobName").textContent = def.name;
-    $("jobSub").textContent = type.name + " · " + regionDef().name + " · " + weather.name + " · dirt ×" + progressToughness().toFixed(2);
+    $("jobSub").textContent = types.map(function(t){ return t.name; }).join(" + ") + " · " + regionDef().name + " · " + weather.name;
     var night = document.documentElement.getAttribute("data-theme") === "night";
     $("stageTint").style.background = night ? (getComputedStyle(document.documentElement).getPropertyValue("--scene-night") || "rgba(24,42,94,0.55)") : weather.tint;
 
@@ -2344,7 +2494,10 @@ body{
     bx.clearRect(0,0,CW,CH);
     def.scene(def.area, rng);
     buildGrime(rng);
-    job.contract = (!type.graffiti && rng() < 0.45) ? makeContract(rng) : null;
+    job.contract = (contractsUnlocked() && rng() < contractChance()) ? makeContract(rng) : null;
+    if(job.contract) job.contract.bonus = contractBonus();
+    if(chemList().indexOf(state.activeChem) < 0) state.activeChem = "water";
+    renderChemBar();
     job.tipMax = tipJarMax();
     drawAllGrime();
     fx.clearRect(0,0,CW,CH);
@@ -2352,17 +2505,22 @@ body{
     aim = { x: def.area.x + def.area.w/2, y: def.area.y + def.area.h/2 };
     spraying = false; hovering = false; pressed = false; lastSprayPt = null; refilling = false;
     sprayAcc = foamAcc = rainAcc = 0;
-    son = { x:0, y:0, target:null, flash:0, acc:0 };
+    son = { x:0, y:0, target:null, flash:0, acc:0 }; bot = { target:null, flash:0, acc:0 };
     setTank(job.tank); setClean(0); setTimer(job.duration);
     $("stageOverlay").classList.add("hidden");
 
-    playIntro(function(){
+    var fresh = types.filter(function(t){ return !state.info["dirt_"+t.id]; });
+    var startIt = function(){ playIntro(function(){
       if(!job || job.ended) return;
       job.started = true;
       job.start = now();
       lastTs = 0;
       rafId = requestAnimationFrame(frame);
-    });
+    }); };
+    if(fresh.length){
+      var t0 = fresh[0];
+      tellInfo("dirt_"+t0.id, t0.icon, "New dirt: " + t0.name, t0.blurb + (t0.chem ? (chemOwned(t0.chem) ? " You have " + CHEMS[t0.chem].name + " — switch to it." : " <b>You don’t have " + CHEMS[t0.chem].name + " yet</b> — it’s in the Shop.") : ""), startIt);
+    } else startIt();
   }
 
   function now(){ return (window.performance && performance.now) ? performance.now() : Date.now(); }
@@ -2420,7 +2578,7 @@ body{
         foamAcc = 0;
         var a = job.area;
         var fxp = a.x + 8 + Math.random()*(a.w-16), fyp = a.y + 8 + Math.random()*(a.h-16);
-        sprayGrime(fxp, fyp, 10 + foamLevel()*2.5, 0.5*degreaserMult());
+        sprayGrime(fxp, fyp, 10 + foamLevel()*2.5, 0.5, state.activeChem);
         splash(fxp, fyp, job.grime.splash, 5);
         updateClean();
       }
@@ -2431,7 +2589,7 @@ body{
       if(rainAcc > 45){ rainAcc = 0; rainDrop(); rainDrop(); }
     }
 
-    sonTick(dt);
+    sonTick(dt); botTick(dt);
 
     fx.clearRect(0,0,CW,CH);
     if(job.def.over) job.def.over();
@@ -2439,7 +2597,7 @@ body{
     renderJobHud(left);
     if(job.def.props){ var keepBx = bx; bx = fx; job.def.props(job.area); bx = keepBx; }
     drawParticles();
-    drawSon();
+    drawSon(); drawBot();
     var tip = drawWasher();
     var sprayingNow = spraying && !refilling && job.tank > 0;
     if(sprayingNow) drawSprayCone(tip);
@@ -2465,7 +2623,7 @@ body{
       removed += sprayGrime(from.x + dx*t, from.y + dy*t, radius, per);
     }
     lastSprayPt = { x:aim.x, y:aim.y };
-    job.tank = Math.max(0, job.tank - 1.2);
+    job.tank = Math.max(0, job.tank - waterPerTick());
     setTank(job.tank);
     if(removed > 0.4) splash(aim.x, aim.y, job.grime.splash, 3);
     updateClean();
@@ -2504,6 +2662,26 @@ body{
     var secs = Math.max(0, Math.ceil(ms/1000));
     $("timeLabel").textContent = Math.floor(secs/60) + ":" + (secs%60 < 10 ? "0" : "") + (secs%60);
   }
+  /* the chemical in the wand: buttons under the stage, keys 1–5 */
+  function renderChemBar(){
+    var bar = $("chemBar"); bar.innerHTML = "";
+    var list = chemList();
+    list.forEach(function(id, i){
+      var b = document.createElement("button");
+      b.className = "pw-btn pw-btn--small chem" + (state.activeChem === id ? " is-active" : "");
+      b.style.setProperty("--face", CHEMS[id].color); b.style.setProperty("--face-hi", mix(CHEMS[id].color, "#ffffff", 0.4)); b.style.setProperty("--lift-c", mix(CHEMS[id].color, "#000000", 0.3));
+      b.innerHTML = ic(CHEMS[id].icon, "pw-btn__icon") + (i+1) + " · " + CHEMS[id].name;
+      b.onclick = function(){ state.activeChem = id; save(); renderChemBar(); };
+      bar.appendChild(b);
+    });
+    var need = job && job.types ? job.types.filter(function(t){ return t.chem && !chemOwned(t.chem); }) : [];
+    $("chemHint").textContent = need.length ? "You don’t have " + need.map(function(t){ return CHEMS[t.chem].name; }).join(" or ") + " — that dirt will barely move. It’s in the Shop." : (job && job.types && job.types.some(function(t){ return t.chem; }) ? "Match the chemical to the dirt: the wrong one barely scratches it." : "Plain water handles this one.");
+  }
+  window.addEventListener("keydown", function(ev){
+    if(!job || job.ended) return;
+    var n = parseInt(ev.key, 10); if(!n) return;
+    var list = chemList(); if(list[n-1]){ state.activeChem = list[n-1]; renderChemBar(); }
+  });
   /* the tip you'd get right now: it shrinks as the customer waits */
   function tipJarMax(){ return 12 + Math.round(state.jobsCompleted*1.5) + Math.round(regionDef().pay*8); }
   function tipNow(msLeft){ if(lvl("tipjar") <= 0) return 0; return Math.round(job.tipMax * clamp(msLeft/job.duration, 0, 1)); }
@@ -2619,7 +2797,7 @@ body{
     var contractMet = !!(job.contract && contractProgress() >= 0.999);
     var contractBonus = contractMet ? Math.round(pay * job.contract.bonus) : 0;
     pay += contractBonus;
-    var crew = crewIncome();
+    var crew = crewIncomeToday();
     var cut = state.loan > 0 ? Math.min(state.loan, Math.round(pay * LENDER.cut)) : 0;
     if(cut > 0 && state.loan - cut <= 0) lenderJustPaid = true;
     state.loan -= cut;
@@ -2656,6 +2834,7 @@ body{
     if(tip>0)  rows.push(mRow(ic("jar")+"Tip for speed", "+"+money(tip), "pw-stats__val--up"));
     else if(lvl("tipjar") > 0) rows.push(mRow(ic("jar")+"Tip", pct >= 80 ? "too slow — nothing" : "under 80% — nothing", "pw-stats__val--down"));
     if(crew>0) rows.push(mRow(ic("hardhat")+"Crew jobs", "+"+money(crew), "pw-stats__val--up"));
+    else if(crewIncome()>0) rows.push(mRow(ic("hardhat")+"Crew", "off — it’s the weekend"));
     if(state.streak>1) rows.push(mRow(ic("flame")+"Streak", "×"+state.streak+(state.streak>=STREAK_MAX ? " (max)" : "")+" · pay +"+Math.round((streakMult()-1)*100)+"%"));
     if(cut>0) rows.push(mRow(ic("coin")+LENDER.name+"’s cut", "−"+money(cut)+(state.loan>0 ? " · "+money(state.loan)+" left" : " · square"), "pw-stats__val--down"));
     if(pay === 0) rows.push(mRow(ic("bill")+"Under 30% clean", "no pay", "pw-stats__val--down"));
@@ -2694,7 +2873,29 @@ body{
   }
   function afterJob3(){
     if(!state.ownedOutright && state.lifetimeEarnings >= BUYOUT_TARGET) return doBuyout();
-    if(state.jobsSinceBill >= billEvery()) return triggerBill();
+    advanceDay();
+  }
+  /* a job takes a day; Friday night and Saturday night you choose; Sunday night the payment is due */
+  function advanceDay(){
+    state.day += 1; save();
+    if(state.day === 5 || state.day === 6){
+      var dayName = state.day === 5 ? "Saturday" : "Sunday";
+      var due = overheadAmount(state.billNumber), canRest = state.cash >= due;
+      var go = function(){
+        showModal(
+          mHead("clock", "It’s the weekend", "Sunday night the weekly payment of <b>"+money(due)+"</b> is due. "+(crewWorksToday() ? "" : "Your crew don’t work weekends"+(lvl("overtime") ? " yet" : "")+".")+(canRest ? " You can afford it — rest, or squeeze in a job." : " You can’t cover it yet — better work "+dayName+"."), "Week "+state.week) +
+          mRows([mRow(ic("coin")+"You have", money(state.cash), canRest ? "pw-stats__val--up" : "pw-stats__val--down"), mRow(ic("bill")+"Due Sunday", money(due))]),
+          [ { label:"Work "+dayName, cls:"pw-btn--primary", icon:"wand", action:function(){ showScreen("screen-home"); } },
+            canRest ? { label:"Rest until Monday", cls:"pw-btn--ghost", action:function(){ state.day = 7; save(); advanceDay(); } }
+                    : { label:"Can’t rest — you’d miss the payment", cls:"pw-btn--ghost", disabled:true } ]
+        );
+      };
+      return tellInfo("weekend", "clock", "Weekends", "Each job takes a day. Crew work Monday to Friday; on the weekend you can rest — if you can afford Sunday’s payment — or keep washing. The payment is 60% of what your last six jobs paid, for the five working days.", go);
+    }
+    if(state.day >= 7){
+      state.day = 0; state.week += 1; save();
+      return triggerBill();
+    }
     showScreen("screen-home");
   }
 
@@ -2721,6 +2922,7 @@ body{
     var amount = overheadAmount(state.billNumber);
     state.billNumber += 1;
     state.jobsSinceBill = 0;
+    var weekLabel = "Week " + (state.week-1) + " payment";
     if(state.loan > 0) state.loan = Math.round(state.loan * 1.12);
 
     var gain = Math.max(2, Math.round(amount/40)) + (state.perks.wordofmouth ? 2 : 0);
@@ -2730,7 +2932,7 @@ body{
       save(); renderTop(); SFX.bill();
       var go = function(){
         showModal(
-          mHead("bill", "Overhead paid", "Handled. Every bill buys a little reputation.", "Bill") +
+          mHead("bill", "Payment made", "Handled. Every payment buys a little reputation.", weekLabel) +
           mRows([mRow(ic("truck")+"Lease, fuel and soap", money(overheadBase(state.billNumber-1)))]
             .concat(crewSalary()>0 ? [mRow(ic("hardhat")+"Crew wages", money(crewSalary()))] : [])
             .concat([mRow(ic("coin")+"Total", money(amount), "pw-stats__val--down"), mRow(ic("star")+"Reputation earned", "+"+gain, "pw-stats__val--up")])),
@@ -2742,7 +2944,7 @@ body{
       /* the lender covers it — at a price — or the van goes */
       runDialogue(STORY.lender, function(){
         showModal(
-          mHead("coin", LENDER.name+"’s offer", "He pays the <b>"+money(amount)+"</b> bill now. You’ll owe him <b>"+money(Math.round(amount*LENDER.markup))+"</b>, paid back as "+Math.round(LENDER.cut*100)+"% of every job.", "Short on cash") +
+          mHead("coin", LENDER.name+"’s offer", "He covers the <b>"+money(amount)+"</b> payment now. You’ll owe him <b>"+money(Math.round(amount*LENDER.markup))+"</b>, paid back as "+Math.round(LENDER.cut*100)+"% of every job.", "Short on cash") +
           mRows([mRow("Bill", money(amount)), mRow("You have", money(state.cash), "pw-stats__val--down"), mRow("You’d owe", money(Math.round(amount*LENDER.markup)))]),
           [{ label:"Take "+LENDER.name+"’s money", cls:"pw-btn--primary", action:function(){
               state.loan = Math.round(amount*LENDER.markup); state.rep += gain; save(); renderTop();
@@ -2798,7 +3000,7 @@ body{
     if(state.loan > 0){
       p.innerHTML =
         '<div class="pw-panel__head"><span class="pw-heading">'+ic("coin","pw-icon--24")+' '+LENDER.name+'’s tab</span><span class="pw-label" style="color:var(--danger-text)">'+money(state.loan)+'</span></div>' +
-        '<p class="pw-small pw-soft">He takes '+Math.round(LENDER.cut*100)+'% of every job until it’s square. Miss another bill and the van goes.</p>';
+        '<p class="pw-small pw-soft">He takes '+Math.round(LENDER.cut*100)+'% of every job until it’s square. Miss another payment and the van goes.</p>';
       return;
     }
     var next = null;
@@ -2837,6 +3039,12 @@ body{
      MODALS + DIALOGUE
      ========================================================= */
   var modalDismissible = false;
+  /* one-time explainers: shown the first time something new turns up */
+  function tellInfo(key, icon, title, html, done){
+    if(state.info[key]){ if(done) done(); return; }
+    state.info[key] = 1; save();
+    showModal(mHead(icon, title, html, "Heads up"), [{ label:"Got it", cls:"pw-btn--primary", action: done }]);
+  }
   function openSettings(){
     var night = document.documentElement.getAttribute("data-theme") === "night";
     showModal(mHead("wrench", "Settings", null, "Options"),
@@ -2858,6 +3066,7 @@ body{
     (buttons||[{label:"OK",cls:"pw-btn--primary"}]).forEach(function(b){
       var btn = document.createElement("button");
       btn.className = "pw-btn pw-btn--block " + (b.cls || "pw-btn--primary");
+      btn.disabled = !!b.disabled;
       btn.innerHTML = (b.icon ? ic(b.icon, "pw-btn__icon") : "") + b.label;
       btn.onclick = function(){ hideModal(); if(b.action) b.action(); };
       wrap.appendChild(btn);
@@ -3009,6 +3218,7 @@ body{
     $("tierName").textContent = t[0];
     $("tierSub").textContent = t[1];
     $("truckArt").innerHTML = truckSVG();
+    wireTruckTips();
     $("heroMascot").innerHTML = mascotSVG();
     paintRoute();
     var nextDef = pickJobDef();
@@ -3028,16 +3238,18 @@ body{
     ]);
     $("regionName").textContent = regionDef().name;
 
-    var interval = billEvery(), due = overheadAmount(state.billNumber);
-    var remain = Math.max(0, interval - state.jobsSinceBill);
-    $("billPanel").innerHTML = meterHTML("bill", "Next bill", money(due)+' in '+remain+' job'+(remain===1?'':'s'), "pw-track--bill",
-      state.jobsSinceBill/interval*100, remain<=1 ? "" : "");
-    if(remain<=1) $("billPanel").querySelector(".pw-label").style.color = "var(--danger-text)";
+    var due = overheadAmount(state.billNumber), daysLeft = 7 - state.day;
+    $("billPanel").innerHTML = meterHTML("bill", "Sunday payment", money(due)+(state.day >= 5 ? ' · '+(daysLeft===1 ? 'tonight' : 'tomorrow') : ' · '+daysLeft+' days'), "pw-track--bill", state.day/7*100);
+    if(state.cash < due) $("billPanel").querySelector(".pw-label").style.color = "var(--danger-text)";
+    var cal = $("calendar"); cal.innerHTML = '<span class="pw-caption cal-week">Week '+state.week+'</span>' + DAYS.map(function(d, i){
+      return '<span class="cal-day'+(i === state.day ? ' is-today' : '')+(i >= 5 ? ' is-weekend' : '')+(i === 6 ? ' is-payday' : '')+(i < state.day ? ' is-past' : '')+'">'+d+(i === 6 ? ic("coin") : '')+'</span>';
+    }).join('');
+    $("btnStartJob").innerHTML = ic("wand","pw-btn__icon") + (state.day >= 5 ? "Work " + (state.day === 5 ? "Saturday" : "Sunday") : "Start Next Job");
 
     var ci = crewIncome();
     $("crewPanel").innerHTML = (ci > 0 || sonHired())
       ? '<div class="pw-panel__head"><span class="pw-heading">'+ic("hardhat","pw-icon--24")+' Crew</span><span class="pw-label">'+(Object.keys(state.crew).length + (sonHired()?1:0))+' on payroll</span></div>' +
-        '<p class="pw-small pw-soft"><b>'+money(ci)+'</b> per job you finish · wages <b>'+money(crewSalary())+'</b> per bill.</p>'
+        '<p class="pw-small pw-soft"><b>'+money(ci)+'</b> per weekday job · wages <b>'+money(crewSalary())+'</b> a week.</p>'
       : '<div class="pw-panel__head"><span class="pw-heading">'+ic("hardhat","pw-icon--24")+' No crew yet</span></div>' +
         '<p class="pw-small pw-soft">Hire someone — they work a job every time you finish one.</p>';
 
@@ -3050,6 +3262,30 @@ body{
       $("buyoutPanel").innerHTML = meterHTML("trophy", "Buyout", money(shown)+' / '+money(BUYOUT_TARGET), "pw-track--gold pw-track--segmented", shown/BUYOUT_TARGET*100);
     }
     renderLoanPanel();
+  }
+
+  /* hover the rig's parts for what they are and what level they're at */
+  function partInfo(part){
+    switch(part){
+      case "tank": return "Tank" + (lvl("tank") ? " lv." + lvl("tank") : "") + (lvl("bigrig") ? " + Big Rig" : "") + " — " + tankMax() + " L";
+      case "pump": return (lvl("prowasher") ? "Pro Pressure Washer" : "Pressure washer") + (lvl("powercore") ? " with Pump Core" : "") + " — spray power " + sprayPower().toFixed(2) + (lvl("pressure") ? " (Pressure lv." + lvl("pressure") + ")" : "") + (lvl("cone") ? ", Even Cone lv." + lvl("cone") : "");
+      case "reel": return "Hose reel — nozzle " + sprayRadius().toFixed(2) + " px" + (lvl("nozzle") ? " (Nozzle lv." + lvl("nozzle") + ")" : "") + ", refill " + (refillMs()/1000).toFixed(2) + " s";
+      case "unit": return lvl("prowasher") ? "Pro Pressure Washer — +0.42 power, +2 px nozzle" : "Pressure washer — the stock unit";
+      case "chems": var owned = chemList().filter(function(c){ return c !== "water"; }); return "Chemicals — " + (owned.length ? owned.map(function(c){ return CHEMS[c].name; }).join(", ") : "none yet (Shop)");
+      case "tipjar": return "Tip Jar — customers tip for speed; watch it drain top-right during a job";
+      case "foam": return "Foam Cannon lv." + lvl("foamcannon") + " — auto-cleans a spot every " + (lvl("foamcannon") >= 2 ? "0.8" : "1.35") + " s";
+      case "cab": return TIERS[rigTier()][0] + (lvl("permit") ? " · Business Permit (payments −8%)" : "") + (lvl("lease") ? " · Cheaper Lease lv." + lvl("lease") : "");
+      case "bar": return "Light bar — a Pro-tier rig";
+    }
+    return "";
+  }
+  function wireTruckTips(){
+    var svg = $("truckArt").querySelector("svg"), tip = $("truckTip");
+    if(!svg) return;
+    Array.prototype.slice.call(svg.querySelectorAll(".hit")).forEach(function(h){
+      h.addEventListener("mouseenter", function(){ tip.textContent = partInfo(h.getAttribute("data-part")); tip.classList.remove("hidden"); });
+      h.addEventListener("mouseleave", function(){ tip.classList.add("hidden"); });
+    });
   }
 
   /* ---- the route map: a 240×100 pixel painting + chip markers ---- */
@@ -3076,9 +3312,9 @@ body{
     miniTree(8, 60); miniTree(70, 52); miniTree(48, 78); bush(66, 82, 0.5);
 
     /* downtown, on land east of the river — towers dwarf the houses */
-    towerSlab(102, 22, 12, 50, P.c3, P.waterHi); towerSlab(116, 34, 9, 38, P.c4, P.waterHi); towerSlab(128, 10, 13, 62, P.c2, P.waterHi); towerSlab(144, 30, 10, 42, P.c3, P.waterHi);
-    antenna(134, 10, 9);
-    R(100, 74, 56, 4, P.c3); R(100, 74, 56, 1, P.c4); crosswalk(108, 74, 20);
+    towerSlab(104, 30, 10, 34, P.c3, P.waterHi); towerSlab(116, 38, 8, 26, P.c4, P.waterHi); towerSlab(126, 22, 11, 42, P.c2, P.waterHi); towerSlab(139, 36, 9, 28, P.c3, P.waterHi);
+    antenna(131, 22, 7);
+    R(100, 66, 52, 3, P.c3); R(100, 66, 52, 1, P.c4); crosswalk(108, 66, 20);
     /* harbour: quay, pier into the sea, boats, lighthouse */
     R(160, 60, 40, 4, P.c3); R(160, 60, 40, 1, P.c4);
     box(196, 62, 30, 3, P.p3, P.p4, P.p1); R(200,65,2,7,P.p1); R(210,65,2,7,P.p1); R(220,65,2,7,P.p1);
@@ -3086,9 +3322,9 @@ body{
     lighthouse(232, 60, 18); buoy(164, 90); seagull(170, 44); seagull(190, 40); seagull(224, 36);
     /* the road: suburb → bridge → downtown, then it bends up and follows the shore to the quay */
     function roadY(x){
-      if(x < 128) return 90 - Math.round(Math.sin(x/38)*5);
-      if(x < 156) return 88 - Math.round((x-128)*1.0);       /* climbing along the shore */
-      return 60 - Math.round(Math.sin((x-156)/12)*2);        /* the quay road */
+      if(x < 124) return 90 - Math.round(Math.sin(x/38)*5);
+      if(x < 160) return 88 - Math.round((x-124)*0.72);      /* bending up between downtown and the shore */
+      return 62 - Math.round(Math.sin((x-160)/14)*2);        /* the quay road */
     }
     for(var rx2=8; rx2<=196; rx2++){
       var ry2 = roadY(rx2);
@@ -3171,6 +3407,7 @@ body{
         var gate = treeGate(key, level), cost = costOf(key, level);
         if(lvl(key) > level || gate || state.cash < cost){ show(); n.classList.remove("is-nope"); void n.offsetWidth; n.classList.add("is-nope"); return; }
         buyGear(key, cost); SFX.buy();
+        if(key === "contracts" && level === 0) tellInfo("contracts", "bill", "Contracts", "Some customers now mark a patch they care about — a dashed outline on the job. Leave every cell inside it spotless and you earn a bonus on top of the pay, plus reputation. The header shows how close you are.");
         var again = wrap.querySelector('[data-key="'+key+'"][data-level="'+level+'"]');
         if(again){ again.classList.add("is-bought"); }
       };
@@ -3301,7 +3538,11 @@ body{
         btn.className = "pw-btn pw-btn--small";
         btn.textContent = "Buy";
         btn.disabled = state.cash < cost;
-        btn.onclick = function(){ buyGear(key, cost); renderHome(); };
+        btn.onclick = function(){
+          buyGear(key, cost); SFX.buy();
+          if(key === "tipjar") tellInfo("tipjar", "jar", "The Tip Jar", "Customers tip for <b>speed</b>. On every job the jar starts full and drains as the timer runs — you’ll see it counting down in the top-right corner. Finish at least 80% clean and what’s left in the jar is yours.");
+          else if(def.chem) tellInfo("chem_"+key, "flask", def.title, "It’s in the wand now. During a job, switch between water and your chemicals with the buttons under the stage or the number keys. Dirt that needs a chemical barely moves under the wrong one.");
+        };
         foot.appendChild(btn);
       }
       card.appendChild(foot);
@@ -3412,6 +3653,7 @@ body{
           if(!state.legacyAvailable || state.rep < def.cost) return;
           state.rep -= def.cost; state.perks[k] = true;
           save(); renderTop(); renderLegacy();
+          if(k === "washbot") tellInfo("washbot", "truck", "WashBot 3000", "It rides along on every job and blasts the dirtiest spot it can find three times a second, with the right chemical built in. Enjoy retirement.");
         };
         foot.appendChild(b);
       }

@@ -160,3 +160,8 @@ body{
 #truckStage{position:relative;}
 .truck-tip{position:absolute;left:50%;transform:translateX(-50%);top:10px;width:max-content;max-width:90%;font-size:14px;line-height:18px;z-index:5;pointer-events:none;text-align:center;}
 #truckArt .hit{cursor:help;}
+
+.job-dirt{gap:6px;flex-wrap:wrap;margin-top:4px;}
+.job-dirt .pw-chip{--face:var(--parchment-hi);}
+.job-dirt .pw-chip .pw-soft{margin-left:4px;}
+#stageOverlay.is-paused{cursor:pointer;}

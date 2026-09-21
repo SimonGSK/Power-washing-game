@@ -70,7 +70,7 @@
     grove: {
       id:"grove", name:"Maple Grove", icon:"house",
       tag:"Quiet suburb. Driveways, patios, decks — where every washer starts.",
-      pay:1.00, unlock:0,
+      dirt:1.00, pay:1.00, unlock:0,
       jobs:["driveway","patio","deck","fence"],
       grimes:["dust","mud","moss","grease","grease"],
       sky:["#a8dcef","#e9f4da"]
@@ -78,7 +78,7 @@
     city: {
       id:"city", name:"Downtown", icon:"city",
       tag:"Glass towers and greasy loading bays. Pays well, notices streaks.",
-      pay:1.55, unlock:12,
+      dirt:1.20, pay:1.55, unlock:12,
       jobs:["windows","storefront","garage"],
       grimes:["dust","soot","grease","soot","grease"],
       sky:["#9dc6e6","#f1e2ca"]
@@ -86,7 +86,7 @@
     harbor: {
       id:"harbor", name:"Saltwick Harbor", icon:"anchor",
       tag:"Salt, barnacles and boat owners with deep pockets.",
-      pay:2.30, unlock:30,
+      dirt:1.40, pay:2.30, unlock:30,
       jobs:["hull","dock","shack"],
       grimes:["moss","salt","salt","grease","salt"],
       sky:["#8fd2e2","#fce8bf"]

@@ -7,6 +7,11 @@
   var NIGHT = false, LIT = false, nightCache = {};
   var NIGHT_INK = "#121838";
   function setNight(on){ NIGHT = !!on; nightCache = {}; }
+  /* where the lamps throw light: the grime painter reads this so dirt under a lamp is lit too */
+  var LIGHT = null;
+  function resetLight(){ LIGHT = NIGHT ? new Uint8Array(CW*CH) : null; }
+  function markLight(x, y){ if(LIGHT && x>=0 && y>=0 && x<CW && y<CH) LIGHT[y*CW+x] = 1; }
+  function lightAt(x, y){ return !!(LIGHT && x>=0 && y>=0 && x<CW && y<CH && LIGHT[y*CW+x]); }
   function shade(c){
     if(!NIGHT || LIT || !c || c.charAt(0) !== "#") return c;
     var k = nightCache[c]; if(k) return k;
@@ -22,7 +27,7 @@
     lit(function(){
       col = col || "#b89a58";
       for(var r=0;r<h;r++){ var w = topW + (bottomW-topW)*r/Math.max(1,h-1), x0 = Math.round(x-w/2), x1 = Math.round(x+w/2);
-        for(var px=x0; px<x1; px++) if(((px + y + r) & 1) === 0) R(px, y+r, 1, 1, col); }
+        for(var px=x0; px<x1; px++){ markLight(px, y+r); if(((px + y + r) & 1) === 0) R(px, y+r, 1, 1, col); } }
     });
   }
   /* a soft pool of light around a bulb */
@@ -31,7 +36,7 @@
     lit(function(){
       col = col || "#b89a58";
       for(var yy=-ry; yy<=ry; yy++){ var hw = Math.round(rx*Math.sqrt(Math.max(0, 1 - (yy*yy)/(ry*ry))));
-        for(var xx=-hw; xx<=hw; xx++) if(((cx+xx + cy+yy) & 1) === 0) R(cx+xx, cy+yy, 1, 1, col); }
+        for(var xx=-hw; xx<=hw; xx++){ markLight(cx+xx, cy+yy); if(((cx+xx + cy+yy) & 1) === 0) R(cx+xx, cy+yy, 1, 1, col); } }
     });
   }
   function stars(horizon){
@@ -335,6 +340,13 @@
     }
   }
   function sign(x,y,w,text){ box(x,y,w,7,P.p1,P.p2,null); for(var i=0;i<Math.floor((w-4)/4);i++) R(x+3+i*4,y+3,2,1,text||P.sunHi); }
+  /* a lantern on a short post at the pier edge; lit after dark */
+  function pierLamp(x,y){
+    if(NIGHT) glowDisc(x, y-14, 10, 8, "#8a7448");
+    R(x-1,y-20,2,20,P.p1); R(x-1,y-20,1,20,P.p2); R(x-2,y-21,4,1,P.ink); R(x-3,y-1,6,1,P.ink);
+    R(x-3,y-19,6,1,P.ink); R(x-3,y-18,1,5,P.ink); R(x+2,y-18,1,5,P.ink); R(x-3,y-13,6,1,P.ink);
+    lit(function(){ R(x-2,y-18,4,5, NIGHT ? "#fff0c4" : P.parchHi); R(x-1,y-17,2,3, NIGHT ? "#ffe08a" : P.sunHi); });
+  }
   function bollard(x,y){ R(x-2,y-6,4,6,P.p1); R(x-2,y-6,1,6,P.p2); R(x-3,y-7,6,1,P.ink); R(x-1,y-4,2,1,P.p3); }
   function ladder(x,y,h){ R(x,y,1,h,P.stone); R(x+4,y,1,h,P.stone); for(var r=2;r<h;r+=3) R(x+1,y+r,3,1,P.stoneLo); }
   function lifeRing(x,y){ R(x-3,y-3,6,6,P.coral); R(x-2,y-2,4,4,P.parchHi); R(x-1,y-1,2,2,P.w2); R(x-3,y-1,1,2,P.parchHi); R(x+2,y-1,1,2,P.parchHi); }
@@ -368,7 +380,8 @@
   function miniHouse(x,y,w,h,wall,roof){
     R(x-2,y-1,w+4,1,P.ink); R(x-1,y,w+2,3,roof); R(x-1,y,w+2,1,mix(roof,"#ffffff",0.35)); R(x-2,y+3,w+4,1,mix(roof,"#000000",0.35));
     R(x,y+4,w,h,wall); R(x-1,y+4,1,h,P.ink); R(x+w,y+4,1,h,P.ink); R(x,y+4+h,w,1,P.ink);
-    R(x+2,y+6,3,3,P.waterHi); R(x+w-4,y+6,2,4,P.p1); R(x+w-4,y+6,2,1,P.p3);
+    lit(function(){ R(x+2,y+6,3,3,NIGHT ? "#ffd57a" : P.waterHi); }); R(x+w-4,y+6,2,4,P.p1); R(x+w-4,y+6,2,1,P.p3);
+    if(NIGHT) glowDisc(x+3, y+9, 4, 2, "#8a7448");
     R(x+w-5,y-3,2,3,P.s3);
   }
   function antenna(x,y,h){ R(x,y-h,1,h,P.ink); R(x-2,y-h+3,5,1,P.ink); R(x-1,y-h+6,3,1,P.ink); R(x,y-h-1,1,1,P.coral); }

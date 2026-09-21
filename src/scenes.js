@@ -165,31 +165,46 @@
   }
 
   function sceneHull(a, rng){
-    /* the boat floats alongside a pier; you work from the deck */
-    regionSky(70); clouds(rng, 50, 3);
-    lighthouse(216, 70, 26); sailboat(150, 68); sailboat(34, 69);
-    waterField(0, 70, CW, 80, rng);
-    /* cabin + mast behind the hull */
-    box(a.x+Math.round(a.w*0.30), a.y-26, Math.round(a.w*0.30), 26, P.parch, P.parchHi, P.parchLo);
-    winPane(a.x+Math.round(a.w*0.34), a.y-21, 12, 8); winPane(a.x+Math.round(a.w*0.48), a.y-21, 10, 8);
-    lifeRing(a.x+Math.round(a.w*0.30)+4, a.y-5);
-    if(NIGHT) lit(function(){ R(a.x+Math.round(a.w*0.42)-1, a.y-58, 4, 2, "#ff9a6a"); });
-    R(a.x+Math.round(a.w*0.42), a.y-56, 2, 31, P.ink);
-    for(var i=0;i<11;i++){ R(a.x+Math.round(a.w*0.42)+2, a.y-55+i, Math.round(22 - Math.abs(i-5)*4.4)+2, 1, P.coral); }
-    R(a.x+Math.round(a.w*0.42)+2, a.y-50, 8, 1, P.coralHi);
-    /* hull body: stepped silhouette from the mask, deck rail, waterline stripe */
-    for(var py=a.y; py<a.y+a.h; py++) for(var px=a.x; px<a.x+a.w; px++){
+    /* a fishing boat moored alongside the pier, floating: the waterline is the bottom of the job */
+    var wl = a.y + a.h;                                   /* the waterline */
+    regionSky(wl); clouds(rng, 50, 3);
+    lighthouse(216, wl, 26); sailboat(30, wl-1);
+    waterField(0, wl, CW, CH-wl, rng);
+    var deck = a.y, bowX = a.x + a.w, sternX = a.x;
+    /* wheelhouse on the stern half, a mast amidships with a boom and a pennant */
+    var cabX = a.x + 14, cabW = 40;
+    box(cabX, deck-26, cabW, 26, P.parch, P.parchHi, P.parchLo);
+    R(cabX-2, deck-27, cabW+4, 2, "#4d7f6f"); R(cabX-2, deck-28, cabW+4, 1, P.ink);
+    winPane(cabX+4, deck-21, 12, 8); winPane(cabX+22, deck-21, 12, 8);
+    lifeRing(cabX+cabW-6, deck-6); R(cabX+cabW+2, deck-16, 6, 4, P.stoneLo); R(cabX+cabW+2, deck-16, 6, 1, P.stone);   /* a vent */
+    var mastX = a.x + Math.round(a.w*0.62);
+    R(mastX, deck-58, 2, 58, P.ink); R(mastX+1, deck-58, 1, 58, P.p2);
+    R(mastX-10, deck-40, 22, 2, P.ink); R(mastX-9, deck-40, 20, 1, P.p3);              /* the boom */
+    for(var i=0;i<7;i++){ R(mastX+2, deck-57+i, Math.round(12 - Math.abs(i-3)*3)+2, 1, P.coral); }
+    if(NIGHT) lit(function(){ R(mastX-1, deck-61, 4, 2, "#ffffff"); }); if(NIGHT) glowDisc(mastX+1, deck-60, 5, 3, "#8a7448");
+    /* bulwark: the rail that runs along the deck edge, capped in wood */
+    R(sternX-2, deck-5, a.w+4, 5, P.c4); R(sternX-2, deck-5, a.w+4, 1, P.p3); R(sternX-2, deck-6, a.w+4, 1, P.ink); R(sternX-2, deck-1, a.w+4, 1, P.c2);
+    for(var st=sternX+6; st<bowX-4; st+=10) R(st, deck-4, 1, 3, P.c2);
+    /* the hull side: a stepped silhouette from the mask, pale above, a red boot-top at the waterline */
+    for(var py=a.y; py<wl; py++) for(var px=a.x; px<bowX; px++){
       if(!maskHull(px+0.5,py+0.5,a)) continue;
-      var edge = !maskHull(px+0.5,py+1.5,a) || !maskHull(px-0.5,py+0.5,a) || !maskHull(px+1.5,py+0.5,a) || py===a.y;
-      R(px,py,1,1, edge ? P.ink : (py < a.y+6 ? P.water : (py > a.y+Math.round(a.h*0.62) && py < a.y+Math.round(a.h*0.62)+3 ? P.berry : P.c4)));
+      var edge = !maskHull(px-0.5,py+0.5,a) || !maskHull(px+1.5,py+0.5,a);
+      var col = py >= wl-4 ? P.berry : (py >= wl-5 ? P.ink : (py < a.y+3 ? P.c3 : P.c4));
+      R(px,py,1,1, edge ? P.ink : col);
     }
-    for(var pl=a.y+8; pl<a.y+a.h-6; pl+=6) for(var px2=a.x+4; px2<a.x+a.w-8; px2+=2) if(maskHull(px2+0.5,pl+0.5,a) && maskHull(px2+8,pl+0.5,a)) R(px2,pl,1,1,P.c3);
-    /* the water meets the keel: foam and the hull's reflection */
-    foamLine(a.x-4, a.y+a.h, a.w+8);
-    for(var rr=a.y+a.h+3; rr<a.y+a.h+14; rr+=3) R(a.x+20+(rr%2)*3, rr, a.w-40-(rr-a.y-a.h)*4, 1, mix(P.w2, P.c4, 0.35));
+    for(var pl=a.y+6; pl<wl-8; pl+=5) for(var px2=a.x+6; px2<bowX-10; px2+=2) if(maskHull(px2+0.5,pl+0.5,a) && maskHull(px2+6,pl+0.5,a)) R(px2,pl,1,1,P.c3);
+    for(var ph=a.x+22; ph<bowX-30; ph+=22){ R(ph, a.y+8, 5, 5, P.ink); R(ph+1, a.y+9, 3, 3, NIGHT ? "#ffd57a" : P.waterHi); }   /* portholes */
+    pxText(a.x+8, a.y+18, "MARY B", P.waterLo, 1);
+    /* the boat sits in the water: foam along the hull, its dark reflection underneath */
+    foamLine(a.x-2, wl, a.w+4);
+    for(var rr=wl+2; rr<wl+14; rr+=2){ var inset = Math.round((rr-wl)*1.6); R(a.x+4+inset, rr, a.w-8-inset*2, 1, mix(P.w2, P.ink, 0.35)); }
+    R(a.x+a.w-30, wl+3, 3, 1, "#ffffff"); R(a.x+12, wl+4, 3, 1, "#ffffff");
+    /* mooring: a line from the bow cleat down to the quay bollard */
+    R(sternX-8, deck-2, 8, 1, P.p1); R(sternX-14, deck-1, 7, 1, P.p1); R(sternX-18, deck, 5, 1, P.p1);
     /* the pier you stand on, and the far end of the quay */
     pier(0, 104, 72, 6); pier(196, 104, 44, 6);
-    bollard(64, 104); crate(54, 102, 8); ropeCoil(10, 102);
+    pierLamp(60, 104); pierLamp(232, 104);
+    bollard(22, 104); crate(50, 102, 8); ropeCoil(10, 102);
     barrel(212, 104); buoy(228, 92); lobsterTrap(224, 106);
     seagull(48, 24); seagull(64, 18); seagull(192, 28); seagull(120, 12);
   }
@@ -208,6 +223,7 @@
     R(a.x-4, a.y+a.h, a.w+8, 3, P.p2); R(a.x-4, a.y+a.h, a.w+8, 1, P.p4);
     /* the deck across the whole pier, on poles */
     pier(0, 104, CW, 7);
+    pierLamp(30, 104); pierLamp(212, 104);
     lifeRing(a.x-14, a.y+8); R(a.x-15, a.y+2, 1, 6, P.ink);
     ropeCoil(14, 102); bollard(28, 104); lobsterTrap(216, 106); crate(232, 102, 8);
     seagull(105, 16); seagull(125, 24); seagull(70, 10);
@@ -228,7 +244,9 @@
     netHang(a.x+8, a.y+10, 30, 38);
     buoy(a.x+a.w-18, a.y+22); buoy(a.x+a.w-30, a.y+35); lifeRing(a.x+a.w-12, a.y+50);
     sign(a.x+a.w/2-20, a.y+4, 40, P.parchHi);
+    if(NIGHT){ lit(function(){ R(a.x+a.w/2-22, a.y+2, 2, 1, "#fff0c4"); R(a.x+a.w/2+20, a.y+2, 2, 1, "#fff0c4"); }); glowCone(a.x+a.w/2, a.y+3, 44, 52, 8, "#8a7448"); }
     pier(0, 106, CW, 6);
+    pierLamp(40, 106); pierLamp(200, 106);
     bollard(12, 106); lobsterTrap(228, 108); crate(214, 104, 9); ropeCoil(24, 104);
     seagull(a.x+Math.round(a.w*0.5), a.y-40); seagull(60, 30); seagull(200, 40);
   }

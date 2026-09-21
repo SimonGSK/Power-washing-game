@@ -80,6 +80,12 @@ test.describe("content tables", () => {
     expect(bad).toEqual([]);
   });
 
+  test("routes get dirtier in order: grove < downtown < harbor", async ({ page }) => {
+    const d = await page.evaluate(() => { const R = window.PowerWashDebug.data.REGIONS; return [R.grove.dirt || 1, R.city.dirt || 1, R.harbor.dirt || 1]; });
+    expect(d[1]).toBeGreaterThan(d[0]);
+    expect(d[2]).toBeGreaterThan(d[1]);
+  });
+
   test("the shop sells one lease discount, not two", async ({ page }) => {
     const shop = await page.evaluate(() => Object.keys(window.PowerWashDebug.data.SHOP));
     expect(shop).toContain("lease");

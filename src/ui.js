@@ -71,7 +71,7 @@
 
     if(mode === "complete" && stars === 3){ burst(CW/2, CH/2, P.sunHi); shakeStage(); }
     if(mode === "timeout" && pct < 60) SFX.fail(); else SFX.done();
-    if(contractMet) state.rep += 2; else if(job.contract) state.rep = Math.max(0, state.rep - 2);
+    if(contractMet) state.rep += 1; else if(job.contract) state.rep = Math.max(0, state.rep - 1);
     fx.clearRect(0,0,CW,CH); drawParticles();
 
     state.recentPays.push(pay); if(state.recentPays.length > 6) state.recentPays = state.recentPays.slice(-6);
@@ -84,7 +84,7 @@
       mRow(ic("coin")+"Job pay", "+"+money(pay), "pw-stats__val--up")
     ];
     if(contractMet) rows.push(mRow(ic("bill")+"Contract met", "+"+money(contractBonus), "pw-stats__val--up"));
-    else if(job.contract) rows.push(mRow(ic("bill")+"Contract missed", Math.floor(contractProgress()*100)+"% — −2 reputation", "pw-stats__val--down"));
+    else if(job.contract) rows.push(mRow(ic("bill")+"Contract missed", Math.floor(contractProgress()*100)+"% — −1 reputation", "pw-stats__val--down"));
     if(tip>0)  rows.push(mRow(ic("jar")+"Tip for speed", "+"+money(tip), "pw-stats__val--up"));
     else if(lvl("tipjar") > 0) rows.push(mRow(ic("jar")+"Tip", pct >= 80 ? "too slow — nothing" : "under 80% — nothing", "pw-stats__val--down"));
     if(crew>0) rows.push(mRow(ic("hardhat")+"Crew jobs", "+"+money(crew), "pw-stats__val--up"));
@@ -98,6 +98,28 @@
       (mode==="timeout" ? mNote(pct >= 75 ? "Not finished, but good enough to keep the streak." : "Under 75% — streak broken, back to zero.") : '');
 
     showModal(body, [{ label:"Continue", cls:"pw-btn--primary pw-btn--big", icon:"arrow-right", action: afterJob }]);
+  }
+
+  /* every dirt type a route's jobs can throw at you, in unlock order */
+  function regionDirt(regionId){
+    var seen = {}, out = [];
+    REGIONS[regionId].jobs.forEach(function(key){
+      var d = JOBS[key], list = (d.grimes || REGIONS[regionId].grimes).slice();
+      if(d.graffitiChance) list.push("graffiti");
+      list.forEach(function(id){ if(!seen[id]){ seen[id] = 1; out.push(GRIME_TYPES[id]); } });
+    });
+    return out.sort(function(a, b){ return DIRT_UNLOCK[a.id] - DIRT_UNLOCK[b.id]; });
+  }
+  function dirtRows(types){
+    return mRows(types.map(function(t){
+      var need = t.chem ? CHEMS[t.chem].name + (chemOwned(t.chem) ? "" : " · not in your rack") : "plain water";
+      return mRow(ic(t.icon) + t.name, (t.chem ? ic(CHEMS[t.chem].icon) : ic("drop")) + need, t.chem && !chemOwned(t.chem) ? "pw-stats__val--down" : "");
+    }));
+  }
+  /* the dirt the next job will have, without starting it (same seed as startJob) */
+  function peekJobTypes(){
+    var seed = (state.jobsCompleted+1) * 2654435761 % 4294967296;
+    return pickGrimes(makeRng(seed));
   }
 
   var lenderJustPaid = false;
@@ -118,7 +140,8 @@
         showModal(
           mHead(REGIONS[unlocked].icon, REGIONS[unlocked].name+' unlocked!', REGIONS[unlocked].tag, "New route") +
           mRows([mRow("Pay rate", "×"+REGIONS[unlocked].pay.toFixed(2), "pw-stats__val--up")]) +
-          mNote("Switch routes any time from the map."),
+          '<div class="pw-label" style="margin-top:10px">Dirt on this route</div>' + dirtRows(regionDirt(unlocked)) +
+          mNote("Each chemical cuts one kind of dirt; the rest is plain water. Stock the rack in the Shop before you drive out. Switch routes any time from the map."),
           [{ label:"Nice", cls:"pw-btn--primary", action: afterJob3 }]
         );
       });
@@ -152,7 +175,7 @@
                     : { label:"Can’t rest — you’d miss the payment", cls:"pw-btn--ghost", disabled:true } ]
         );
       };
-      return tellInfo("weekend", "clock", "Weekends", "Each job takes a day. Crew work Monday to Friday; on the weekend you can rest — if you can afford Sunday’s payment — or keep washing. The payment covers water, power, the lease and your crew’s wages, and it grows with the business: about 65% of what your last six jobs paid, for the five working days.", go);
+      return tellInfo("weekend", "clock", "Weekends", "Each job takes a day. Crew work Monday to Friday; on the weekend you can rest — if you can afford Sunday’s payment — or keep washing. The payment covers water, power, the lease and your crew’s wages, and it grows with the business: about 55% of what your last six jobs paid, for the five working days.", go);
     }
     if(state.day >= 7){
       state.day = 0; state.week += 1; save();
@@ -187,7 +210,7 @@
     var weekLabel = "Week " + (state.week-1) + " payment";
     if(state.loan > 0) state.loan = Math.round(state.loan * 1.12);
 
-    var gain = Math.max(2, Math.round(amount/40)) + (state.perks.wordofmouth ? 2 : 0);
+    var gain = Math.max(1, Math.round(amount/100)) + (state.perks.wordofmouth ? 2 : 0);   /* a star per $100 paid */
     if(state.cash >= amount){
       state.cash -= amount;
       state.rep += gain;
@@ -221,7 +244,7 @@
   }
 
   function repossess(amount){
-    var gain = Math.max(1, Math.floor(state.cashSinceRepo/45));
+    var gain = Math.max(1, Math.floor(state.cashSinceRepo/90));   /* a star per $90 earned on this rig */
     state.rep += gain;
     state.cashSinceRepo = 0;
     state.streak = 0;
@@ -919,7 +942,7 @@
     document.documentElement.setAttribute("data-theme", t);
 
     try{ localStorage.setItem(THEME_KEY, t); }catch(e){}
-    loadPalette(); Sprites.reset();
+    setNight(t === "night"); loadPalette(); Sprites.reset();
   }
   try{ applyTheme(localStorage.getItem(THEME_KEY) || "day"); }catch(e){ applyTheme("day"); }
 
@@ -927,7 +950,20 @@
   /* =========================================================
      NAV WIRING
      ========================================================= */
-  $("btnStartJob").onclick = function(){ startJob(); };
+  $("btnStartJob").onclick = function(){
+    /* no chemical for the dirt out there? offer the shop first */
+    var missing = peekJobTypes().filter(function(t){ return t.chem && !chemOwned(t.chem); });
+    if(!missing.length) return startJob();
+    var names = missing.map(function(t){ return CHEMS[t.chem].name; }).join(" and ");
+    showModal(
+      mHead("flask", "Missing " + names, "Today’s job has " + missing.map(function(t){ return t.name; }).join(" and ") + ". Without the right chemical that dirt barely moves — you’d be paid for the rest, if there is any.", "Before you go") +
+      dirtRows(missing) +
+      mNote(missing.map(function(t){ return CHEMS[t.chem].name + " is " + money(costOf(t.chem, 0)); }).join(", ") + " in the Shop. You have " + money(state.cash) + "."),
+      [ { label:"Go to the Shop", cls:"pw-btn--primary", icon:"flask", action:function(){ showScreen("screen-shop"); } },
+        { label:"Start anyway", cls:"pw-btn--ghost", action:function(){ startJob(); } } ],
+      { dismissible:true }
+    );
+  };
   $("btnMapQuick").onclick = function(){ showScreen("screen-map"); };
   Array.prototype.slice.call(document.querySelectorAll("#tabs .tab")).forEach(function(t){
     t.onclick = function(){ showScreen(t.getAttribute("data-screen")); };
@@ -984,7 +1020,7 @@
       return state;
     },
     show: showScreen,
-    startJob: startJob,
+    startJob: function(key){ if(job){ stopJobLoop(); job.ended = true; job = null; } hideModal(); forcedJob = key || null; startJob(); forcedJob = null; },
     endJob: endJob,
     /* clear the first `frac` (0–1) of dirty cells outright, as if washed */
     wash: function(frac){
@@ -1007,7 +1043,9 @@
       rigMult: rigMult, progressToughness: progressToughness, chemFactor: chemFactor, starsFor: starsFor, cleanPayFactor: cleanPayFactor, payMult: payMult,
       overheadMult: overheadMult, leaseMult: leaseMult
     },
-    data: { GEAR: GEAR, SHOP: SHOP, PERKS: PERKS, CHEMS: CHEMS, GRIME_TYPES: GRIME_TYPES, JOBS: JOBS, REGIONS: REGIONS, LIMB_DEFS: LIMB_DEFS, icons: Object.keys(ICONS) },
+    data: { GEAR: GEAR, SHOP: SHOP, PERKS: PERKS, CHEMS: CHEMS, GRIME_TYPES: GRIME_TYPES, JOBS: JOBS, REGIONS: REGIONS, LIMB_DEFS: LIMB_DEFS, DIRT_UNLOCK: DIRT_UNLOCK, WRONG_CHEM: WRONG_CHEM, icons: Object.keys(ICONS) },
+    grimeStats: function(){ var n = 0, hp = 0; if(grime) for(var i=0;i<grime.length;i++){ if(grime[i] > 0.03){ n++; hp += grime[i]; } } return { cells: n, hp: hp, cols: gCols, rows: gRows }; },
+    night: function(){ return NIGHT; },
     Sprites: Sprites,
     SPRITES: SPRITES
   };

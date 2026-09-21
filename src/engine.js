@@ -2,6 +2,7 @@
      GRIME ENGINE — layered, cell based (2×2 scene pixels per cell)
      ========================================================= */
   var grime = null, jitter = null, gCols = 0, gRows = 0;
+  var REF_CELLS = 2100;   /* a driveway's worth of cells (≈92×92 px): the dirt budget every job is sized to */
   var grimeTotal = 0, grimeLeft = 0;
 
   function makeNoise(w,h,scale,rng){
@@ -83,15 +84,32 @@
         grimeTotal += hp;
       }
     }
-    /* the same amount of work every time, wherever the dirt sits: too little coverage → grow
-       the patches; still short → thicken what's there (capped at the layer count) */
-    var target = gCols*gRows * 0.78 * (0.7 + 0.5*(layers-0.3));
+    /* the same amount of work every time, wherever the dirt sits — and however big the wall:
+       the budget is sized for a normal job (REF_CELLS), so the tower doesn't get twice the dirt.
+       Too little coverage → grow the patches; short → thicken; over budget → thin the whole field */
+    var ref = Math.min(gCols*gRows, REF_CELLS);
+    var target = ref * 0.78 * (0.7 + 0.5*(layers-0.3));
     var covered = 0; for(var cc=0; cc<grime.length; cc++) if(grime[cc] > 0) covered++;
-    if(nPatches && covered < gCols*gRows*0.42 && pass < 3){ pass++; patches.forEach(function(pq){ pq.r *= 1.3; }); continue; }
+    if(nPatches && covered < ref*0.42 && pass < 3){ pass++; patches.forEach(function(pq){ pq.r *= 1.3; }); continue; }
+    /* a big surface spreads the dirt over far more cells, and every cell is a pass of the wand:
+       drop the thinnest cells (the fringes) until it's a normal job's worth of ground to cover */
+    var maxCover = Math.round(ref * 0.83);
+    if(covered > maxCover){
+      var vals = []; for(var cv=0; cv<grime.length; cv++) if(grime[cv] > 0) vals.push(grime[cv]);
+      vals.sort(function(a,b){ return a-b; });
+      var cutHp = vals[covered - maxCover];
+      grimeTotal = 0;
+      for(var cd=0; cd<grime.length; cd++){ if(grime[cd] > 0 && grime[cd] <= cutHp && jitter[cd] < 0.9) grime[cd] = 0; grimeTotal += grime[cd]; }
+    }
     if(grimeTotal < target){
       var scale = Math.min(1.7, target/Math.max(1, grimeTotal));
       grimeTotal = 0;
       for(var sc=0; sc<grime.length; sc++){ if(grime[sc] > 0){ grime[sc] = Math.min(layers, grime[sc]*scale); grimeTotal += grime[sc]; } }
+    } else if(grimeTotal > target*1.05){
+      /* over budget: keep the shape, lighten everything to the budget */
+      var cut = grimeTotal/target;
+      grimeTotal = 0;
+      for(var sd=0; sd<grime.length; sd++){ if(grime[sd] > 0){ grime[sd] = Math.max(0.40, grime[sd]/cut); grimeTotal += grime[sd]; } }
     }
     break;
     }
@@ -166,7 +184,7 @@
     if(ct.graffiti && cellColor && cellColor[i]){
       /* graffiti fades: the paint lightens and breaks up as it comes off */
       var f = hp / ct.layers, gcol = mix(cellColor[i], "#ffffff", (1-f)*0.55);
-      gx.fillStyle = gcol;
+      gx.fillStyle = shade(gcol);
       if(f > 0.75){ gx.fillRect(px, py, w, h); }
       else if(f > 0.5){ gx.fillRect(px, py, w, 1); gx.fillRect(px, py+1, 1, 1); }
       else if(f > 0.25){ gx.fillRect(px, py, 1, 1); gx.fillRect(px+1, py+1, 1, 1); }
@@ -175,7 +193,7 @@
     }
     var shades = job.shadesByType[cellType ? cellType[i] : 0] || job.shadesByType[0];
     var idx = Math.min(4, Math.floor(hp)), f = hp - Math.floor(hp);
-    var ca = shades[idx], cb = shades[Math.min(4, idx+1)];
+    var ca = shade(shades[idx]), cb = shade(shades[Math.min(4, idx+1)]);
     var odd = jitter[i] < 0.5 ? 0 : 1;
     if(idx === 0 && hp < 0.45){
       gx.fillStyle = ca; gx.fillRect(px+odd, py, 1, 1); gx.fillRect(px+1-odd, py+1, 1, 1);
@@ -282,7 +300,7 @@
   function rainDrop(){
     particles.push({ x: Math.random()*CW, y:-3, vx:-0.15, vy:2+Math.random()*0.8, life:1, size:1, color:P.waterHi, type:"rain" });
   }
-  function FX(x,y,w,h,c){ fx.fillStyle = c; fx.fillRect(Math.round(x), Math.round(y), w, h); }
+  function FX(x,y,w,h,c){ fx.fillStyle = shade(c); fx.fillRect(Math.round(x), Math.round(y), w, h); }
 
   function drawParticles(){
     for(var i=particles.length-1;i>=0;i--){
@@ -443,7 +461,9 @@
   var spraying = false, hovering = false, pressed = false, lastSprayPt = null, refilling = false;
   var rafId = null, lastTs = 0, sprayAcc = 0, foamAcc = 0, rainAcc = 0, refillT = 0;
 
+  var forcedJob = null;   /* the test hook can pin a job */
   function pickJobDef(){
+    if(forcedJob && JOBS[forcedJob]) return JOBS[forcedJob];
     var r = regionDef();
     var key = pick(r.jobs, state.jobsCompleted);
     return JOBS[key];
@@ -482,8 +502,8 @@
     showScreen("screen-job");
     $("jobName").textContent = def.name;
     $("jobSub").textContent = types.map(function(t){ return t.name; }).join(" + ") + " · " + regionDef().name + " · " + weather.name;
-    var night = document.documentElement.getAttribute("data-theme") === "night";
-    $("stageTint").style.background = night ? (getComputedStyle(document.documentElement).getPropertyValue("--scene-night") || "rgba(24,42,94,0.55)") : weather.tint;
+    /* after dark the scene paints itself dark (see NIGHT in props.js); only the weather tints */
+    $("stageTint").style.background = NIGHT ? (weather.rain ? weather.tint : "transparent") : weather.tint;
 
     loadPalette();
     bx.clearRect(0,0,CW,CH);

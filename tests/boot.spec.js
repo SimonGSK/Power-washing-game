@@ -37,6 +37,27 @@ test.describe("boot", () => {
     expect(s.jobsCompleted).toBe(3);
   });
 
+  test("night paints a dark sky with lit windows instead of a dimmed day", async ({ page }) => {
+    const errors = await openGame(page);
+    await newGame(page);
+    await page.click("#btnSettings");
+    await page.locator("#modalWrap button", { hasText: /night mode/i }).click();
+    await page.evaluate(() => window.PowerWashDebug.patch({ info: { dirt_dust: 1, dirt_mud: 1, dirt_moss: 1 } }));
+    await page.evaluate(() => window.PowerWashDebug.startJob("driveway"));
+    await page.waitForFunction(() => { const j = window.PowerWashDebug.job; return !!(j && j.started); });
+    const px = await page.evaluate(() => {
+      const c = document.getElementById("bgCanvas").getContext("2d");
+      const at = (x, y) => Array.from(c.getImageData(x, y, 1, 1).data);
+      /* top-left sky, and the left porch light's bulb (porchLight(a.x-1, 20) → box at y 23..26) */
+      return { sky: at(2, 2), bulb: at(74, 25), night: window.PowerWashDebug.night() };
+    });
+    expect(px.night).toBe(true);
+    expect(px.sky[2]).toBeGreaterThan(px.sky[0]);          /* blue-ish */
+    expect(px.sky[0] + px.sky[1] + px.sky[2]).toBeLessThan(200);   /* and dark */
+    expect(px.bulb[0]).toBeGreaterThan(200);                /* the porch light is on */
+    expect(errors).toEqual([]);
+  });
+
   test("night theme swaps the palette and rebuilds sprites without errors", async ({ page }) => {
     const errors = await openGame(page);
     await newGame(page);

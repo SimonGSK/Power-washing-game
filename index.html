@@ -851,29 +851,29 @@ body{
   }
   var GEAR = {
     pressure:{ title:"Water Pressure", icon:"bolt", costs:[110,290,640],
-      desc:["Spray power +0.3 (0.5 → 0.8): grime strips 60% faster","Spray power +0.3 (0.8 → 1.1)","Spray power +0.3 (1.1 → 1.4)"] },
+      desc:["Spray power +0.3 (0.5 → 0.8): grime strips 60% faster. Uses a little more water.","Spray power +0.3 (0.8 → 1.1). More water.","Spray power +0.3 (1.1 → 1.4). More water."] },
     nozzle:  { title:"Nozzle Width",   icon:"wand", costs:[90,240,520],
-      desc:["Nozzle +1.25 px: spray area +46%","Nozzle +1.25 px: spray area +37%","Nozzle +1.25 px: spray area +32%"] },
+      desc:["Nozzle +1.25 px: spray area +46%. A wider spray drinks more water (+21%).","Nozzle +1.25 px: spray area +37%. Water +17%.","Nozzle +1.25 px: spray area +32%. Water +15%."] },
     tank:    { title:"Tank Capacity",  icon:"barrel", costs:[80,210,480],
-      desc:["Tank +110 L (260 → 370 L)","Tank +130 L (370 → 500 L)","Tank +160 L (500 → 660 L)"] },
+      desc:["Tank +110 L (260 → 370 L). A bigger tank fills 10% slower.","Tank +130 L (370 → 500 L). Fills 20% slower.","Tank +160 L (500 → 660 L). Fills 30% slower."] },
     refill:  { title:"Refill Speed",   icon:"clock", costs:[90,230,470],
       desc:["Refill 1.7 s → 1.3 s","Refill 1.3 s → 0.9 s","Refill 0.9 s → 0.55 s"] },
     pay:     { title:"Money per Job",  icon:"coin", costs:[100,260,560],
-      desc:["Pay +12% on every job","Pay +12% more (+24% in total)","Pay +12% more (+36% in total)"] },
+      desc:["Pay +12% on every job. Pricier clients bring 4% tougher dirt.","Pay +24% in total. Dirt +8%.","Pay +36% in total. Dirt +12%."] },
     patience:{ title:"Patience",       icon:"hourglass", costs:[80,210,460],
       desc:["Customer patience +10 s (40 → 50 s)","Customer patience +10 s (50 → 60 s)","Customer patience +10 s (60 → 70 s)"] },
     morale:  { title:"Crew Morale",    icon:"star", costs:[350,900,2200],
-      desc:["Crew income +15%","Crew income +15% more (+30% in total)","Crew income +15% more (+45% in total)"] },
+      desc:["Crew income +15%. Wages +10%.","Crew income +30% in total. Wages +20%.","Crew income +45% in total. Wages +30%."] },
     watergun:{ title:"Water Gun",      icon:"drop", costs:[120,300,650],
-      desc:["Your son's water gun +1.2 px: his spray area +95%","+1.2 px: spray area +65% more","+1.2 px: spray area +50% more"] },
+      desc:["Your son's water gun +1.2 px: his spray area +95%. Pocket money +$5 a week.","+1.2 px: spray area +65% more. +$5 a week.","+1.2 px: spray area +50% more. +$5 a week."] },
     cone:    { title:"Even Cone",      icon:"wand", costs:[130,320,700],
-      desc:["A flatter spray: the edge of the cone strips 60% as hard as the centre (was 50%)","Edge at 70%","Edge at 80% — the whole cone works"] },
+      desc:["A flatter spray: the cone's edge strips 60% as hard as the centre (was 50%). Peak power −4%.","Edge at 70%. Peak power −8%.","Edge at 80% — the whole cone works. Peak power −12%."] },
     flow:    { title:"Flow Control",   icon:"barrel", costs:[100,260,560],
-      desc:["Water use −15% per pass","−30% in total","−45% in total — the tank lasts nearly twice as long"] },
+      desc:["Water use −15% per pass. Spray power −3%.","Water −30% in total. Power −6%.","Water −45% in total — the tank lasts nearly twice as long. Power −9%."] },
     contracts:{ title:"Contracts",     icon:"bill", costs:[200,450,900],
-      desc:["Customers start offering contracts: leave a marked patch spotless for +30% pay","Contract bonus +40%","Contract bonus +50%, and they come more often"] },
+      desc:["Customers start offering contracts: leave a marked patch spotless for +15% pay. Miss one and it costs 2 reputation.","Contract bonus +20%","Contract bonus +25%, and they come more often"] },
     overtime:{ title:"Overtime",       icon:"clock", costs:[300,700,1500],
-      desc:["Crew work Saturdays","Crew work Sundays too","Weekend crew income +20%"] },
+      desc:["Crew work Saturdays. Wages +15%.","Crew work Sundays too.","Weekend crew income +20%."] },
 
     /* trunks - each one opens the two branches above it */
     powercore:{ title:"Pump Core",    icon:"drop", costs:[150],
@@ -905,9 +905,9 @@ body{
     stripper:   { title:"Paint Stripper", icon:"flask", costs:[600], chem:true,
       desc:["Lifts spray paint. Switch to it mid-job (or press 5)."] },
     prowasher: { title:"Pro Pressure Washer", icon:"wand", costs:[900],
-      desc:["Spray power +0.42 and nozzle +2 px (spray area +55% or more)"] },
+      desc:["Spray power +0.42 and nozzle +2 px (spray area +55% or more). Drinks 10% more water."] },
     foamcannon:{ title:"Foam Cannon", icon:"foam", costs:[260,540],
-      desc:["Auto-cleans a random spot every 1.35 s","Auto-cleans every 0.8 s, with a wider blast"] },
+      desc:["Auto-cleans a random spot every 1.35 s. Each shot uses 8 L from the tank.","Auto-cleans every 0.8 s, with a wider blast. 8 L a shot."] },
     tipjar:    { title:"Tip Jar", icon:"jar", costs:[190],
       desc:["Customers tip for speed: the jar starts full and empties as the timer runs. Needs an 80% clean."] },
     permit:    { title:"Business Permit", icon:"bill", costs:[340],
@@ -999,7 +999,7 @@ body{
   function costOf(k, level){
     var d = gearDef(k);
     if(!d || level >= d.costs.length) return null;
-    return Math.round(d.costs[level] * (state.perks.discount ? 0.85 : 1));
+    return Math.round(d.costs[level] * 1.25 * (state.perks.discount ? 0.85 : 1) / 10) * 10;
   }
 
   function tankMax(){
@@ -1008,10 +1008,10 @@ body{
       + (lvl("bigrig")>0 ? 200 : 0);
   }
   function sprayPower(){
-    return 0.50 + lvl("pressure")*0.30 + (state.perks.goldenhose ? 0.15 : 0)
+    return (0.50 + lvl("pressure")*0.30 + (state.perks.goldenhose ? 0.15 : 0)
       + (lvl("prowasher")>0 ? 0.42 : 0)
       + (lvl("powercore")>0 ? 0.12 : 0)
-      + (lvl("surge")>0 ? 0.40 : 0);
+      + (lvl("surge")>0 ? 0.40 : 0)) * (1 - lvl("cone")*0.04 - lvl("flow")*0.03);
   }
   /* scene pixels: the first nozzle is narrow on purpose — early jobs are a race against the timer */
   var BASE_RADIUS = 6;
@@ -1031,7 +1031,7 @@ body{
     return (sprayPower()/0.5) * Math.pow(sprayRadius()/BASE_RADIUS, 2) * degreaserMult() * (jobMs()/40000);
   }
   function progressToughness(){ return Math.min(1.9, 0.85 + state.jobsCompleted * 0.02) * (REGION_TOUGH[state.region] || 1) * (state.perks.neighbourly && state.region === "grove" ? 0.95 : 1); }
-  function grimeToughness(){ return progressToughness() * Math.pow(rigMult(), 1 - RIG_KEEPS); }
+  function grimeToughness(){ return progressToughness() * Math.pow(rigMult(), 1 - RIG_KEEPS) * (1 + lvl("pay")*0.04); }   /* pricier clients bring worse dirt */
   function sonHired(){ return state.son > 0; }
   function sonRadius(){ return 3.5 + lvl("watergun")*1.2; }
   function sonIntervalMs(){ return lvl("family")>0 ? 350 : 700; }
@@ -1040,13 +1040,15 @@ body{
   function crewSalary(){
     var s = 0;
     CREW.forEach(function(c){ if(crewHired(c.id)) s += Math.round(c.rate * 0.5 * (1 + crewLevel(c.id)*0.6)); });
-    if(sonHired()) s += SON.wage;
+    s = Math.round(s * (1 + lvl("morale")*0.10 + (lvl("overtime") ? 0.15 : 0)));   /* morale and overtime cost wages */
+    if(sonHired()) s += SON.wage + lvl("watergun")*5;
     return s;
   }
 
   function refillMs(){
     var t = Math.max(550, 1700 - lvl("refill")*400);
     if(lvl("bigrig")>0) t *= 0.7;
+    t *= 1 + lvl("tank")*0.10;                       /* a bigger tank takes longer to fill */
     return state.perks.coffee ? t*0.9 : t;
   }
   function jobMs(){ return 40000 + lvl("patience")*10000 + (lvl("empire")>0 ? 12000 : 0) + (state.perks.legend ? 10000 : 0); }
@@ -1059,9 +1061,13 @@ body{
     return chemId === type.chem ? 1 : WRONG_CHEM;
   }
   function coneEdge(){ return 0.5 - lvl("cone")*0.1; }             /* the cone's edge strips (1 - this) of the centre */
-  function waterPerTick(){ return 1.2 * (1 - lvl("flow")*0.15); }
+  /* a wider, harder spray drinks more: with the radius and pressure^0.3, minus Flow Control */
+  function waterPerTick(){
+    return 1.2 * (sprayRadius()/BASE_RADIUS) * Math.pow(sprayPower()/0.5, 0.3) * (1 - lvl("flow")*0.15) * (lvl("prowasher")>0 ? 1.1 : 1);
+  }
+  function waterPerSecond(){ return waterPerTick() * (1000/70); }
   function contractsUnlocked(){ return lvl("contracts") > 0; }
-  function contractBonus(){ return [0, 0.30, 0.40, 0.50][Math.min(3, lvl("contracts"))]; }
+  function contractBonus(){ return [0, 0.15, 0.20, 0.25][Math.min(3, lvl("contracts"))]; }
   function contractChance(){ return lvl("contracts") >= 3 ? 0.65 : 0.45; }
   function foamLevel(){ return lvl("foamcannon"); }
   function tipChance(){ return lvl("tipjar")>0 ? 0.35 : 0; }
@@ -1087,7 +1093,7 @@ body{
      suspense is whether you spent your reserve on upgrades. (Tuned with the simulator: bills
      take ~42% of income; a careful spender still gets tight now and then.) */
   var REGION_OVERHEAD = { grove:95, city:190, harbor:340 };
-  var BILL_SHARE = 0.60;
+  var BILL_SHARE = 0.65;
   function recentPayAvg(){
     var r = state.recentPays.slice(-6);
     if(!r.length) return 0;
@@ -1293,7 +1299,7 @@ body{
     if(hasTip) hit("tipjar", tankX+tw-10, ty-8, 8, 8);
     if(hasFoam) hit("foam", tankX-7, ty+2, 8, 7);
     hit("cab", cabX, Gy-32, front-cabX, 24);
-    if(t>=3) hit("bar", cabX+3, Gy-36, 12, 5);
+
     var VW = 8 + 10 + (30+18+6) + 3 + 15 + 34 + 8;   /* the longest possible rig */
     return '<svg viewBox="0 0 '+VW+' '+H+'" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">' + out.join('') + '</svg>';
   }
@@ -2580,6 +2586,8 @@ body{
         var fxp = a.x + 8 + Math.random()*(a.w-16), fyp = a.y + 8 + Math.random()*(a.h-16);
         sprayGrime(fxp, fyp, 10 + foamLevel()*2.5, 0.5, state.activeChem);
         splash(fxp, fyp, job.grime.splash, 5);
+        job.tank = Math.max(0, job.tank - 8); setTank(job.tank);
+        if(job.tank <= 0) beginRefill();
         updateClean();
       }
     }
@@ -2817,7 +2825,7 @@ body{
 
     if(mode === "complete" && stars === 3){ burst(CW/2, CH/2, P.sunHi); shakeStage(); }
     if(mode === "timeout" && pct < 60) SFX.fail(); else SFX.done();
-    if(contractMet) state.rep += 2;
+    if(contractMet) state.rep += 2; else if(job.contract) state.rep = Math.max(0, state.rep - 2);
     fx.clearRect(0,0,CW,CH); drawParticles();
 
     state.recentPays.push(pay); if(state.recentPays.length > 6) state.recentPays = state.recentPays.slice(-6);
@@ -2830,7 +2838,7 @@ body{
       mRow(ic("coin")+"Job pay", "+"+money(pay), "pw-stats__val--up")
     ];
     if(contractMet) rows.push(mRow(ic("bill")+"Contract met", "+"+money(contractBonus), "pw-stats__val--up"));
-    else if(job.contract) rows.push(mRow(ic("bill")+"Contract", Math.floor(contractProgress()*100)+"% — no bonus", "pw-stats__val--down"));
+    else if(job.contract) rows.push(mRow(ic("bill")+"Contract missed", Math.floor(contractProgress()*100)+"% — −2 reputation", "pw-stats__val--down"));
     if(tip>0)  rows.push(mRow(ic("jar")+"Tip for speed", "+"+money(tip), "pw-stats__val--up"));
     else if(lvl("tipjar") > 0) rows.push(mRow(ic("jar")+"Tip", pct >= 80 ? "too slow — nothing" : "under 80% — nothing", "pw-stats__val--down"));
     if(crew>0) rows.push(mRow(ic("hardhat")+"Crew jobs", "+"+money(crew), "pw-stats__val--up"));
@@ -2872,8 +2880,16 @@ body{
     afterJob3();
   }
   function afterJob3(){
-    if(!state.ownedOutright && state.lifetimeEarnings >= BUYOUT_TARGET) return doBuyout();
+    if(!state.ownedOutright && state.cash >= BUYOUT_TARGET) return offerBuyout(advanceDay);
     advanceDay();
+  }
+  function offerBuyout(then){
+    showModal(
+      mHead("trophy", "You can buy the business", "You’ve got <b>"+money(BUYOUT_TARGET)+"</b> in hand — enough to pay off every cent Uncle Lenny’s company ever owed and own Power Wash Co. outright.", "The big one") +
+      mRows([mRow(ic("coin")+"You have", money(state.cash), "pw-stats__val--up"), mRow(ic("bill")+"Buyout", money(BUYOUT_TARGET))]),
+      [ { label:"Buy it out", cls:"pw-btn--primary", icon:"trophy", action:function(){ state.cash -= BUYOUT_TARGET; doBuyout(); } },
+        { label:"Not yet", cls:"pw-btn--ghost", action:then } ]
+    );
   }
   /* a job takes a day; Friday night and Saturday night you choose; Sunday night the payment is due */
   function advanceDay(){
@@ -2890,7 +2906,7 @@ body{
                     : { label:"Can’t rest — you’d miss the payment", cls:"pw-btn--ghost", disabled:true } ]
         );
       };
-      return tellInfo("weekend", "clock", "Weekends", "Each job takes a day. Crew work Monday to Friday; on the weekend you can rest — if you can afford Sunday’s payment — or keep washing. The payment is 60% of what your last six jobs paid, for the five working days.", go);
+      return tellInfo("weekend", "clock", "Weekends", "Each job takes a day. Crew work Monday to Friday; on the weekend you can rest — if you can afford Sunday’s payment — or keep washing. The payment covers water, power, the lease and your crew’s wages, and it grows with the business: about 65% of what your last six jobs paid, for the five working days.", go);
     }
     if(state.day >= 7){
       state.day = 0; state.week += 1; save();
@@ -2932,8 +2948,8 @@ body{
       save(); renderTop(); SFX.bill();
       var go = function(){
         showModal(
-          mHead("bill", "Payment made", "Handled. Every payment buys a little reputation.", weekLabel) +
-          mRows([mRow(ic("truck")+"Lease, fuel and soap", money(overheadBase(state.billNumber-1)))]
+          mHead("bill", "Payment made", "Water, power and the lease — handled. Every payment buys a little reputation.", weekLabel) +
+          mRows([mRow(ic("truck")+"Water, power, lease", money(overheadBase(state.billNumber-1)))]
             .concat(crewSalary()>0 ? [mRow(ic("hardhat")+"Crew wages", money(crewSalary()))] : [])
             .concat([mRow(ic("coin")+"Total", money(amount), "pw-stats__val--down"), mRow(ic("star")+"Reputation earned", "+"+gain, "pw-stats__val--up")])),
           [{ label:"Back to the garage", cls:"pw-btn--primary", action:function(){ showScreen("screen-home"); } }]
@@ -2978,6 +2994,7 @@ body{
     }
     var lostCrew = Object.keys(state.crew).length - Object.keys(kept).length;
     state.crew = kept;
+    state.recentPays = [];
     state.legacyAvailable = true;
     save(); renderTop();
 
@@ -3233,7 +3250,7 @@ body{
       mRow(ic("clock")+"Refill", (refillMs()/1000).toFixed(2)+" s"),
       mRow(ic("hourglass")+"Patience", Math.round(jobMs()/1000)+" s"),
       mRow(ic("coin")+"Pay bonus", "+"+Math.round((payMult()-1)*100)+"%"),
-      mRow(ic("flask")+"Degreaser", "×"+degreaserMult().toFixed(2)),
+      mRow(ic("drop")+"Water use", waterPerSecond().toFixed(1)+" L/s"),
       mRow(ic("hardhat")+"Crew per job", money(crewIncome()))
     ]);
     $("regionName").textContent = regionDef().name;
@@ -3256,10 +3273,15 @@ body{
     if(state.ownedOutright){
       $("buyoutPanel").innerHTML =
         '<div class="pw-panel__head"><span class="pw-heading">'+ic("trophy","pw-icon--24")+' Owned outright</span><span class="pw-label pw-tag--ok">Debt free</span></div>' +
-        '<p class="pw-small pw-soft">Every cent paid off. Overhead is pocket change now.</p>';
+        '<p class="pw-small pw-soft">Every cent paid off. The weekly bills are pocket change now.</p>';
     } else {
-      var shown = Math.min(state.lifetimeEarnings, BUYOUT_TARGET);
-      $("buyoutPanel").innerHTML = meterHTML("trophy", "Buyout", money(shown)+' / '+money(BUYOUT_TARGET), "pw-track--gold pw-track--segmented", shown/BUYOUT_TARGET*100);
+      var shown = Math.min(state.cash, BUYOUT_TARGET);
+      $("buyoutPanel").innerHTML = meterHTML("trophy", "Buyout (cash in hand)", money(shown)+' / '+money(BUYOUT_TARGET), "pw-track--gold pw-track--segmented", shown/BUYOUT_TARGET*100);
+      if(state.cash >= BUYOUT_TARGET){
+        var bb = document.createElement("button"); bb.className = "pw-btn pw-btn--small pw-btn--block"; bb.style.marginTop = "8px";
+        bb.innerHTML = ic("trophy","pw-btn__icon") + "Buy the business"; bb.onclick = function(){ offerBuyout(function(){ renderHome(); }); };
+        $("buyoutPanel").appendChild(bb);
+      }
     }
     renderLoanPanel();
   }
@@ -3275,7 +3297,6 @@ body{
       case "tipjar": return "Tip Jar — customers tip for speed; watch it drain top-right during a job";
       case "foam": return "Foam Cannon lv." + lvl("foamcannon") + " — auto-cleans a spot every " + (lvl("foamcannon") >= 2 ? "0.8" : "1.35") + " s";
       case "cab": return TIERS[rigTier()][0] + (lvl("permit") ? " · Business Permit (payments −8%)" : "") + (lvl("lease") ? " · Cheaper Lease lv." + lvl("lease") : "");
-      case "bar": return "Light bar — a Pro-tier rig";
     }
     return "";
   }

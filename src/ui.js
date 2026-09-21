@@ -112,7 +112,7 @@
   }
   function dirtRows(types){
     return mRows(types.map(function(t){
-      var need = t.chem ? CHEMS[t.chem].name + (chemOwned(t.chem) ? "" : " · not in your rack") : "plain water";
+      var need = t.chem ? CHEMS[t.chem].name + (chemOwned(t.chem) ? "" : " · in the Shop") : "plain water";
       return mRow(ic(t.icon) + t.name, (t.chem ? ic(CHEMS[t.chem].icon) : ic("drop")) + need, t.chem && !chemOwned(t.chem) ? "pw-stats__val--down" : "");
     }));
   }
@@ -956,7 +956,7 @@
     if(!missing.length) return startJob();
     var names = missing.map(function(t){ return CHEMS[t.chem].name; }).join(" and ");
     showModal(
-      mHead("flask", "Missing " + names, "Today’s job has " + missing.map(function(t){ return t.name; }).join(" and ") + ". Without the right chemical that dirt barely moves — you’d be paid for the rest, if there is any.", "Before you go") +
+      mHead(CHEMS[missing[0].chem].icon, "Missing " + names, "Today’s job has " + missing.map(function(t){ return t.name; }).join(" and ") + ". Without the right chemical that dirt barely moves — you’d be paid for the rest, if there is any.", "Before you go") +
       dirtRows(missing) +
       mNote(missing.map(function(t){ return CHEMS[t.chem].name + " is " + money(costOf(t.chem, 0)); }).join(", ") + " in the Shop. You have " + money(state.cash) + "."),
       [ { label:"Go to the Shop", cls:"pw-btn--primary", icon:"flask", action:function(){ showScreen("screen-shop"); } },

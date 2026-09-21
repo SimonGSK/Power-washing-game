@@ -77,7 +77,7 @@
     regionSky(10); sun(14, 4); clouds(rng, 10, 1);
     grassField(0,10,CW,CH-10,rng); fireflies(0,50,CW,100,rng);
     hedgeRow(0, 10, CW, 36);
-    tree(36, 46, 1.1); tree(200, 44, 0.95); bush(120, 52, 0.8);
+    tree(36, 46, 1.1); tree(200, 44, 0.95); bush(228, 98, 0.9);
     paintArea(a, P.p4);
     for(var px=a.x+5; px<a.x+a.w; px+=6){ R(px,a.y,1,a.h,P.p2); if(((px/6)&3)===0) R(px+3,a.y+Math.round(a.h*0.4),1,1,P.p1); }
     R(a.x, a.y+Math.round(a.h*0.22), a.w, 2, P.p2); R(a.x, a.y+Math.round(a.h*0.72), a.w, 2, P.p2);

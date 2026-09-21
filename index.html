@@ -2076,7 +2076,7 @@ body{
     regionSky(10); sun(14, 4); clouds(rng, 10, 1);
     grassField(0,10,CW,CH-10,rng); fireflies(0,50,CW,100,rng);
     hedgeRow(0, 10, CW, 36);
-    tree(36, 46, 1.1); tree(200, 44, 0.95); bush(120, 52, 0.8);
+    tree(36, 46, 1.1); tree(200, 44, 0.95); bush(228, 98, 0.9);
     paintArea(a, P.p4);
     for(var px=a.x+5; px<a.x+a.w; px+=6){ R(px,a.y,1,a.h,P.p2); if(((px/6)&3)===0) R(px+3,a.y+Math.round(a.h*0.4),1,1,P.p1); }
     R(a.x, a.y+Math.round(a.h*0.22), a.w, 2, P.p2); R(a.x, a.y+Math.round(a.h*0.72), a.w, 2, P.p2);
@@ -2857,7 +2857,7 @@ body{
 
     showScreen("screen-job");
     $("jobName").textContent = def.name;
-    $("jobSub").textContent = types.map(function(t){ return t.name; }).join(" + ") + " · " + regionDef().name + " · " + weather.name;
+    $("jobSub").textContent = types.map(function(t){ return t.name; }).join(" + ") + " · " + regionDef().name + " · " + (NIGHT && weather.sun ? "Clear night" : (NIGHT ? weather.name + " night" : weather.name));
     /* after dark the scene paints itself dark (see NIGHT in props.js); only the weather tints */
     $("stageTint").style.background = NIGHT ? (weather.rain ? weather.tint : "transparent") : weather.tint;
 
@@ -3232,7 +3232,7 @@ body{
   }
   function dirtRows(types){
     return mRows(types.map(function(t){
-      var need = t.chem ? CHEMS[t.chem].name + (chemOwned(t.chem) ? "" : " · not in your rack") : "plain water";
+      var need = t.chem ? CHEMS[t.chem].name + (chemOwned(t.chem) ? "" : " · in the Shop") : "plain water";
       return mRow(ic(t.icon) + t.name, (t.chem ? ic(CHEMS[t.chem].icon) : ic("drop")) + need, t.chem && !chemOwned(t.chem) ? "pw-stats__val--down" : "");
     }));
   }
@@ -4115,7 +4115,7 @@ body{
     if(!missing.length) return startJob();
     var names = missing.map(function(t){ return CHEMS[t.chem].name; }).join(" and ");
     showModal(
-      mHead("flask", "Missing " + names, "Today’s job has " + missing.map(function(t){ return t.name; }).join(" and ") + ". Without the right chemical that dirt barely moves — you’d be paid for the rest, if there is any.", "Before you go") +
+      mHead(CHEMS[missing[0].chem].icon, "Missing " + names, "Today’s job has " + missing.map(function(t){ return t.name; }).join(" and ") + ". Without the right chemical that dirt barely moves — you’d be paid for the rest, if there is any.", "Before you go") +
       dirtRows(missing) +
       mNote(missing.map(function(t){ return CHEMS[t.chem].name + " is " + money(costOf(t.chem, 0)); }).join(", ") + " in the Shop. You have " + money(state.cash) + "."),
       [ { label:"Go to the Shop", cls:"pw-btn--primary", icon:"flask", action:function(){ showScreen("screen-shop"); } },

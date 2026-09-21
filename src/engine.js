@@ -501,7 +501,7 @@
 
     showScreen("screen-job");
     $("jobName").textContent = def.name;
-    $("jobSub").textContent = types.map(function(t){ return t.name; }).join(" + ") + " · " + regionDef().name + " · " + weather.name;
+    $("jobSub").textContent = types.map(function(t){ return t.name; }).join(" + ") + " · " + regionDef().name + " · " + (NIGHT && weather.sun ? "Clear night" : (NIGHT ? weather.name + " night" : weather.name));
     /* after dark the scene paints itself dark (see NIGHT in props.js); only the weather tints */
     $("stageTint").style.background = NIGHT ? (weather.rain ? weather.tint : "transparent") : weather.tint;
 

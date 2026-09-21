@@ -159,12 +159,14 @@ __SCENES__
     for(var j=1;j<prow;j++){ if(Math.abs(py-(a.y + a.h*j/prow)) < 2.5) return false; }
     return true;
   }
+  /* the side of a fishing boat, deck rail to waterline: the stem rakes forward at the bow (right),
+     the stern is a rounded transom; below the waterline is the sea's business, not yours */
   function maskHull(px,py,a){
     var u = (px-a.x)/a.w, v = (py-a.y)/a.h;
     if(u<0||u>1||v<0||v>1) return false;
-    var bow   = Math.pow(clamp((u-0.60)/0.40,0,1), 1.5);
-    var stern = Math.pow(clamp((0.12-u)/0.12,0,1), 1.4);
-    return v <= 1 - bow*0.80 - stern*0.34;
+    var bowCut   = Math.pow(v, 1.35) * 0.20;          /* the stem leans back as it goes down */
+    var sternCut = Math.pow(v, 2.2) * 0.07;           /* the transom tucks in a little */
+    return u >= sternCut && u <= 1 - bowCut;
   }
 
   /* =========================================================
@@ -192,9 +194,9 @@ __SCENES__
     garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:59,y:30,w:118,h:76}, hero:{x:46,y:138}, son:{x:74,y:132}, hose:{x:-8,y:146}, vertical:true, patchChance:0.3,
                  grimes:["grease","soot","grease","soot"], graffitiChance:0.45,
                  props:function(a){ cone(a.x+18, a.y+a.h+2); bin(a.x+a.w-16, a.y+a.h+2); } },
-    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:59,y:52,w:128,h:46}, hero:{x:36,y:104}, son:{x:14,y:104}, hose:{x:-8,y:106}, mask:maskHull, vertical:true, ragged:false,
+    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:66,y:50,w:132,h:36}, hero:{x:36,y:104}, son:{x:14,y:104}, hose:{x:-8,y:106}, mask:maskHull, vertical:true, ragged:false,
                  grimes:["moss","rust","rust","salt","rust"],
-                 props:function(a){ ladder(a.x+a.w-34, a.y+6, 32); } },
+                 props:function(a){ ladder(a.x+a.w-46, a.y+4, 30); } },
     dock:      { name:"Pier Railing",    region:"harbor", scene:sceneDock,       area:{x:60,y:60,w:120,h:44}, hero:{x:40,y:104}, son:{x:204,y:104}, hose:{x:-8,y:106}, vertical:true, patchChance:0.3,
                  grimes:["moss","salt","moss","salt"],
                  props:function(a){ lobsterTrap(a.x+14, a.y+a.h+2); ropeCoil(a.x+a.w-14, a.y+a.h+2); } },

@@ -29,6 +29,7 @@
 
   function endJob(mode){
     if(!job || job.ended) return;
+    if(paused){ job.start += now() - pausedAt; }   /* the pause never counted */
     job.ended = true;
     stopJobLoop();
 
@@ -281,29 +282,13 @@
   }
 
   /* the fourth home panel: the lender's tab while you owe him, otherwise what's coming next */
-  function renderLoanPanel(){
-    var p = $("loanPanel");
-    if(state.loan > 0){
-      p.innerHTML =
-        '<div class="pw-panel__head"><span class="pw-heading">'+ic("coin","pw-icon--24")+' '+LENDER.name+'’s tab</span><span class="pw-label" style="color:var(--danger-text)">'+money(state.loan)+'</span></div>' +
-        '<p class="pw-small pw-soft">He takes '+Math.round(LENDER.cut*100)+'% of every job until it’s square. Miss another payment and the van goes.</p>';
-      return;
-    }
-    var next = null;
-    REGION_ORDER.forEach(function(id){ if(!next && !regionUnlocked(id)) next = REGIONS[id]; });
-    p.innerHTML = next
-      ? '<div class="pw-panel__head"><span class="pw-heading">'+ic(next.icon,"pw-icon--24")+' '+next.name+'</span><span class="pw-label">'+Math.max(0, next.unlock - state.jobsCompleted)+' jobs</span></div>' +
-        '<p class="pw-small pw-soft">'+next.tag+' Pays ×'+next.pay.toFixed(2)+'.</p>'
-      : '<div class="pw-panel__head"><span class="pw-heading">'+ic("star","pw-icon--24")+' Reputation</span><span class="pw-label">'+state.rep+'</span></div>' +
-        '<p class="pw-small pw-soft">Every bill you pay earns stars. Spend them on Legacy perks.</p>';
-  }
-  /* the route picture: the region's first job, painted clean */
+  /* the route picture: the next job on the route, painted clean */
   function paintRoute(){
     var canvas = $("routeCanvas"), rc = canvas.getContext("2d"); rc.imageSmoothingEnabled = false;
-    var r = regionDef(), def = JOBS[r.jobs[0]];
+    var r = regionDef(), def = pickJobDef();
     var keep = bx; bx = rc;
     var wasJob = job; job = null;
-    def.scene(def.area, makeRng(7 + REGION_ORDER.indexOf(r.id)));
+    def.scene(def.area, makeRng(7 + REGION_ORDER.indexOf(r.id) + state.jobsCompleted));
     job = wasJob; bx = keep;
     sizeRoute();
     requestAnimationFrame(function(){ requestAnimationFrame(sizeRoute); });
@@ -493,12 +478,21 @@
     }).join('');
     $("btnStartJob").innerHTML = ic("wand","pw-btn__icon") + (state.day >= 5 ? "Work " + (state.day === 5 ? "Saturday" : "Sunday") : "Start Next Job");
 
-    var ci = crewIncome();
-    $("crewPanel").innerHTML = (ci > 0 || sonHired())
-      ? '<div class="pw-panel__head"><span class="pw-heading">'+ic("hardhat","pw-icon--24")+' Crew</span><span class="pw-label">'+(Object.keys(state.crew).length + (sonHired()?1:0))+' on payroll</span></div>' +
-        '<p class="pw-small pw-soft"><b>'+money(ci)+'</b> per weekday job · wages <b>'+money(crewSalary())+'</b> a week.</p>'
-      : '<div class="pw-panel__head"><span class="pw-heading">'+ic("hardhat","pw-icon--24")+' No crew yet</span></div>' +
-        '<p class="pw-small pw-soft">Hire someone — they work a job every time you finish one.</p>';
+    /* money: what you have, and what Sunday leaves you (or what Sal is still owed) */
+    var after = state.cash - due;
+    $("cashPanel").innerHTML =
+      '<div class="pw-panel__head"><span class="pw-heading">'+ic("coin","pw-icon--24")+' Cash</span><span class="pw-label'+(after < 0 ? '" style="color:var(--danger-text)' : '')+'">'+money(state.cash)+'</span></div>' +
+      (state.loan > 0
+        ? '<p class="pw-small pw-soft">'+LENDER.name+'’s tab: <b>'+money(state.loan)+'</b> — he takes '+Math.round(LENDER.cut*100)+'% of every job until it’s square.</p>'
+        : '<p class="pw-small pw-soft">'+(after >= 0 ? 'After Sunday’s payment you keep <b>'+money(after)+'</b>.' : '<b>'+money(-after)+' short</b> of Sunday’s payment — keep washing.')+'</p>');
+    /* the next thing worth buying */
+    var rec = recommendBuy();
+    $("advicePanel").innerHTML = rec
+      ? '<div class="pw-panel__head"><span class="pw-heading">'+ic(rec.icon,"pw-icon--24")+' Next buy</span><span class="pw-label '+(rec.afford ? 'pw-tag--ok' : '')+'">'+money(rec.cost)+'</span></div>' +
+        '<p class="pw-small pw-soft"><b>'+rec.title+'</b>'+(rec.level ? ' lv.'+rec.level : '')+' — '+rec.why+(rec.afford ? '' : ' Save up '+money(rec.cost - state.cash)+' more.')+'</p>'
+      : '<div class="pw-panel__head"><span class="pw-heading">'+ic("check","pw-icon--24")+' Rig complete</span></div><p class="pw-small pw-soft">Nothing left to buy — it’s all profit now.</p>';
+    $("advicePanel").onclick = rec ? function(){ showScreen(rec.screen); } : null;
+    $("advicePanel").style.cursor = rec ? "pointer" : "";
 
     if(state.ownedOutright){
       $("buyoutPanel").innerHTML =
@@ -513,7 +507,24 @@
         $("buyoutPanel").appendChild(bb);
       }
     }
-    renderLoanPanel();
+  }
+  /* What to buy next: a chemical for dirt already on your route comes first, then the tree in a
+     sensible order (spray, tank, patience, pay…), shop gear when it's the cheapest big win. */
+  var BUY_ORDER = ["powercore","nozzle","pressure","tankcore","tank","bizcore","patience","nozzle","refill","pressure","flow","pay","cone","tank","tipjar","nozzle","pressure","refill","patience","pay","foamcannon","contracts","lease","prowasher","cone","flow","tank","refill","patience","pay","contracts","cone","flow","lease","foamcannon","contracts","lease","surge","bigrig","empire"];
+  function recommendBuy(){
+    var jobs = state.jobsCompleted;
+    var dirt = regionDirt(state.region).filter(function(t){ return t.chem && !chemOwned(t.chem) && DIRT_UNLOCK[t.id] <= jobs + 2; });
+    if(dirt.length){ var ch = dirt[0].chem, cc = costOf(ch, 0); return { key:ch, title:SHOP[ch].title, icon:SHOP[ch].icon, cost:cc, afford:state.cash >= cc, level:0, screen:"screen-shop", why:dirt[0].name + " is on this route and only " + SHOP[ch].title + " cuts it." }; }
+    var want = {};
+    for(var i=0;i<BUY_ORDER.length;i++){
+      var k = BUY_ORDER[i], def = GEAR[k] || SHOP[k]; want[k] = (want[k] || 0) + 1;
+      var level = want[k] - 1;
+      if(lvl(k) !== level || level >= def.costs.length) continue;      /* not the next step for this one */
+      if(GEAR[k] && treeGate(k, level)) continue;                       /* locked behind the tree */
+      var cost = costOf(k, level);
+      return { key:k, title:def.title, icon:def.icon, cost:cost, afford:state.cash >= cost, level:def.costs.length > 1 ? level+1 : 0, screen: GEAR[k] ? "screen-upgrades" : "screen-shop", why: def.desc[level].split(".")[0] + "." };
+    }
+    return null;
   }
 
   /* hover the rig's parts for what they are and what level they're at */
@@ -540,7 +551,9 @@
   }
 
   /* ---- the route map: a 240×100 pixel painting + chip markers ---- */
-  var MARKERS = { grove:[15,58], city:[52,88], harbor:[84,50] };
+  var MARKERS = { grove:[15,58], city:[49,74], harbor:[80,36] };
+  /* the coast: the sea fills the bottom-right corner; land is everything left of shoreX(y) */
+  function shoreX(y){ return y < 40 ? 240 : 236 - Math.round((y-40)*1.4) + Math.round(Math.sin(y/7)*2); }
   function paintMap(){
     var mc = $("mapCanvas").getContext("2d"); mc.imageSmoothingEnabled = false;
     var keep = bx; bx = mc;
@@ -551,9 +564,10 @@
     blob(96, 26, ellipseRows(56, 18, true), function(r){ return r < 3 ? P.g3 : P.g2; }, P.g1);
     blob(150, 28, ellipseRows(50, 14, true), function(r){ return r < 2 ? P.g3 : P.g2; }, P.g1);
     grassField(0, 34, 240, 66, rng);
-    /* the sea: bottom right, with a shoreline */
-    for(var sy=64; sy<100; sy++){ var sx0 = 150 + Math.round(Math.sin(sy/6)*2) - Math.round((sy-64)*0.4); R(sx0, sy, 240-sx0, 1, sy < 80 ? P.w3 : P.w2); R(sx0, sy, 1, 1, P.c4); }
-    for(var w=0;w<14;w++){ var wx=156+Math.floor(rng()*80), wy=68+Math.floor(rng()*28); R(wx,wy,4,1,P.w4); R(wx+1,wy-1,2,1,P.w4); }
+    /* the sea, with a sandy shoreline */
+    for(var sy=40; sy<100; sy++){ var sx0 = shoreX(sy); if(sx0 >= 240) continue; R(sx0, sy, 240-sx0, 1, sy < 70 ? P.w3 : P.w2); R(sx0-1, sy, 2, 1, P.parchHi); R(sx0-2, sy, 1, 1, P.parchLo); }
+    for(var w=0;w<16;w++){ var wy=44+Math.floor(rng()*54), wx=shoreX(wy)+4+Math.floor(rng()*Math.max(4, 236-shoreX(wy))); R(wx,wy,4,1,P.w4); R(wx+1,wy-1,2,1,P.w4); }
+    if(NIGHT) lit(function(){ for(var gy=46; gy<100; gy+=2){ var gx0 = 214 + Math.round((rng()-0.5)*(6+(gy-46)*0.4)); if(gx0 > shoreX(gy)) R(gx0, gy, 2, 1, (gy&2) ? "#cfd8ff" : "#8d99cf"); } });
     /* the river, from the hills down to the sea, with a bridge on the road */
     for(var ry=30; ry<100; ry++){ var rx = 84 + Math.round(Math.sin(ry/9)*3) + Math.round((ry-30)*0.12); R(rx, ry, 8, 1, ry%7===0 ? P.w4 : P.w3); R(rx, ry, 1, 1, P.w1); R(rx+7, ry, 1, 1, P.w1); }
     /* suburb (a house is ~22 px, a car 10, a tree 12) */
@@ -562,27 +576,28 @@
     for(var fx=8; fx<40; fx+=3){ R(fx, 80, 2, 3, P.parchHi); } R(8,81,32,1,P.parchLo);
     miniTree(8, 60); miniTree(70, 52); miniTree(48, 78); bush(66, 82, 0.5);
 
-    /* downtown, on land east of the river — towers dwarf the houses */
-    towerSlab(104, 30, 10, 34, P.c3, P.waterHi); towerSlab(116, 38, 8, 26, P.c4, P.waterHi); towerSlab(126, 22, 11, 42, P.c2, P.waterHi); towerSlab(139, 36, 9, 28, P.c3, P.waterHi);
-    antenna(131, 22, 7);
-    R(100, 66, 52, 3, P.c3); R(100, 66, 52, 1, P.c4); crosswalk(108, 66, 20);
-    /* harbour: quay, pier into the sea, boats, lighthouse */
-    R(160, 60, 40, 4, P.c3); R(160, 60, 40, 1, P.c4);
-    box(196, 62, 30, 3, P.p3, P.p4, P.p1); R(200,65,2,7,P.p1); R(210,65,2,7,P.p1); R(220,65,2,7,P.p1);
-    miniBoat(224, 78, P.coral); miniBoat(186, 92, "#4d7f6f"); sailboat(206, 96); sailboat(170, 84);
-    lighthouse(232, 60, 18); buoy(164, 90); seagull(170, 44); seagull(190, 40); seagull(224, 36);
-    /* the road: suburb → bridge → downtown, then it bends up and follows the shore to the quay */
+    /* downtown, inland east of the river — towers dwarf the houses */
+    towerSlab(100, 28, 10, 34, P.c3, P.waterHi); towerSlab(112, 36, 8, 26, P.c4, P.waterHi); towerSlab(122, 20, 11, 42, P.c2, P.waterHi); towerSlab(135, 34, 9, 28, P.c3, P.waterHi);
+    antenna(127, 20, 7);
+    R(96, 64, 52, 3, P.c3); R(96, 64, 52, 1, P.c4); crosswalk(104, 64, 20);
+    /* harbour, up the coast: a quay along the shore, a pier into the sea, boats, the lighthouse on the point */
+    var qx = shoreX(54);
+    R(qx-28, 50, 28, 4, P.c3); R(qx-28, 50, 28, 1, P.c4);
+    box(qx-3, 58, 26, 3, P.p3, P.p4, P.p1); R(qx+1,61,2,6,P.p1); R(qx+11,61,2,6,P.p1); R(qx+20,61,2,6,P.p1);
+    miniBoat(shoreX(86)+24, 86, P.coral); miniBoat(shoreX(72)+40, 72, "#4d7f6f"); sailboat(shoreX(96)+50, 96); sailboat(shoreX(66)+18, 66);
+    lighthouse(230, 40, 14); buoy(shoreX(78)+6, 78); seagull(170, 44); seagull(190, 40); seagull(224, 36);
+    if(NIGHT){ lit(function(){ R(qx-24, 46, 1, 4, P.stoneLo); R(qx-25, 45, 3, 1, "#fff0c4"); R(qx-8, 46, 1, 4, P.stoneLo); R(qx-9, 45, 3, 1, "#fff0c4"); }); glowDisc(qx-23, 50, 6, 3, "#8a7448"); glowDisc(qx-7, 50, 6, 3, "#8a7448"); }
+    /* the road: suburb → bridge → downtown, then it climbs the coast to the quay, keeping to the land */
     function roadY(x){
-      if(x < 124) return 90 - Math.round(Math.sin(x/38)*5);
-      if(x < 160) return 88 - Math.round((x-124)*0.72);      /* bending up between downtown and the shore */
-      return 62 - Math.round(Math.sin((x-160)/14)*2);        /* the quay road */
+      if(x < 148) return 90 - Math.round(Math.sin(x/38)*5);
+      return 90 - Math.round((x-148)*0.78);            /* up the coast, parallel to the shore */
     }
-    for(var rx2=8; rx2<=196; rx2++){
+    for(var rx2=8; rx2<=qx-6; rx2++){
       var ry2 = roadY(rx2);
       R(rx2, ry2, 1, 4, P.c3); R(rx2, ry2, 1, 1, P.c4); R(rx2, ry2+3, 1, 1, P.c1); if((rx2 % 8) < 4) R(rx2, ry2+2, 1, 1, P.parchHi);
     }
     box(82, 86, 14, 6, P.p3, P.p4, P.p1); R(82,84,14,1,P.p1); R(82,93,14,1,P.p1);
-    miniCar(40, roadY(40)+1, P.coral); miniCar(112, roadY(112)+1, P.sun); miniCar(176, roadY(176)+1, P.water);
+    miniCar(40, roadY(40)+1, P.coral); miniCar(112, roadY(112)+1, P.sun); miniCar(170, roadY(170)+1, P.water);
     bx = keep;
   }
   function renderMap(){
@@ -608,6 +623,7 @@
       card.innerHTML =
         '<div class="pw-card__title">'+ic(open ? r.icon : "lock")+'<h3 class="pw-heading">'+r.name+'</h3></div>' +
         '<p class="pw-small pw-card__body">'+r.tag+'</p>' +
+        '<div class="pw-caption pw-soft">Pay ×'+r.pay.toFixed(2)+' · dirt per job ×'+(r.dirt||1).toFixed(1)+'</div>' +
         '<div class="pw-card__foot"><span class="pw-label pw-tag pw-tag--price">'+ic("coin")+'×'+r.pay.toFixed(2)+' pay</span>' +
         '<span class="pw-caption pw-tag'+(open && active ? ' pw-tag--ok' : '')+'">'+(open ? (active ? ic("check")+"Current route" : "Tap to switch") : "Unlocks at "+r.unlock+" jobs")+'</span></div>';
       if(open){
@@ -843,6 +859,7 @@
       card.className = "pw-card" + (hired ? " pw-card--owned" : "");
       card.innerHTML = '<div class="pw-card__title">'+portraitSVG(c.id).replace('pw-portrait__art','pw-icon--32')+'<h3 class="pw-heading">'+c.name+'</h3></div>' +
         '<p class="pw-small pw-card__body">'+c.blurb+'</p>' +
+        '<div class="pw-caption pw-soft">'+(c.id === "mimi" ? 'Works jobs on her own' : 'Works jobs on his own')+' — every weekday you finish a job, so does '+c.name.split(" ")[0]+'.</div>' +
         '<div class="pw-caption pw-soft">'+(hired ? 'Level '+(l+1)+' · brings in '+money(rate)+' per job · wages '+money(Math.round(c.rate*0.5*(1+l*0.6)))+' per bill' : 'Brings in '+money(Math.round(c.rate*regionDef().pay*crewMult()))+' per job · wages '+money(Math.round(c.rate*0.5))+' per bill')+'</div>';
       var foot = footEl();
       if(!hired){
@@ -1033,6 +1050,7 @@
       return n;
     },
     spray: function(x, y, radius, power, chem){ return sprayGrime(x, y, radius, power, chem); },
+    pause: pauseJob, resume: resumeJob, paused: function(){ return paused; },
     cleanliness: cleanliness,
     advanceDay: advanceDay,
     triggerBill: triggerBill,

@@ -66,10 +66,10 @@
         </div>
         <button class="pw-btn pw-btn--primary pw-btn--big pw-btn--block" id="btnStartJob"><span class="ico pw-btn__icon" data-ic="wand"></span>Start Next Job</button>
         <div class="stat-grid">
+          <div class="pw-panel pw-panel--tight" id="cashPanel"></div>
+          <div class="pw-panel pw-panel--tight" id="advicePanel"></div>
           <div class="pw-panel pw-panel--tight" id="billPanel"></div>
-          <div class="pw-panel pw-panel--tight" id="crewPanel"></div>
           <div class="pw-panel pw-panel--tight" id="buyoutPanel"></div>
-          <div class="pw-panel pw-panel--tight" id="loanPanel"></div>
         </div>
       </div>
     </div>
@@ -88,9 +88,11 @@
   <div id="screen-job" class="screen hidden">
     <div class="pw-screen-head">
       <div><h2 class="pw-title" id="jobName">Driveway</h2><p class="pw-small" id="jobSub">Everyday Dirt · Maple Grove</p>
+        <div class="pw-row job-dirt" id="jobDirt"></div>
         <p class="pw-small contract-line hidden" id="contractLine"><span class="ico" data-ic="bill"></span> Contract: leave the marked patch spotless for +30% pay — <b id="contractVal">0%</b></p></div>
       <div class="job-right">
         <div class="pw-counter pw-counter--cash hidden" id="tipBadge" title="Tip for speed"><span class="ico" data-ic="jar"></span><span id="tipVal">$0</span></div>
+        <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnPauseJob" title="Pause (P)">Pause</button>
         <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnQuitJob">Call it done</button>
       </div>
     </div>
@@ -105,7 +107,7 @@
       <div id="stageTint"></div>
       <div id="stageOverlay" class="hidden">
         <div class="pw-panel overlay-card">
-          <span class="ico" data-ic="drop"></span>
+          <span id="overlayIcon"><span class="ico" data-ic="drop"></span></span>
           <div class="pw-label" id="overlayText">Refilling tank…</div>
         </div>
       </div>

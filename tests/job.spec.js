@@ -26,6 +26,23 @@ test.describe("a job", () => {
     expect(after.recentPays.length).toBe(1);
   });
 
+  test("pausing freezes the clock and blocks the wand; resuming gives the time back", async ({ page }) => {
+    await startJob(page);
+    await page.waitForTimeout(400);
+    await page.click("#btnPauseJob");
+    await expect(page.locator("#stageOverlay")).toBeVisible();
+    await expect(page.locator("#btnPauseJob")).toHaveText("Resume");
+    const before = await page.locator("#timeLabel").textContent();
+    await page.waitForTimeout(1500);
+    expect(await page.locator("#timeLabel").textContent()).toBe(before);
+    expect(await page.evaluate(() => window.PowerWashDebug.paused())).toBe(true);
+    await page.keyboard.press("p");
+    await expect(page.locator("#btnPauseJob")).toHaveText("Pause");
+    await expect(page.locator("#stageOverlay")).toBeHidden();
+    const left = await page.evaluate(() => window.PowerWashDebug.job.duration - (performance.now() - window.PowerWashDebug.job.start));
+    expect(left).toBeGreaterThan(38000);   /* ~0.5 s of real play used, the pause didn't count */
+  });
+
   test("the wand actually removes grime where it points", async ({ page }) => {
     await startJob(page);
     const removed = await page.evaluate(() => {
@@ -74,7 +91,8 @@ test.describe("a job", () => {
     await startJob(page, "windows");
     const stats = () => page.evaluate(() => {
       const D = window.PowerWashDebug, g = D.grimeStats(), layers = Math.max.apply(null, D.job.types.map((t) => t.layers));
-      return Object.assign(g, { perLayer: g.hp / (0.7 + 0.5 * (layers - 0.3)) });   /* the budget formula's layer term */
+      const dirt = D.data.REGIONS[D.job.region].dirt || 1;   /* the route's dirt factor */
+      return Object.assign(g, { perLayer: g.hp / (0.7 + 0.5 * (layers - 0.3)) / dirt, cellsNorm: g.cells / dirt });
     });
     const tower = await stats();
     await page.evaluate(() => window.PowerWashDebug.patch({ region: "grove", gear: { mosskiller: 1 } }));
@@ -83,7 +101,7 @@ test.describe("a job", () => {
     expect(tower.cols * tower.rows).toBeGreaterThan(drive.cols * drive.rows * 1.8);   /* the wall really is bigger */
     /* …but the dirt on it is not: both sit inside the budget (2100 cells × 0.83 cover, × 0.78 hp per layer term) */
     for(const j of [tower, drive]){
-      expect(j.cells).toBeLessThan(2100 * 0.83 * 1.12);
+      expect(j.cellsNorm).toBeLessThan(2100 * 0.83 * 1.12);
       expect(j.perLayer).toBeLessThan(2100 * 0.78 * 1.06);
     }
     expect(tower.perLayer).toBeGreaterThan(drive.perLayer * 0.5);

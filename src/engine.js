@@ -87,8 +87,11 @@
     /* the same amount of work every time, wherever the dirt sits — and however big the wall:
        the budget is sized for a normal job (REF_CELLS), so the tower doesn't get twice the dirt.
        Too little coverage → grow the patches; short → thicken; over budget → thin the whole field */
-    var ref = Math.min(gCols*gRows, REF_CELLS);
-    var target = ref * 0.78 * (0.7 + 0.5*(layers-0.3));
+    /* the budget: a driveway's worth of dirt, times the route's dirt factor (downtown and the
+       harbor are dirtier per job — that's why they pay more) */
+    var budget = REGIONS[job.region].dirt || 1;
+    var ref = Math.min(gCols*gRows, Math.round(REF_CELLS * budget));
+    var target = Math.min(gCols*gRows, REF_CELLS) * 0.78 * (0.7 + 0.5*(layers-0.3)) * budget;
     var covered = 0; for(var cc=0; cc<grime.length; cc++) if(grime[cc] > 0) covered++;
     if(nPatches && covered < ref*0.42 && pass < 3){ pass++; patches.forEach(function(pq){ pq.r *= 1.3; }); continue; }
     /* a big surface spreads the dirt over far more cells, and every cell is a pass of the wand:
@@ -183,8 +186,9 @@
     var ct = job.types[cellType ? cellType[i] : 0] || job.grime;
     if(ct.graffiti && cellColor && cellColor[i]){
       /* graffiti fades: the paint lightens and breaks up as it comes off */
-      var f = hp / ct.layers, gcol = mix(cellColor[i], "#ffffff", (1-f)*0.55);
-      gx.fillStyle = shade(gcol);
+      var f = hp / ct.layers, gcol = shade(mix(cellColor[i], "#ffffff", (1-f)*0.55));
+      if(NIGHT && lightAt(px, py) && ((cx + cy) & 1) === 0) gcol = mix(gcol, "#c9a95a", 0.42);
+      gx.fillStyle = gcol;
       if(f > 0.75){ gx.fillRect(px, py, w, h); }
       else if(f > 0.5){ gx.fillRect(px, py, w, 1); gx.fillRect(px, py+1, 1, 1); }
       else if(f > 0.25){ gx.fillRect(px, py, 1, 1); gx.fillRect(px+1, py+1, 1, 1); }
@@ -194,6 +198,8 @@
     var shades = job.shadesByType[cellType ? cellType[i] : 0] || job.shadesByType[0];
     var idx = Math.min(4, Math.floor(hp)), f = hp - Math.floor(hp);
     var ca = shade(shades[idx]), cb = shade(shades[Math.min(4, idx+1)]);
+    /* a lamp shines on this cell: warm it, on alternate cells, like the dithered cone around it */
+    if(NIGHT && lightAt(px, py) && ((cx + cy) & 1) === 0){ ca = mix(ca, "#c9a95a", 0.42); cb = mix(cb, "#c9a95a", 0.42); }
     var odd = jitter[i] < 0.5 ? 0 : 1;
     if(idx === 0 && hp < 0.45){
       gx.fillStyle = ca; gx.fillRect(px+odd, py, 1, 1); gx.fillRect(px+1-odd, py+1, 1, 1);
@@ -501,11 +507,15 @@
 
     showScreen("screen-job");
     $("jobName").textContent = def.name;
-    $("jobSub").textContent = types.map(function(t){ return t.name; }).join(" + ") + " · " + regionDef().name + " · " + (NIGHT && weather.sun ? "Clear night" : (NIGHT ? weather.name + " night" : weather.name));
+    $("jobSub").textContent = regionDef().name + " · " + (NIGHT && weather.sun ? "Clear night" : (NIGHT ? weather.name + " night" : weather.name));
+    $("jobDirt").innerHTML = types.map(function(t){
+      var need = t.chem ? CHEMS[t.chem].name + (chemOwned(t.chem) ? "" : " (not owned)") : "plain water";
+      return '<span class="pw-chip" title="' + t.blurb.replace(/"/g, "&quot;") + '">' + ic(t.icon, "pw-chip__icon") + t.name + '<span class="pw-small pw-soft">· ' + need + '</span></span>';
+    }).join("");
     /* after dark the scene paints itself dark (see NIGHT in props.js); only the weather tints */
     $("stageTint").style.background = NIGHT ? (weather.rain ? weather.tint : "transparent") : weather.tint;
 
-    loadPalette();
+    loadPalette(); resetLight();
     bx.clearRect(0,0,CW,CH);
     def.scene(def.area, rng);
     buildGrime(rng);
@@ -518,7 +528,7 @@
     fx.clearRect(0,0,CW,CH);
     particles = [];
     aim = { x: def.area.x + def.area.w/2, y: def.area.y + def.area.h/2 };
-    spraying = false; hovering = false; pressed = false; lastSprayPt = null; refilling = false;
+    spraying = false; hovering = false; pressed = false; lastSprayPt = null; refilling = false; paused = false; $("btnPauseJob").textContent = "Pause";
     sprayAcc = foamAcc = rainAcc = 0;
     son = { x:0, y:0, target:null, flash:0, acc:0 }; bot = { target:null, flash:0, acc:0 };
     setTank(job.tank); setClean(0); setTimer(job.duration);
@@ -742,14 +752,14 @@
   stage.addEventListener("pointerenter", function(e){ lastPointerType = e.pointerType || "mouse"; hovering = true; aim = stagePoint(e); updateSpraying(); });
   stage.addEventListener("pointerleave", function(){ hovering = false; pressed = false; updateSpraying(); });
   stage.addEventListener("pointerdown", function(e){
-    if(!job || job.ended || !job.started) return;
+    if(!job || job.ended || !job.started || paused) return;
     e.preventDefault();
     lastPointerType = e.pointerType || "mouse";
     hovering = true; pressed = true; aim = stagePoint(e);
     updateSpraying();
   });
   window.addEventListener("pointermove", function(e){
-    if(!job || job.ended) return;
+    if(!job || job.ended || paused) return;
     aim = stagePoint(e);
     if(e.pointerType && e.pointerType !== "mouse"){ hovering = pressed; }
   });
@@ -758,6 +768,36 @@
 
   function stopJobLoop(){
     if(rafId && window.cancelAnimationFrame) cancelAnimationFrame(rafId);
-    rafId = null; spraying = false; hovering = false; pressed = false; refilling = false;
+    rafId = null; spraying = false; hovering = false; pressed = false; refilling = false; paused = false;
+    $("btnPauseJob").textContent = "Pause"; $("stageOverlay").classList.remove("is-paused");
     syncSpraySound(false);
   }
+  /* pause: the loop stops, the clock is shifted on resume so no patience is lost */
+  var paused = false, pausedAt = 0;
+  function pauseJob(){
+    if(!job || job.ended || !job.started || paused) return;
+    paused = true; pausedAt = now();
+    if(rafId && window.cancelAnimationFrame) cancelAnimationFrame(rafId);
+    rafId = null; spraying = false; pressed = false; syncSpraySound(false);
+    $("overlayText").textContent = "Paused — press P or tap to resume"; $("overlayIcon").innerHTML = ic("hourglass", "pw-icon");
+    $("stageOverlay").classList.remove("hidden"); $("stageOverlay").classList.add("is-paused");
+    $("btnPauseJob").textContent = "Resume";
+  }
+  function resumeJob(){
+    if(!paused || !job || job.ended) return;
+    paused = false;
+    job.start += now() - pausedAt;
+    lastTs = 0;
+    $("stageOverlay").classList.remove("is-paused");
+    $("overlayIcon").innerHTML = ic("drop", "pw-icon");
+    if(refilling) $("overlayText").textContent = "Refilling tank…"; else $("stageOverlay").classList.add("hidden");
+    $("btnPauseJob").textContent = "Pause";
+    rafId = requestAnimationFrame(frame);
+  }
+  function togglePause(){ if(paused) resumeJob(); else pauseJob(); }
+  $("btnPauseJob").onclick = togglePause;
+  $("stageOverlay").addEventListener("click", function(){ if(paused) resumeJob(); });
+  window.addEventListener("keydown", function(ev){
+    if(ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA") return;
+    if((ev.key === "p" || ev.key === "P") && job && job.started && !job.ended && $("modalWrap").classList.contains("hidden")){ togglePause(); ev.preventDefault(); }
+  });

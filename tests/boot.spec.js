@@ -40,8 +40,7 @@ test.describe("boot", () => {
   test("night paints a dark sky with lit windows instead of a dimmed day", async ({ page }) => {
     const errors = await openGame(page);
     await newGame(page);
-    await page.click("#btnSettings");
-    await page.locator("#modalWrap button", { hasText: /night mode/i }).click();
+    await page.evaluate(() => window.PowerWashDebug.applyTheme("night"));
     await page.evaluate(() => window.PowerWashDebug.patch({ info: { dirt_dust: 1, dirt_mud: 1, dirt_moss: 1 } }));
     await page.evaluate(() => window.PowerWashDebug.startJob("driveway"));
     await page.waitForFunction(() => { const j = window.PowerWashDebug.job; return !!(j && j.started); });
@@ -58,16 +57,24 @@ test.describe("boot", () => {
     expect(errors).toEqual([]);
   });
 
-  test("night theme swaps the palette and rebuilds sprites without errors", async ({ page }) => {
+  test("the theme follows the clock by default and can be pinned in Settings", async ({ page }) => {
     const errors = await openGame(page);
     await newGame(page);
+    const t0 = await page.evaluate(() => window.PowerWashDebug.theme());
+    expect(t0.pref).toBe("auto");
+    const hour = new Date().getHours();
+    expect(t0.effective).toBe(hour >= 19 || hour < 6 ? "night" : "day");
+    expect(await page.evaluate(() => document.documentElement.getAttribute("data-theme"))).toBe(t0.effective);
+    /* Settings cycles: clock → always day → always night → clock */
     await page.click("#btnSettings");
-    await page.locator("#modalWrap button", { hasText: /night mode|day mode/i }).first().click();
+    await page.locator("#modalWrap button", { hasText: /follows the clock/i }).click();
+    await expect(page.locator("#modalWrap button", { hasText: /always day/i })).toBeVisible();
+    await page.locator("#modalWrap button", { hasText: /always day/i }).click();
+    await expect(page.locator("#modalWrap button", { hasText: /always night/i })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.getAttribute("data-theme"))).toBe("night");
-    await page.click("#btnSettings");
-    await page.locator("#modalWrap button", { hasText: /day mode/i }).click();
-    const theme = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
-    expect(["day", "night"]).toContain(theme);
+    await page.reload();
+    await page.waitForFunction(() => !!window.PowerWashDebug);
+    expect(await page.evaluate(() => window.PowerWashDebug.theme().pref)).toBe("night");   /* remembered */
     expect(errors).toEqual([]);
   });
 });

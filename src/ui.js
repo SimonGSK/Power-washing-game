@@ -317,10 +317,11 @@
     showModal(mHead(icon, title, html, "Heads up"), [{ label:"Got it", cls:"pw-btn--primary", action: done }]);
   }
   function openSettings(){
-    var night = document.documentElement.getAttribute("data-theme") === "night";
+    var themeLabel = themePref === "auto" ? "Theme: follows the clock (" + effectiveTheme() + " now)" : (themePref === "day" ? "Theme: always day" : "Theme: always night");
+    var nextPref = themePref === "auto" ? "day" : (themePref === "day" ? "night" : "auto");
     showModal(mHead("wrench", "Settings", null, "Options"),
       [ { label: SFX.isOn() ? "Sound: on" : "Sound: off", cls:"pw-btn--ghost", action:function(){ SFX.setOn(!SFX.isOn()); openSettings(); } },
-        { label: night ? "Switch to day mode" : "Switch to night mode", cls:"pw-btn--ghost", action:function(){ applyTheme(night ? "day" : "night"); if(!$("screen-home").classList.contains("hidden")) renderHome(); } },
+        { label: themeLabel, cls:"pw-btn--ghost", action:function(){ applyTheme(nextPref); if(!$("screen-home").classList.contains("hidden")) renderHome(); if(!$("screen-map").classList.contains("hidden")) renderMap(); openSettings(); } },
         { label:"Replay the story", cls:"pw-btn--ghost", icon:"book", action:function(){ runDialogue(STORY.intro, null); } },
         { label:"Back to the title screen", cls:"pw-btn--ghost", action:function(){ showScreen("screen-title"); renderTitle(); } },
         { label:"Reset save", cls:"pw-btn--ghost", action:function(){
@@ -410,8 +411,9 @@
     if(id !== "screen-legacy" && state.legacyAvailable && $("screen-legacy") && !$("screen-legacy").classList.contains("hidden")){ state.legacyAvailable = false; save(); }
     SCREENS.forEach(function(s){ $(s).classList.toggle("hidden", s !== id); });
     document.body.classList.toggle("at-home", id === "screen-home");
-    $("chrome").classList.toggle("hidden", id === "screen-title");
-    $("tabs").classList.toggle("hidden", id === "screen-job");
+    $("chrome").classList.toggle("hidden", id === "screen-title" || id === "screen-job");
+    document.body.classList.toggle("at-job", id === "screen-job");
+    if(id !== "screen-job"){ syncClockTheme(); syncScene(); }
     Array.prototype.slice.call(document.querySelectorAll("#tabs .tab")).forEach(function(t){ t.classList.toggle("is-active", t.getAttribute("data-screen") === id); });
     if(id === "screen-home") renderHome();
     if(id === "screen-map") renderMap();
@@ -471,7 +473,8 @@
     $("regionName").textContent = regionDef().name;
 
     var due = overheadAmount(state.billNumber), daysLeft = 7 - state.day;
-    $("billPanel").innerHTML = meterHTML("bill", "Sunday payment", money(due)+(state.day >= 5 ? ' · '+(daysLeft===1 ? 'tonight' : 'tomorrow') : ' · '+daysLeft+' days'), "pw-track--bill", state.day/7*100);
+    $("billPanel").innerHTML = meterHTML("bill", "Sunday payment", money(due), "pw-track--bill", state.day/7*100) +
+      '<p class="pw-small pw-soft">Due '+(daysLeft===1 ? 'tonight' : (daysLeft===2 ? 'tomorrow night' : 'in '+daysLeft+' days'))+' — water, power, the lease'+(crewSalary()>0 ? ' and wages' : '')+'.</p>';
     if(state.cash < due) $("billPanel").querySelector(".pw-label").style.color = "var(--danger-text)";
     var cal = $("calendar"); cal.innerHTML = '<span class="pw-caption cal-week">Week '+state.week+'</span>' + DAYS.map(function(d, i){
       return '<span class="cal-day'+(i === state.day ? ' is-today' : '')+(i >= 5 ? ' is-weekend' : '')+(i === 6 ? ' is-payday' : '')+(i < state.day ? ' is-past' : '')+'">'+d+(i === 6 ? ic("coin") : '')+'</span>';
@@ -488,7 +491,7 @@
     /* the next thing worth buying */
     var rec = recommendBuy();
     $("advicePanel").innerHTML = rec
-      ? '<div class="pw-panel__head"><span class="pw-heading">'+ic(rec.icon,"pw-icon--24")+' Next buy</span><span class="pw-label '+(rec.afford ? 'pw-tag--ok' : '')+'">'+money(rec.cost)+'</span></div>' +
+      ? '<div class="pw-panel__head"><span class="pw-heading">'+ic(rec.icon,"pw-icon--24")+' Recommended</span><span class="pw-label '+(rec.afford ? 'pw-tag--ok' : '')+'">'+money(rec.cost)+'</span></div>' +
         '<p class="pw-small pw-soft"><b>'+rec.title+'</b>'+(rec.level ? ' lv.'+rec.level : '')+' — '+rec.why+(rec.afford ? '' : ' Save up '+money(rec.cost - state.cash)+' more.')+'</p>'
       : '<div class="pw-panel__head"><span class="pw-heading">'+ic("check","pw-icon--24")+' Rig complete</span></div><p class="pw-small pw-soft">Nothing left to buy — it’s all profit now.</p>';
     $("advicePanel").onclick = rec ? function(){ showScreen(rec.screen); } : null;
@@ -500,7 +503,7 @@
         '<p class="pw-small pw-soft">Every cent paid off. The weekly bills are pocket change now.</p>';
     } else {
       var shown = Math.min(state.cash, BUYOUT_TARGET);
-      $("buyoutPanel").innerHTML = meterHTML("trophy", "Buyout (cash in hand)", money(shown)+' / '+money(BUYOUT_TARGET), "pw-track--gold pw-track--segmented", shown/BUYOUT_TARGET*100);
+      $("buyoutPanel").innerHTML = meterHTML("trophy", "Buyout", money(shown)+' / '+money(BUYOUT_TARGET), "pw-track--gold pw-track--segmented", shown/BUYOUT_TARGET*100);
       if(state.cash >= BUYOUT_TARGET){
         var bb = document.createElement("button"); bb.className = "pw-btn pw-btn--small pw-btn--block"; bb.style.marginTop = "8px";
         bb.innerHTML = ic("trophy","pw-btn__icon") + "Buy the business"; bb.onclick = function(){ offerBuyout(function(){ renderHome(); }); };
@@ -587,17 +590,22 @@
     miniBoat(shoreX(86)+24, 86, P.coral); miniBoat(shoreX(72)+40, 72, "#4d7f6f"); sailboat(shoreX(96)+50, 96); sailboat(shoreX(66)+18, 66);
     lighthouse(230, 40, 14); buoy(shoreX(78)+6, 78); seagull(170, 44); seagull(190, 40); seagull(224, 36);
     if(NIGHT){ lit(function(){ R(qx-24, 46, 1, 4, P.stoneLo); R(qx-25, 45, 3, 1, "#fff0c4"); R(qx-8, 46, 1, 4, P.stoneLo); R(qx-9, 45, 3, 1, "#fff0c4"); }); glowDisc(qx-23, 50, 6, 3, "#8a7448"); glowDisc(qx-7, 50, 6, 3, "#8a7448"); }
-    /* the road: suburb → bridge → downtown, then it climbs the coast to the quay, keeping to the land */
-    function roadY(x){
-      if(x < 148) return 90 - Math.round(Math.sin(x/38)*5);
-      return 90 - Math.round((x-148)*0.78);            /* up the coast, parallel to the shore */
+    /* the road: suburb → bridge → downtown, then it winds up the coast to the quay, keeping to the land.
+       A smooth curve through waypoints, stamped as a band: dark edges, grey top, a broken centre line */
+    var way = [[-4,93],[30,90],[60,91],[89,90],[118,91],[142,89],[158,82],[170,72],[184,62],[198,54],[qx-4,49]];
+    var pts = [];
+    for(var w0=0; w0<way.length-1; w0++){
+      var p0 = way[Math.max(0,w0-1)], p1 = way[w0], p2 = way[w0+1], p3 = way[Math.min(way.length-1,w0+2)];
+      for(var tt=0; tt<1; tt+=0.04){ var t2=tt*tt, t3=t2*tt;   /* Catmull-Rom */
+        pts.push([ 0.5*((2*p1[0]) + (-p0[0]+p2[0])*tt + (2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2 + (-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3),
+                   0.5*((2*p1[1]) + (-p0[1]+p2[1])*tt + (2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2 + (-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3) ]); }
     }
-    for(var rx2=8; rx2<=qx-6; rx2++){
-      var ry2 = roadY(rx2);
-      R(rx2, ry2, 1, 4, P.c3); R(rx2, ry2, 1, 1, P.c4); R(rx2, ry2+3, 1, 1, P.c1); if((rx2 % 8) < 4) R(rx2, ry2+2, 1, 1, P.parchHi);
-    }
+    pts.forEach(function(q){ R(q[0]-2, q[1]-2, 5, 5, P.c1); });
+    pts.forEach(function(q){ R(q[0]-1, q[1]-1, 3, 3, P.c3); });
+    pts.forEach(function(q, i){ if((i % 10) < 4) R(q[0], q[1], 1, 1, P.parchHi); });
+    var roadY = function(x){ var best = pts[0]; pts.forEach(function(q){ if(Math.abs(q[0]-x) < Math.abs(best[0]-x)) best = q; }); return Math.round(best[1]) - 1; };
     box(82, 86, 14, 6, P.p3, P.p4, P.p1); R(82,84,14,1,P.p1); R(82,93,14,1,P.p1);
-    miniCar(40, roadY(40)+1, P.coral); miniCar(112, roadY(112)+1, P.sun); miniCar(170, roadY(170)+1, P.water);
+    miniCar(40, roadY(40)+1, P.coral); miniCar(112, roadY(112)+1, P.sun); miniCar(176, roadY(176)+1, P.water);
     bx = keep;
   }
   function renderMap(){
@@ -955,13 +963,28 @@
      THEME
      ========================================================= */
   var THEME_KEY = "pwco_theme";
-  function applyTheme(t){
+  /* "auto" follows the clock: night from 19:00 to 06:00. "day"/"night" pin it. */
+  var themePref = "auto";
+  function clockTheme(){ var h = new Date().getHours(); return (h >= 19 || h < 6) ? "night" : "day"; }
+  function effectiveTheme(){ return themePref === "auto" ? clockTheme() : themePref; }
+  function applyTheme(pref){
+    themePref = pref === "day" || pref === "night" ? pref : "auto";
+    try{ localStorage.setItem(THEME_KEY, themePref); }catch(e){}
+    var t = effectiveTheme();
     document.documentElement.setAttribute("data-theme", t);
-
-    try{ localStorage.setItem(THEME_KEY, t); }catch(e){}
-    setNight(t === "night"); loadPalette(); Sprites.reset();
+    if(!(job && !job.ended)) syncScene();   /* a running job keeps its painted scene; the next one follows */
   }
-  try{ applyTheme(localStorage.getItem(THEME_KEY) || "day"); }catch(e){ applyTheme("day"); }
+  function syncScene(){ var n = effectiveTheme() === "night"; if(n !== NIGHT || !P.ink){ setNight(n); loadPalette(); Sprites.reset(); } }
+  /* the clock moves on: switch when it does, but never in the middle of a job (the scene is painted) */
+  function syncClockTheme(){
+    if(themePref !== "auto" || (job && !job.ended)) return;
+    if(document.documentElement.getAttribute("data-theme") === effectiveTheme()) return;
+    applyTheme("auto");
+    if(!$("screen-home").classList.contains("hidden")) renderHome();
+    if(!$("screen-map").classList.contains("hidden")) renderMap();
+  }
+  setInterval(syncClockTheme, 60000);
+  try{ applyTheme(localStorage.getItem(THEME_KEY) || "auto"); }catch(e){ applyTheme("auto"); }
 
 
   /* =========================================================
@@ -986,6 +1009,7 @@
     t.onclick = function(){ showScreen(t.getAttribute("data-screen")); };
   });
   $("btnSettings").onclick = openSettings;
+  $("btnJobSettings").onclick = function(){ pauseJob(); openSettings(); };
   $("btnTitleSettings").onclick = openSettings;
   /* packing up ends the job as it stands: paid for what's clean */
   $("btnQuitJob").onclick = function(){
@@ -1064,6 +1088,7 @@
     data: { GEAR: GEAR, SHOP: SHOP, PERKS: PERKS, CHEMS: CHEMS, GRIME_TYPES: GRIME_TYPES, JOBS: JOBS, REGIONS: REGIONS, LIMB_DEFS: LIMB_DEFS, DIRT_UNLOCK: DIRT_UNLOCK, WRONG_CHEM: WRONG_CHEM, icons: Object.keys(ICONS) },
     grimeStats: function(){ var n = 0, hp = 0; if(grime) for(var i=0;i<grime.length;i++){ if(grime[i] > 0.03){ n++; hp += grime[i]; } } return { cells: n, hp: hp, cols: gCols, rows: gRows }; },
     night: function(){ return NIGHT; },
+    theme: function(){ return { pref: themePref, effective: effectiveTheme() }; }, applyTheme: applyTheme,
     Sprites: Sprites,
     SPRITES: SPRITES
   };

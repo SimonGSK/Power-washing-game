@@ -42,7 +42,8 @@ body{
 #routeNote{flex:1;text-align:center;}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media (max-width:560px){ .stat-grid{grid-template-columns:1fr;} #rigStats .pw-stats{grid-template-columns:1fr;} }
-.home-grid,.home-col{display:flex;flex-direction:column;gap:12px;}
+.home-grid,.home-col{display:flex;flex-direction:column;gap:12px;min-width:0;}
+.stat-grid > .pw-panel{min-width:0;}
 /* a wide, tall enough window gets the start screen locked to one page: no scrolling */
 @media (min-width:900px) and (min-height:600px){
   body.at-home{overflow:hidden;}
@@ -62,9 +63,11 @@ body{
   .home-col:last-child > *{flex:none;}
   .home-col:last-child .stat-grid{gap:14px;}
   .home-col:last-child .stat-grid .pw-panel{padding:10px 14px;}
-  .home-col:last-child .stat-grid .pw-panel > p.pw-small{display:none;}
+  .home-col:last-child .stat-grid .pw-panel > p.pw-small{display:block;margin:0;font-size:12px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .home-col:last-child .stat-grid .pw-panel > p.pw-small b{font-weight:700;}
   .home-col:last-child .stat-grid .pw-panel__head{margin-bottom:4px;}
   .home-col:last-child .stat-grid .pw-meter__row{margin-bottom:6px;}
+  .home-col:last-child .stat-grid .pw-meter{margin-bottom:4px;}
   #routePanel{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;overflow:hidden;}
   #routePanel > .pw-row{flex:none;}
   .route-art{flex:1;min-height:0;width:100%;align-items:center;}
@@ -138,7 +141,7 @@ body{
 #screen-job .pw-meter__row > .pw-label{color:var(--text-ground);}
 
 /* job header extras */
-.job-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.job-right{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;}
 .contract-line{color:var(--text-ground);margin-top:4px;}
 .contract-line.is-done{color:var(--leaf-lo);}
 .contract-line b{color:var(--sun-text);}
@@ -165,3 +168,18 @@ body{
 .job-dirt .pw-chip{--face:var(--parchment-hi);}
 .job-dirt .pw-chip .pw-soft{margin-left:4px;}
 #stageOverlay.is-paused{cursor:pointer;}
+
+/* numbers sit on the same baseline as the words next to them */
+.pw-panel__head{align-items:baseline;}
+.pw-panel__head .pw-heading{display:inline-flex;align-items:center;gap:6px;}
+.pw-meter__row{align-items:center;}
+/* a job fits on one page: the stage shrinks to whatever height is left, no scrolling */
+@media (min-width:900px) and (min-height:600px){
+  body.at-job{overflow:hidden;}
+  body.at-job #app{height:100vh;min-height:0;padding-top:12px;padding-bottom:12px;gap:8px;}
+  #screen-job{height:100%;min-height:0;gap:8px;}
+  #screen-job .pw-title{font-size:24px;line-height:28px;}
+  #screen-job .pw-screen-head .pw-small{margin-top:2px;}
+  #screen-job .pw-stage{flex:1;min-height:0;width:auto;max-width:100%;aspect-ratio:8/5;margin:0 auto;align-self:center;max-height:100%;}
+  #screen-job .pw-meters{margin-top:0;}
+}

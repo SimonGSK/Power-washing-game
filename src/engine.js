@@ -702,8 +702,6 @@
       b.onclick = function(){ state.activeChem = id; save(); renderChemBar(); };
       bar.appendChild(b);
     });
-    var need = job && job.types ? job.types.filter(function(t){ return t.chem && !chemOwned(t.chem); }) : [];
-    $("chemHint").textContent = need.length ? "You don’t have " + need.map(function(t){ return CHEMS[t.chem].name; }).join(" or ") + " — that dirt will barely move. It’s in the Shop." : (job && job.types && job.types.some(function(t){ return t.chem; }) ? "Match the chemical to the dirt: the wrong one barely scratches it." : "Plain water handles this one.");
   }
   window.addEventListener("keydown", function(ev){
     if(!job || job.ended) return;
@@ -759,7 +757,7 @@
     updateSpraying();
   });
   window.addEventListener("pointermove", function(e){
-    if(!job || job.ended || paused) return;
+    if(!job || job.ended) return;
     aim = stagePoint(e);
     if(e.pointerType && e.pointerType !== "mouse"){ hovering = pressed; }
   });
@@ -792,6 +790,7 @@
     $("overlayIcon").innerHTML = ic("drop", "pw-icon");
     if(refilling) $("overlayText").textContent = "Refilling tank…"; else $("stageOverlay").classList.add("hidden");
     $("btnPauseJob").textContent = "Pause";
+    updateSpraying();                       /* the mouse is still over the stage: wash on */
     rafId = requestAnimationFrame(frame);
   }
   function togglePause(){ if(paused) resumeJob(); else pauseJob(); }

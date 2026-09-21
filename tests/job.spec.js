@@ -28,17 +28,24 @@ test.describe("a job", () => {
 
   test("pausing freezes the clock and blocks the wand; resuming gives the time back", async ({ page }) => {
     await startJob(page);
+    /* the mouse is parked over the stage before the pause, as it would be mid-wash */
+    const box = await page.locator("#stage").boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.waitForTimeout(400);
-    await page.click("#btnPauseJob");
+    await page.keyboard.press("p");   /* paused from the keyboard: the mouse never leaves the stage */
     await expect(page.locator("#stageOverlay")).toBeVisible();
     await expect(page.locator("#btnPauseJob")).toHaveText("Resume");
     const before = await page.locator("#timeLabel").textContent();
     await page.waitForTimeout(1500);
     expect(await page.locator("#timeLabel").textContent()).toBe(before);
     expect(await page.evaluate(() => window.PowerWashDebug.paused())).toBe(true);
+    /* resuming must wash again without a click */
     await page.keyboard.press("p");
     await expect(page.locator("#btnPauseJob")).toHaveText("Pause");
     await expect(page.locator("#stageOverlay")).toBeHidden();
+    const c0 = await page.evaluate(() => window.PowerWashDebug.cleanliness());
+    await page.waitForTimeout(900);   /* no click, no move */
+    expect(await page.evaluate(() => window.PowerWashDebug.cleanliness())).toBeGreaterThan(c0);
     const left = await page.evaluate(() => window.PowerWashDebug.job.duration - (performance.now() - window.PowerWashDebug.job.start));
     expect(left).toBeGreaterThan(38000);   /* ~0.5 s of real play used, the pause didn't count */
   });

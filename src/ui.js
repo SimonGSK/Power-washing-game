@@ -1074,7 +1074,7 @@
       return n;
     },
     spray: function(x, y, radius, power, chem){ return sprayGrime(x, y, radius, power, chem); },
-    pause: pauseJob, resume: resumeJob, paused: function(){ return paused; },
+    pause: pauseJob, resume: resumeJob, paused: function(){ return paused; }, spraying: function(){ return spraying; },
     cleanliness: cleanliness,
     advanceDay: advanceDay,
     triggerBill: triggerBill,

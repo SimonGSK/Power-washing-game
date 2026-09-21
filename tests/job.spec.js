@@ -39,13 +39,14 @@ test.describe("a job", () => {
     await page.waitForTimeout(1500);
     expect(await page.locator("#timeLabel").textContent()).toBe(before);
     expect(await page.evaluate(() => window.PowerWashDebug.paused())).toBe(true);
-    /* resuming must wash again without a click */
+    expect(await page.evaluate(() => window.PowerWashDebug.spraying())).toBe(false);
+    /* resuming must arm the wand again without a click or a move (the spot under it may already
+       be clean, so the flag is the thing to check, not the clean bar) */
     await page.keyboard.press("p");
     await expect(page.locator("#btnPauseJob")).toHaveText("Pause");
     await expect(page.locator("#stageOverlay")).toBeHidden();
-    const c0 = await page.evaluate(() => window.PowerWashDebug.cleanliness());
-    await page.waitForTimeout(900);   /* no click, no move */
-    expect(await page.evaluate(() => window.PowerWashDebug.cleanliness())).toBeGreaterThan(c0);
+    await page.waitForTimeout(300);   /* no click, no move */
+    expect(await page.evaluate(() => window.PowerWashDebug.spraying())).toBe(true);
     const left = await page.evaluate(() => window.PowerWashDebug.job.duration - (performance.now() - window.PowerWashDebug.job.start));
     expect(left).toBeGreaterThan(38000);   /* ~0.5 s of real play used, the pause didn't count */
   });

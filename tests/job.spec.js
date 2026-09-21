@@ -57,14 +57,59 @@ test.describe("a job", () => {
     expect(after.cash).toBeGreaterThan(before.cash);
   });
 
-  test("the wrong chemical barely scratches moss; the right one cuts it", async ({ page }) => {
+  test("the wrong chemical barely scratches moss; the right one cuts it; water dirt takes anything", async ({ page }) => {
     const f = await page.evaluate(() => {
-      const F = window.PowerWashDebug.formulas, moss = window.PowerWashDebug.data.GRIME_TYPES.moss;
-      return { water: F.chemFactor(moss, "water"), right: F.chemFactor(moss, "mosskiller"), wrong: F.chemFactor(moss, "degreaser") };
+      const F = window.PowerWashDebug.formulas, G = window.PowerWashDebug.data.GRIME_TYPES;
+      return { water: F.chemFactor(G.moss, "water"), right: F.chemFactor(G.moss, "mosskiller"), wrong: F.chemFactor(G.moss, "stripper"), pricey: F.chemFactor(G.moss, "rustremover"), sootWithAnything: F.chemFactor(G.soot, "stripper") };
     });
     expect(f.right).toBe(1);
-    expect(f.water).toBeLessThan(0.5);
-    expect(f.wrong).toBeLessThan(0.5);
+    expect(f.water).toBeLessThanOrEqual(0.1);
+    expect(f.wrong).toBeLessThanOrEqual(0.1);
+    expect(f.pricey).toBeLessThanOrEqual(0.1);   /* a dearer bottle is no master key */
+    expect(f.sootWithAnything).toBe(1);
+  });
+
+  test("the tower gets the same dirt budget as a driveway, not double", async ({ page }) => {
+    await page.evaluate(() => window.PowerWashDebug.patch({ jobsCompleted: 20, region: "city", gear: { degreaser: 1, stripper: 1 } }));
+    await startJob(page, "windows");
+    const stats = () => page.evaluate(() => {
+      const D = window.PowerWashDebug, g = D.grimeStats(), layers = Math.max.apply(null, D.job.types.map((t) => t.layers));
+      return Object.assign(g, { perLayer: g.hp / (0.7 + 0.5 * (layers - 0.3)) });   /* the budget formula's layer term */
+    });
+    const tower = await stats();
+    await page.evaluate(() => window.PowerWashDebug.patch({ region: "grove", gear: { mosskiller: 1 } }));
+    await startJob(page, "driveway");
+    const drive = await stats();
+    expect(tower.cols * tower.rows).toBeGreaterThan(drive.cols * drive.rows * 1.8);   /* the wall really is bigger */
+    /* …but the dirt on it is not: both sit inside the budget (2100 cells × 0.83 cover, × 0.78 hp per layer term) */
+    for(const j of [tower, drive]){
+      expect(j.cells).toBeLessThan(2100 * 0.83 * 1.12);
+      expect(j.perLayer).toBeLessThan(2100 * 0.78 * 1.06);
+    }
+    expect(tower.perLayer).toBeGreaterThan(drive.perLayer * 0.5);
+  });
+
+  test("starting a job without its chemical offers the Shop first", async ({ page }) => {
+    /* moss shows up from job 6; with no Moss Killer the garage button should stop and ask */
+    await page.evaluate(() => window.PowerWashDebug.patch({ jobsCompleted: 8, cash: 800 }));
+    let asked = false;
+    for(let i = 0; i < 12 && !asked; i++){
+      await page.click("#btnStartJob");
+      if(await page.locator("#modalWrap:not(.hidden)").count()){
+        const txt = await page.locator("#modalCard").textContent();
+        if(/Missing Moss Killer/.test(txt || "")){ asked = true; break; }
+      }
+      /* a water-only job started: abandon it and try the next seed */
+      await page.evaluate(() => { const D = window.PowerWashDebug; D.patch({ jobsCompleted: D.state.jobsCompleted + 1 }); D.show("screen-home"); });
+      await page.evaluate(() => window.PowerWashDebug.startJob("driveway") && 0).catch(() => {});
+      await page.evaluate(() => { const D = window.PowerWashDebug; if(D.job){ D.endJob("early"); } });
+      await page.locator("#modalWrap:not(.hidden) button").first().click().catch(() => {});
+      await skipDialogue(page);
+      await page.evaluate(() => window.PowerWashDebug.show("screen-home"));
+    }
+    expect(asked).toBe(true);
+    await page.locator("#modalBtns button", { hasText: /Go to the Shop/ }).click();
+    await expect(page.locator("#screen-shop")).toBeVisible();
   });
 
   test("the calendar advances a day per job and the weekend asks what to do", async ({ page }) => {

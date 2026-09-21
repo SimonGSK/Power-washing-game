@@ -133,7 +133,8 @@
     hit("cab", cabX, Gy-32, front-cabX, 24);
 
     var VW = 8 + 10 + (30+18+6) + 3 + 15 + 34 + 8;   /* the longest possible rig */
-    return '<svg viewBox="0 0 '+VW+' '+H+'" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">' + out.join('') + '</svg>';
+    /* a shorter rig sits centred in the same box, so the picture doesn't lean left */
+    return '<svg viewBox="0 0 '+VW+' '+H+'" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><g transform="translate('+Math.round((VW-W)/2)+' 0)">' + out.join('') + '</g></svg>';
   }
 
   /* =========================================================

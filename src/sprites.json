@@ -169,8 +169,8 @@
   }
  },
  "cat": {
-  "w": 15,
-  "h": 9,
+  "w": 16,
+  "h": 13,
   "palette": {
    "K": "ink",
    "N": "skin",
@@ -199,21 +199,25 @@
   },
   "frames": {
    "idle": [
-    "...........KK.K",
-    "..KKK.....KgKgK",
-    ".KgggK....KgggK",
-    "KgggggKKKKgSgSK",
-    "KggggggggggggKK",
-    "KggggggggggggK.",
-    ".KggKKgggKKggK.",
-    ".KgK..KgK..KgK.",
-    ".KKK..KKK..KKK."
+    ".KK...KK........",
+    ".KCK.KCK........",
+    ".KgggggK........",
+    "KgggggggK.......",
+    "KgSgggSgK.......",
+    "KggggRggK.......",
+    ".KgOOOgK........",
+    "..KOOggKKK......",
+    ".KggggggggK.....",
+    ".KgggggggggK....",
+    ".KggggggggggKKK.",
+    ".KgKKgggggKKgggK",
+    ".KKK.KKKKK.KKKK."
    ]
   }
  },
  "dog": {
-  "w": 17,
-  "h": 9,
+  "w": 18,
+  "h": 12,
   "palette": {
    "K": "ink",
    "N": "skin",
@@ -242,15 +246,18 @@
   },
   "frames": {
    "idle": [
-    "..............KK.",
-    ".............KpKK",
-    "...KKKKKKKKKKKppK",
-    "..KppppppppppKKpK",
-    ".KpppppppppppppK.",
-    "KKpppppppppppppK.",
-    ".KppKKpppppKKppK.",
-    ".KpK..KpK..KpK...",
-    ".KKK..KKK..KKK..."
+    "...............K..",
+    "..............KpK.",
+    "...KKKK.......KpK.",
+    "..KppppKKKKKKKKpK.",
+    ".KKpBppppppppppK..",
+    "KBpppppDDppppppK..",
+    "KpppppppDDpppppK..",
+    ".KKKKpRRpppppppK..",
+    ".....KppKKpppKKpK.",
+    ".....KpK..KpK.KpK.",
+    ".....KpK..KpK.KpK.",
+    ".....KKK..KKK.KKK."
    ]
   }
  }

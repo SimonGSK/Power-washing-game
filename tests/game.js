@@ -44,8 +44,8 @@ async function clickModal(page, label){
 function state(page){ return page.evaluate(() => JSON.parse(JSON.stringify(window.PowerWashDebug.state))); }
 
 /** Starts a job and waits for the truck intro to finish. */
-async function startJob(page){
-  await page.evaluate(() => window.PowerWashDebug.startJob());
+async function startJob(page, key){
+  await page.evaluate((k) => window.PowerWashDebug.startJob(k), key || null);
   await expect(page.locator("#screen-job")).toBeVisible();
   /* a "New dirt" heads-up may sit in front of the truck intro */
   for(let i = 0; i < 60; i++){

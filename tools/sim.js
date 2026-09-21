@@ -10,16 +10,20 @@ const K = {
 };
 let seed = K.seed; const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
 
-const REGIONS = { grove: { pay: 1.0, unlock: 0, jobs: ['driveway','patio','deck','fence'], grimes: ['dust','mud','moss','grease','grease'] },
-  city: { pay: 1.55, unlock: 12, jobs: ['windows','storefront','garage'], grimes: ['dust','soot','grease','soot','grease'] },
-  harbor: { pay: 2.30, unlock: 30, jobs: ['hull','dock','shack'], grimes: ['moss','salt','salt','grease','salt'] } };
-const GRIME = { dust: [3,1.00], mud: [4,1.14], moss: [4,1.24], grease: [4,1.36], soot: [4,1.42], salt: [5,1.58] };
-const AREA = { driveway: 98*87, patio: 94*82, deck: 100*76, fence: 182*50, windows: 120*82*0.84, storefront: 120*62, garage: 118*72, hull: 128*46*0.72, dock: 90*78, shack: 120*66 };
+const REGIONS = { grove: { pay: 1.0, unlock: 0, jobs: ['driveway','patio','deck','fence'], grimes: ['dust','mud','moss','moss','moss'] },
+  city: { pay: 1.55, unlock: 12, jobs: ['windows','storefront','garage'], grimes: ['dust','soot','grease','graffiti','grease'] },
+  harbor: { pay: 2.30, unlock: 30, jobs: ['hull','dock','shack'], grimes: ['moss','salt','rust','rust','salt'] } };
+// [layers, pay, chemical it needs] — soot and salt are thick but plain-water dirt
+const GRIME = { dust: [3,1.00,null], mud: [4,1.14,null], moss: [4,1.24,'mosskiller'], grease: [4,1.36,'degreaser'], soot: [4,1.42,null], graffiti: [3,1.50,'stripper'], salt: [5,1.58,null], rust: [5,1.62,'rustremover'] };
+const DIRT_UNLOCK = { dust:0, mud:0, moss:6, grease:12, soot:12, graffiti:16, salt:30, rust:30 };
+const REF_CELLS = 2100;   // the dirt budget is capped at a driveway's worth of cells
+const AREA = { driveway: 98*87, patio: 94*82, deck: 100*76, fence: 182*50, windows: 164*112, storefront: 120*62, garage: 118*76, hull: 128*46*0.72, dock: 120*44, shack: 120*66 };
 const GEAR = { pressure: [110,290,640], nozzle: [90,240,520], tank: [80,210,480], refill: [90,230,470], pay: [100,260,560], patience: [80,210,460], cone: [130,320,700], flow: [100,260,560],
   powercore: [150], tankcore: [150], bizcore: [150], surge: [1500], bigrig: [1500], empire: [1700],
-  prowasher: [900], degreaser: [220,460], foamcannon: [260,540], tipjar: [190], permit: [340], lease: [300,700,1500] };
-// what a sensible player buys, in order
-const PRIORITY = ['nozzle','powercore','pressure','nozzle','pressure','tank','patience','nozzle','pressure','degreaser','tank','refill','flow','prowasher','pay','patience','tank','refill','cone','patience','pay','pay','flow','degreaser','tankcore','bizcore','refill','cone','permit','lease','foamcannon','tipjar','flow','cone','surge','bigrig','empire','lease','lease'];
+  prowasher: [900], foamcannon: [260,540], tipjar: [190], lease: [300,700,1500],
+  mosskiller: [+(args.cmoss ?? 180)], degreaser: [+(args.cgrease ?? 240)], stripper: [+(args.cpaint ?? 300)], rustremover: [+(args.crust ?? 380)] };
+// what a sensible player buys, in order (chemicals are bought when their dirt shows up, see below)
+const PRIORITY = ['nozzle','powercore','pressure','nozzle','pressure','tank','patience','nozzle','pressure','tank','refill','flow','prowasher','pay','patience','tank','refill','cone','patience','pay','pay','flow','tankcore','bizcore','refill','cone','lease','foamcannon','tipjar','flow','cone','surge','bigrig','empire','lease','lease'];
 
 const s = { cash: 120, jobs: 0, sinceBill: 0, billN: 1, streak: 0, region: 'grove', gear: {}, lifetime: 0, repos: 0, loan: 0, lastPct: 100 };
 const lvl = k => s.gear[k] || 0;
@@ -28,9 +32,9 @@ const sprayRadius = () => K.radius + lvl('nozzle')*1.25 + (lvl('prowasher')?2:0)
 const tankMax = () => 260 + [0,110,240,400][Math.min(3,lvl('tank'))] + (lvl('tankcore')?70:0) + (lvl('bigrig')?200:0);
 const refillMs = () => { const t = Math.max(550, 1700 - lvl('refill')*400); return lvl('bigrig') ? t*0.7 : t; };
 const jobMs = () => 40000 + lvl('patience')*10000 + (lvl('empire')?12000:0);
-const degreaser = () => [1,1.18,1.32][Math.min(2,lvl('degreaser'))];
+const degreaser = () => 1;
 const payMult = () => 1 + lvl('pay')*0.12 + (lvl('bizcore')?0.06:0) + (lvl('empire')?0.2:0);
-const billEvery = () => 3 + (lvl('permit')?1:0);
+const billEvery = () => 5;
 const leaseMult = () => [1,0.9,0.8,0.7][Math.min(3,lvl('lease'))];
 const gearMult = () => (sprayPower()/0.5) * Math.pow(sprayRadius()/K.radius, 2) * degreaser() * (jobMs()/40000);
 const tough = () => {
@@ -49,7 +53,7 @@ function overhead(n){
 // cleaning model: hp removed per second by a perfect robot with the base rig on job 1 = 127 (from playtest)
 function cleanFraction(jobKey, grime, eff){
   const [layers] = GRIME[grime];
-  const cells = AREA[jobKey]/4, avgHp = 0.7 + 0.5*(layers-0.3), H = cells*avgHp;
+  const cells = Math.min(REF_CELLS, AREA[jobKey]/4), avgHp = 0.7 + 0.5*(layers-0.3), H = cells*avgHp;
   const areaMult = Math.pow(sprayRadius()/5.5, 2);
   const ratePerSec = 127 * (sprayPower()/0.5) * areaMult * degreaser() / tough();
   const T = jobMs()/1000;
@@ -75,8 +79,12 @@ for(let n=0; n<K.jobs; n++){
   const r = REGIONS[s.region];
   const jobKey = r.jobs[s.jobs % r.jobs.length];
   const tier = (() => { const g = Object.values(s.gear).reduce((a,b)=>a+b,0); return g===0?0:g<=5?1:g<=12?2:g<=19?3:4; })();
-  const grime = r.grimes[Math.min(r.grimes.length-1, tier + (s.jobs%3===2?1:0))];
-  const f = cleanFraction(jobKey, grime, K.eff);
+  let grime = r.grimes[Math.min(r.grimes.length-1, tier + (s.jobs%3===2?1:0))];
+  if(DIRT_UNLOCK[grime] > s.jobs) grime = s.region === 'grove' ? 'mud' : (s.region === 'city' ? 'soot' : 'salt');
+  const need = GRIME[grime][2]; let chemNote = '';
+  if(need && !lvl(need)){ const c = costOf(need, 0); if(s.cash >= c){ s.cash -= c; s.gear[need] = 1; chemNote = ` +${need}`; } }
+  let f = cleanFraction(jobKey, grime, K.eff);
+  if(need && !lvl(need)){ f *= 0.08; chemNote += ' (no chemical!)'; }
   const pct = Math.round(f*100);
   const complete = f >= 0.985;
   let pay = (K.basePay + s.jobs*K.payPerJob) * cleanPay(f) * payMult() * GRIME[grime][1] * r.pay * streakMult();
@@ -86,7 +94,7 @@ for(let n=0; n<K.jobs; n++){
   s.cash += pay + tip; s.lifetime += pay + tip; s.jobs++; s.sinceBill++; recentPays.push(pay);
   s.streak = (complete || pct >= 80) ? Math.min(10, s.streak+1) : 0;
   s.lastPct = pct;
-  let note = '';
+  let note = chemNote;
   // bill
   if(s.sinceBill >= billEvery()){
     const amt = overhead(s.billN) + (K.wages ? 0 : 0);

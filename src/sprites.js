@@ -7,7 +7,7 @@
   var SPRITES = __SPRITES__;
   var Sprites = (function(){
     var cache = {};
-    function colorOf(spec){ return spec.charAt(0) === "#" ? spec : (P[spec] || PAL_FALLBACK[spec] || spec); }
+    function colorOf(spec){ return shade(spec.charAt(0) === "#" ? spec : (P[spec] || PAL_FALLBACK[spec] || spec)); }
     function raster(name, frame, flip){
       var key = name + "/" + frame + (flip ? "/f" : "");
       if(cache[key]) return cache[key];

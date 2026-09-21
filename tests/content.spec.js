@@ -47,6 +47,31 @@ test.describe("content tables", () => {
     expect(mismatches).toEqual([]);
   });
 
+  test("each chemical cuts exactly one kind of dirt, and no dirt needs two", async ({ page }) => {
+    const bad = await page.evaluate(() => {
+      const D = window.PowerWashDebug.data, out = [], seen = {};
+      Object.keys(D.CHEMS).forEach((id) => {
+        if(id === "water") return;
+        const cuts = D.CHEMS[id].cuts;
+        if(cuts.length !== 1) out.push(id + " cuts " + cuts.length + " kinds: " + cuts.join(","));
+        cuts.forEach((t) => { if(seen[t]) out.push(t + " is cut by both " + seen[t] + " and " + id); seen[t] = id; });
+      });
+      return out;
+    });
+    expect(bad).toEqual([]);
+  });
+
+  test("chemicals are priced in the order their dirt shows up", async ({ page }) => {
+    const order = await page.evaluate(() => {
+      const D = window.PowerWashDebug.data;
+      return Object.keys(D.SHOP).filter((k) => D.SHOP[k].chem).map((k) => ({ k, cost: D.SHOP[k].costs[0], unlock: D.DIRT_UNLOCK[D.CHEMS[k].cuts[0]] }));
+    });
+    for(let i = 1; i < order.length; i++){
+      expect(order[i].unlock, order[i].k + " unlocks before " + order[i-1].k + " but is listed after it").toBeGreaterThanOrEqual(order[i-1].unlock);
+      expect(order[i].cost, order[i].k + " should cost more than " + order[i-1].k).toBeGreaterThan(order[i-1].cost);
+    }
+  });
+
   test("every dirt type has a chemical that cuts it, or is water-only", async ({ page }) => {
     const bad = await page.evaluate(() => {
       const D = window.PowerWashDebug.data;

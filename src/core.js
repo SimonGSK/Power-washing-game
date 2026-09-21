@@ -101,19 +101,19 @@
     mud:    { id:"mud",    name:"Caked Mud",         layers:4, pay:1.14, shades:["#9c7a52","#70522f","#4a351d"], splash:"#dcc5a2", chem:null,          icon:"dirtMud", blurb:"Plain water, but it's thick — thick patches need several passes." },
     moss:   { id:"moss",   name:"Moss & Algae",      layers:4, pay:1.24, shades:["#93b166","#61883b","#3d6425"], splash:"#c9e4a6", chem:"mosskiller",  icon:"dirtMoss", blurb:"Green growth that laughs at water. Switch to Moss Killer (Shop) or it barely moves." },
     grease: { id:"grease", name:"Grease & Grime",    layers:4, pay:1.36, shades:["#7f776a","#524c43","#2d2a24"], splash:"#d2ccbe", chem:"degreaser",   icon:"dirtGrease", blurb:"Oily film. Degreaser cuts it; water just smears it around." },
-    soot:   { id:"soot",   name:"City Soot",         layers:4, pay:1.42, shades:["#8c8c93","#5d5d65","#34343b"], splash:"#d6d6de", chem:"degreaser",   icon:"dirtSoot", blurb:"Greasy black soot from the traffic. Degreaser." },
-    salt:   { id:"salt",   name:"Salt & Barnacles",  layers:5, pay:1.58, shades:["#c0cdc5","#93a79d","#657a70"], splash:"#eaf3ed", chem:"rustremover", icon:"dirtSalt", blurb:"Crusted salt and shell. Rust Remover dissolves it." },
+    soot:   { id:"soot",   name:"City Soot",         layers:4, pay:1.42, shades:["#8c8c93","#5d5d65","#34343b"], splash:"#d6d6de", chem:null,          icon:"dirtSoot", blurb:"Black soot from the traffic. Plain water takes it, but it sits thick — keep the wand on it." },
+    salt:   { id:"salt",   name:"Salt & Barnacles",  layers:5, pay:1.58, shades:["#c0cdc5","#93a79d","#657a70"], splash:"#eaf3ed", chem:null,          icon:"dirtSalt", blurb:"Crusted salt and shell. Plain water, but it's the thickest crust on the coast — five layers deep." },
     rust:   { id:"rust",   name:"Rust & Weed",       layers:5, pay:1.62, shades:["#c98a5a","#9a5a2e","#6a3a18"], splash:"#e9c9a8", chem:"rustremover", icon:"dirtRust", blurb:"Rust bloom and weed. Rust Remover, and plenty of it." },
     graffiti:{ id:"graffiti", name:"Graffiti",       layers:3, pay:1.50, shades:["#d43d6a","#2f7fd8","#f2c12e"], splash:"#ffffff", chem:"stripper",    icon:"dirtGraffiti", blurb:"Spray paint. Paint Stripper lifts it; water only fades it a shade.", graffiti:true }
   };
   var CHEMS = {
     water:       { name:"Water",         icon:"drop",  color:"#58a6d8", cuts:[] },
     mosskiller:  { name:"Moss Killer",   icon:"flaskMoss",   color:"#61883b", cuts:["moss"] },
-    degreaser:   { name:"Degreaser",     icon:"flaskGrease", color:"#5d5d65", cuts:["grease","soot"] },
-    rustremover: { name:"Rust Remover",  icon:"flaskRust",   color:"#9a5a2e", cuts:["rust","salt"] },
-    stripper:    { name:"Paint Stripper",icon:"flaskPaint",  color:"#d43d6a", cuts:["graffiti"] }
+    degreaser:   { name:"Degreaser",     icon:"flaskGrease", color:"#524c43", cuts:["grease"] },
+    stripper:    { name:"Paint Stripper",icon:"flaskPaint",  color:"#d43d6a", cuts:["graffiti"] },
+    rustremover: { name:"Rust Remover",  icon:"flaskRust",   color:"#9a5a2e", cuts:["rust"] }
   };
-  var WRONG_CHEM = 0.22;
+  var WRONG_CHEM = 0.08;
   /* when each dirt starts turning up (jobs completed) */
   var DIRT_UNLOCK = { dust:0, mud:0, moss:6, grease:12, soot:12, graffiti:16, salt:30, rust:30 };   /* how much of a pass gets through when the chemical doesn't match */
 
@@ -165,7 +165,7 @@
     flow:    { title:"Flow Control",   icon:"valve", costs:[100,260,560],
       desc:["Water use −15% per pass. Spray power −3%.","Water −30% in total. Power −6%.","Water −45% in total — the tank lasts nearly twice as long. Power −9%."] },
     contracts:{ title:"Contracts",     icon:"scroll", costs:[200,450,900],
-      desc:["Customers start offering contracts: leave a marked patch spotless for +15% pay. Miss one and it costs 2 reputation.","Contract bonus +20%","Contract bonus +25%, and they come more often"] },
+      desc:["Customers start offering contracts: leave a marked patch spotless for +15% pay. Miss one and it costs a reputation star.","Contract bonus +20%","Contract bonus +25%, and they come more often"] },
     overtime:{ title:"Overtime",       icon:"calendar", costs:[300,700,1500],
       desc:["Crew work Saturdays. Wages +15%.","Crew work Sundays too.","Weekend crew income +20%."] },
 
@@ -190,14 +190,14 @@
       desc:["Crew income +30%, and your son fires twice as often."] }
   };
   var SHOP = {
-    mosskiller: { title:"Moss Killer",  icon:"flaskMoss", costs:[260], chem:true,
-      desc:["A chemical for the wand: cuts moss and algae at full strength. Switch to it mid-job (or press 2)."] },
-    degreaser:  { title:"Degreaser",    icon:"flaskGrease", costs:[340], chem:true,
-      desc:["Cuts grease and city soot at full strength. Switch to it mid-job (or press 3)."] },
-    rustremover:{ title:"Rust Remover", icon:"flaskRust", costs:[520], chem:true,
-      desc:["Dissolves rust, salt crust and barnacles. Switch to it mid-job (or press 4)."] },
-    stripper:   { title:"Paint Stripper", icon:"flaskPaint", costs:[600], chem:true,
-      desc:["Lifts spray paint. Switch to it mid-job (or press 5)."] },
+    mosskiller: { title:"Moss Killer",  icon:"flaskMoss", costs:[150], chem:true,
+      desc:["A chemical for the wand: cuts moss and algae at full strength — and only moss. Works like water on everything else. Switch to it mid-job (or press 2)."] },
+    degreaser:  { title:"Degreaser",    icon:"flaskGrease", costs:[200], chem:true,
+      desc:["Cuts grease and grime at full strength — and only grease. Switch to it mid-job (or press 3)."] },
+    stripper:   { title:"Paint Stripper", icon:"flaskPaint", costs:[240], chem:true,
+      desc:["Lifts spray paint — and only paint. Switch to it mid-job (or press 4)."] },
+    rustremover:{ title:"Rust Remover", icon:"flaskRust", costs:[300], chem:true,
+      desc:["Dissolves rust bloom — and only rust. Switch to it mid-job (or press 5)."] },
     prowasher: { title:"Pro Pressure Washer", icon:"wand", costs:[900],
       desc:["Spray power +0.42 and nozzle +2 px (spray area +55% or more). Drinks 10% more water."] },
     foamcannon:{ title:"Foam Cannon", icon:"foam", costs:[260,540],
@@ -209,20 +209,20 @@
   };
   /* Legacy perks: bought with reputation stars (earned on every bill you pay), permanent. */
   var PERKS = {
-    coffee:      { title:"Coffee Break",   icon:"clock",   cost:3,   desc:"Tank refills 10% faster." },
-    neighbourly: { title:"Neighbourly",    icon:"house",   cost:4,   desc:"Maple Grove dirt is 5% easier." },
-    sunday:      { title:"Sunday Best",    icon:"sparkle", cost:5,   desc:"+6% pay on sunny jobs." },
-    headstart:   { title:"Loyal Client",   icon:"bolt",    cost:8,   desc:"Every new rig starts with Water Pressure lvl.1 installed." },
-    discount:    { title:"Bulk Soap Deal", icon:"flask",   cost:12,  desc:"All upgrades and shop gear cost 15% less." },
-    basepay:     { title:"Regulars",       icon:"coin",    cost:14,  desc:"Earn an extra 20% cash on every job." },
-    lowoverhead: { title:"Tax Write-off",  icon:"bill",    cost:14,  desc:"Overhead bills are 15% cheaper." },
-    wordofmouth: { title:"Word of Mouth",  icon:"star",    cost:12,  desc:"+2 bonus reputation every time you pay a bill." },
-    severance:   { title:"Severance Pay",  icon:"hardhat", cost:18,  desc:"Your first crew member stays on through a repossession." },
-    franchise:   { title:"Franchise Van",  icon:"truck",   cost:40,  desc:"Every new rig starts with Pump Core and Plumbing installed." },
-    oldmoney:    { title:"Old Money",      icon:"trophy",  cost:60,  desc:"After a repossession you restart with at least $1,000." },
-    goldenhose:  { title:"Golden Hose",    icon:"wand",    cost:80,  desc:"Spray power +0.15, forever." },
-    legend:      { title:"Local Legend",   icon:"crown",   cost:120, desc:"Crew income +25% and +10 s customer patience." },
-    washbot:     { title:"WashBot 3000",   icon:"truck",   cost:400, desc:"A robot that rides along and blasts the dirtiest spot every third of a second with any chemical. The retirement plan." }
+    coffee:      { title:"Coffee Break",   icon:"clock",   cost:5,   desc:"Tank refills 10% faster." },
+    neighbourly: { title:"Neighbourly",    icon:"house",   cost:6,   desc:"Maple Grove dirt is 5% easier." },
+    sunday:      { title:"Sunday Best",    icon:"sparkle", cost:8,   desc:"+6% pay on sunny jobs." },
+    headstart:   { title:"Loyal Client",   icon:"bolt",    cost:12,   desc:"Every new rig starts with Water Pressure lvl.1 installed." },
+    discount:    { title:"Bulk Soap Deal", icon:"flask",   cost:18,  desc:"All upgrades and shop gear cost 15% less." },
+    basepay:     { title:"Regulars",       icon:"coin",    cost:22,  desc:"Earn an extra 20% cash on every job." },
+    lowoverhead: { title:"Tax Write-off",  icon:"bill",    cost:22,  desc:"Overhead bills are 15% cheaper." },
+    wordofmouth: { title:"Word of Mouth",  icon:"star",    cost:16,  desc:"+2 bonus reputation every time you pay a bill." },
+    severance:   { title:"Severance Pay",  icon:"hardhat", cost:26,  desc:"Your first crew member stays on through a repossession." },
+    franchise:   { title:"Franchise Van",  icon:"truck",   cost:55,  desc:"Every new rig starts with Pump Core and Plumbing installed." },
+    oldmoney:    { title:"Old Money",      icon:"trophy",  cost:80,  desc:"After a repossession you restart with at least $1,000." },
+    goldenhose:  { title:"Golden Hose",    icon:"wand",    cost:110,  desc:"Spray power +0.15, forever." },
+    legend:      { title:"Local Legend",   icon:"crown",   cost:160, desc:"Crew income +25% and +10 s customer patience." },
+    washbot:     { title:"WashBot 3000",   icon:"truck",   cost:450, desc:"A robot that rides along and blasts the dirtiest spot every third of a second with any chemical. The retirement plan." }
   };
   /* Crew work their own jobs (income per job you finish) and draw wages on every overhead bill. */
   var CREW = [
@@ -380,12 +380,12 @@
   function cleanPayFactor(c){ return c < 0.30 ? 0 : Math.pow((c-0.30)/0.70, 1.15); }
   function regionDef(){ return REGIONS[state.region] || REGIONS.grove; }
 
-  /* The bill scales with the business: 60% of what your last six jobs paid on average, times the
-     jobs between bills, with a floor per route. So it's the same squeeze for everyone — the
-     suspense is whether you spent your reserve on upgrades. (Tuned with the simulator: bills
-     take ~42% of income; a careful spender still gets tight now and then.) */
+  /* The bill scales with the business: BILL_SHARE of what your last six jobs paid on average, times
+     the five working days, with a floor per route. So it's the same squeeze for everyone — the
+     suspense is whether you spent your reserve on upgrades. At 0.55 roughly 45% of a week's pay
+     is left over for chemicals and gear. */
   var REGION_OVERHEAD = { grove:95, city:190, harbor:340 };
-  var BILL_SHARE = 0.65;
+  var BILL_SHARE = 0.55;   /* a week's payment ≈ this share of a week's pay: the rest is yours for gear and chemicals */
   function recentPayAvg(){
     var r = state.recentPays.slice(-6);
     if(!r.length) return 0;

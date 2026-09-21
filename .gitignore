@@ -3,3 +3,4 @@ test-results/
 playwright-report/
 tools/icon-sheet.html
 .DS_Store
+tools/sprite-preview.html

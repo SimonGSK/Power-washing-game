@@ -1,0 +1,33 @@
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Build index.html from src/ and check it is committed
+        run: |
+          python3 tools/build.py
+          git diff --exit-code -- index.html || (echo "index.html is stale: run python3 tools/build.py and commit it" && exit 1)
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7

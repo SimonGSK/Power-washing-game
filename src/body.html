@@ -1,0 +1,195 @@
+<body class="pw">
+<div id="app">
+  <!-- ============ TITLE ============ -->
+  <div id="screen-title" class="screen title">
+    <div class="title-card pw-panel pw-panel--raised">
+      <div id="titleMascot" class="title-mascot"></div>
+      <h1 class="pw-display title-name">Power Wash Co.</h1>
+      <p class="pw-body pw-soft">Grab the wand. Make it shine. Repeat.</p>
+      <div class="title-actions">
+        <button class="pw-btn pw-btn--primary pw-btn--big pw-btn--block" id="btnContinue"><span class="ico pw-btn__icon" data-ic="wand"></span>Continue</button>
+        <button class="pw-btn pw-btn--block" id="btnNewGame">New game</button>
+        <button class="pw-btn pw-btn--ghost pw-btn--block" id="btnTitleSettings">Settings</button>
+      </div>
+      <p class="pw-caption pw-soft title-foot">A pixel power-washing business sim</p>
+    </div>
+  </div>
+
+  <div id="chrome" class="hidden">
+    <div class="pw-topbar" id="topbar">
+      <div class="pw-counter pw-counter--cash" title="Cash"><span class="ico" data-ic="coin"></span><span id="cashBadge">$0</span></div>
+      <div class="pw-counter pw-counter--rep" title="Reputation"><span class="ico" data-ic="star"></span><span id="repBadge">0</span></div>
+      <div class="pw-counter pw-counter--streak hidden" id="streakBadge" title="Streak"><span class="ico" data-ic="flame"></span><span id="streakVal">0</span></div>
+      <div class="pw-counter pw-counter--crew hidden" id="crewBadge" title="Crew income per job"><span class="ico" data-ic="hardhat"></span><span id="crewVal">0</span></div>
+      <span class="spacer"></span>
+      <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnSettings"><span class="ico pw-btn__icon" data-ic="wrench"></span>Settings</button>
+    </div>
+    <div class="pw-tabs" id="tabs">
+      <button class="pw-btn pw-btn--small tab" data-screen="screen-home"><span class="ico pw-btn__icon" data-ic="house"></span>Home</button>
+      <button class="pw-btn pw-btn--small tab" data-screen="screen-upgrades"><span class="ico pw-btn__icon" data-ic="wrench"></span>Upgrades</button>
+      <button class="pw-btn pw-btn--small tab" data-screen="screen-shop"><span class="ico pw-btn__icon" data-ic="jar"></span>Shop</button>
+      <button class="pw-btn pw-btn--small tab" data-screen="screen-crew"><span class="ico pw-btn__icon" data-ic="hardhat"></span>Crew</button>
+      <button class="pw-btn pw-btn--small tab" data-screen="screen-legacy"><span class="ico pw-btn__icon" data-ic="star"></span>Legacy</button>
+      <button class="pw-btn pw-btn--small tab" data-screen="screen-map"><span class="ico pw-btn__icon" data-ic="map"></span>Map</button>
+      <button class="pw-btn pw-btn--small tab" data-screen="screen-stats"><span class="ico pw-btn__icon" data-ic="chart"></span>Stats</button>
+    </div>
+  </div>
+
+  <!-- ============ HOME ============ -->
+  <div id="screen-home" class="screen home">
+    <div class="pw-hero home-hero">
+      <div id="heroMascot" class="pw-hero__mark"></div>
+      <div>
+        <h1 class="pw-display home-title">Power Wash Co.</h1>
+        <p class="pw-body pw-on-ground-soft home-tagline" id="homeGreeting">Grab the wand. Make it shine. Repeat.</p>
+      </div>
+    </div>
+    <div class="home-grid">
+      <div class="home-col">
+        <div class="pw-panel" id="truckStage">
+          <div id="truckArt"></div>
+          <div class="pw-panel pw-panel--plain pw-panel--tight truck-tip hidden" id="truckTip"></div>
+          <p class="pw-heading" id="tierName">Rookie Rig</p>
+          <p class="pw-small pw-soft" id="tierSub">A hose, a dream and a little elbow grease.</p>
+          <div class="pw-panel pw-panel--plain pw-panel--tight" id="rigStats"></div>
+        </div>
+      </div>
+      <div class="home-col">
+        <div class="pw-panel pw-panel--tight calendar" id="calendar"></div>
+        <div class="pw-panel" id="routePanel">
+          <div class="route-art"><canvas id="routeCanvas" width="240" height="150"></canvas></div>
+          <div class="pw-row pw-row--spread" style="margin-top:10px">
+            <span class="pw-chip"><span class="ico" data-ic="map"></span><span id="regionName">Maple Grove</span></span>
+            <span class="pw-small pw-soft" id="routeNote">Next job: Driveway</span>
+            <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnMapQuick">Change route</button>
+          </div>
+        </div>
+        <button class="pw-btn pw-btn--primary pw-btn--big pw-btn--block" id="btnStartJob"><span class="ico pw-btn__icon" data-ic="wand"></span>Start Next Job</button>
+        <div class="stat-grid">
+          <div class="pw-panel pw-panel--tight" id="billPanel"></div>
+          <div class="pw-panel pw-panel--tight" id="crewPanel"></div>
+          <div class="pw-panel pw-panel--tight" id="buyoutPanel"></div>
+          <div class="pw-panel pw-panel--tight" id="loanPanel"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MAP ============ -->
+  <div id="screen-map" class="screen hidden">
+    <div class="pw-screen-head">
+      <div><h2 class="pw-title">The Route</h2><p class="pw-small">Work your way from the quiet suburbs, through downtown, out to the coast. Tap a spot to set your next job.</p></div>
+    </div>
+    <div class="pw-panel pw-panel--tight" id="mapPanel"><div id="mapArt"><canvas id="mapCanvas" width="240" height="100"></canvas></div></div>
+    <div class="pw-grid-2" id="regionGrid"></div>
+  </div>
+
+  <!-- ============ JOB ============ -->
+  <div id="screen-job" class="screen hidden">
+    <div class="pw-screen-head">
+      <div><h2 class="pw-title" id="jobName">Driveway</h2><p class="pw-small" id="jobSub">Everyday Dirt · Maple Grove</p>
+        <p class="pw-small contract-line hidden" id="contractLine"><span class="ico" data-ic="bill"></span> Contract: leave the marked patch spotless for +30% pay — <b id="contractVal">0%</b></p></div>
+      <div class="job-right">
+        <div class="pw-counter pw-counter--cash hidden" id="tipBadge" title="Tip for speed"><span class="ico" data-ic="jar"></span><span id="tipVal">$0</span></div>
+        <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnQuitJob">Call it done</button>
+      </div>
+    </div>
+    <div class="pw-meter">
+      <div class="pw-meter__row"><span><span class="ico" data-ic="clock"></span>Customer's patience</span><span class="pw-label" id="timeLabel">0:40</span></div>
+      <div class="pw-track pw-track--gold pw-track--tall"><div class="pw-track__fill" id="timerFill" style="width:100%"></div></div>
+    </div>
+    <div class="pw-stage" id="stage">
+      <canvas id="bgCanvas" width="240" height="150"></canvas>
+      <canvas id="grimeCanvas" width="240" height="150"></canvas>
+      <canvas id="fxCanvas" width="240" height="150"></canvas>
+      <div id="stageTint"></div>
+      <div id="stageOverlay" class="hidden">
+        <div class="pw-panel overlay-card">
+          <span class="ico" data-ic="drop"></span>
+          <div class="pw-label" id="overlayText">Refilling tank…</div>
+        </div>
+      </div>
+    </div>
+    <div class="chem-row">
+      <div class="pw-row pw-row--wrap" id="chemBar"></div>
+      <p class="pw-small pw-on-ground-soft" id="chemHint"></p>
+    </div>
+    <div class="pw-meters">
+      <div class="pw-meter">
+        <div class="pw-meter__row"><span><span class="ico" data-ic="drop"></span>Tank</span><span class="pw-label" id="tankLabel">100%</span></div>
+        <div class="pw-track pw-track--water"><div class="pw-track__fill" id="tankFill" style="width:100%"></div></div>
+      </div>
+      <div class="pw-meter">
+        <div class="pw-meter__row"><span><span class="ico" data-ic="sparkle"></span>Clean</span><span class="pw-label" id="cleanLabel">0%</span></div>
+        <div class="pw-track pw-track--clean"><div class="pw-track__fill" id="cleanFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <p class="pw-small pw-on-ground-soft" style="text-align:center;" id="jobHint">Move the wand over the grime. Thick crust needs a few passes.</p>
+  </div>
+
+  <!-- ============ UPGRADES ============ -->
+  <div id="screen-upgrades" class="screen hidden">
+    <div class="pw-screen-head">
+      <div><h2 class="pw-title">Upgrades</h2><p class="pw-small">Tap a node to upgrade the rig. Gear is lost if the van gets repossessed.</p></div>
+    </div>
+    <div class="pw-panel">
+      <div class="tree-scroll"><div class="tree-wrap pw-tree" id="treeWrap"></div></div>
+      <div class="pw-legend">
+        <span><i style="background:var(--coral)"></i>Available</span>
+        <span><i style="background:var(--leaf)"></i>Installed</span>
+        <span><i style="background:var(--sun)"></i>Maxed</span>
+        <span><i style="background:var(--stone)"></i>Locked</span>
+      </div>
+      <p class="pw-small pw-soft" style="text-align:center;margin-top:8px" id="treeHint">Hover a node to see what it does. Hire someone to open the Crew limb.</p>
+    </div>
+  </div>
+
+  <!-- ============ SHOP ============ -->
+  <div id="screen-shop" class="screen hidden">
+    <div class="pw-screen-head">
+      <div><h2 class="pw-title">Shop</h2><p class="pw-small">One-off gear bolted onto the rig. Lost with the van if it gets repossessed.</p></div>
+    </div>
+    <div class="pw-grid-2" id="shopGrid"></div>
+  </div>
+
+  <!-- ============ CREW ============ -->
+  <div id="screen-crew" class="screen hidden">
+    <div class="pw-screen-head">
+      <div><h2 class="pw-title">The Crew</h2><p class="pw-small">Every job you finish, your crew finishes one too — and the money lands in your pocket.</p></div>
+    </div>
+    <div class="pw-panel pw-panel--tight" id="crewSummary"></div>
+    <div class="pw-grid-2" id="crewGrid"></div>
+  </div>
+
+  <!-- ============ LEGACY ============ -->
+  <div id="screen-legacy" class="screen hidden">
+    <div class="pw-screen-head">
+      <div><h2 class="pw-title">Legacy</h2><p class="pw-small" id="legacyStatus">Bought with reputation stars, which every paid bill earns. Permanent — they survive every repossession.</p></div>
+    </div>
+    <div class="pw-grid-2" id="perkGrid"></div>
+  </div>
+
+  <!-- ============ STATS ============ -->
+  <div id="screen-stats" class="screen hidden">
+    <div class="pw-screen-head">
+      <div><h2 class="pw-title">Stats &amp; Achievements</h2></div>
+    </div>
+    <div class="pw-panel" id="statsPanel"></div>
+    <div class="pw-screen-head"><div><h3 class="pw-title" style="font-size:20px;line-height:24px">Achievements</h3></div></div>
+    <div class="pw-grid-2" id="achieveGrid"></div>
+  </div>
+
+  <div id="modalWrap" class="hidden">
+    <div class="pw-panel pw-panel--raised pw-modal" id="modalCard"></div>
+  </div>
+  <div id="dlgWrap" class="hidden">
+    <div class="pw-dialogue" id="dlgCard">
+      <div class="pw-portrait" id="dlgPortrait"></div>
+      <div class="pw-panel pw-dialogue__box">
+        <div class="pw-heading pw-dialogue__name" id="dlgName">Uncle Lenny</div>
+        <p class="pw-body pw-dialogue__text" id="dlgText"></p>
+        <div class="pw-dialogue__next" id="dlgNext"><span id="dlgNextLabel">Next</span><span class="ico" data-ic="arrow-right"></span></div>
+      </div>
+    </div>
+  </div>
+</div>

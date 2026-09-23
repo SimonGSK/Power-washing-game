@@ -30,7 +30,7 @@
       perks: {},
       crew: {},
       son: 0,
-      recentPays: [],
+      recentPays: [], sinceContract: 0,
       day: 0, week: 1, activeChem: "water", info: {},
       stats: { bestClean:0, longestStreak:0, repoCount:0, crewEarnings:0, grove:0, city:0, harbor:0 },
       story: {}
@@ -145,49 +145,49 @@
   }
   var GEAR = {
     pressure:{ title:"Water Pressure", icon:"bolt", costs:[110,290,640],
-      desc:["Spray power +0.3 (0.5 → 0.8): grime strips 60% faster. Uses a little more water.","Spray power +0.3 (0.8 → 1.1). More water.","Spray power +0.3 (1.1 → 1.4). More water."] },
+      desc:["A stronger pump: grime strips faster.","Stronger still.","The strongest pump you can fit."] },
     nozzle:  { title:"Nozzle Width",   icon:"nozzle", costs:[90,240,520],
-      desc:["Nozzle +1.25 px: spray area +46%. A wider spray drinks more water (+21%).","Nozzle +1.25 px: spray area +37%. Water +17%.","Nozzle +1.25 px: spray area +32%. Water +15%."] },
+      desc:["A wider nozzle: more ground per pass.","Wider still.","The widest nozzle."] },
     tank:    { title:"Tank Capacity",  icon:"barrel", costs:[80,210,480],
-      desc:["Tank +110 L (260 → 370 L). A bigger tank fills 10% slower.","Tank +130 L (370 → 500 L). Fills 20% slower.","Tank +160 L (500 → 660 L). Fills 30% slower."] },
+      desc:["A bigger tank — it takes a little longer to fill.","A bigger tank.","The biggest tank."] },
     refill:  { title:"Refill Speed",   icon:"faucet", costs:[90,230,470],
-      desc:["Refill 1.7 s → 1.3 s","Refill 1.3 s → 0.9 s","Refill 0.9 s → 0.55 s"] },
+      desc:["A faster pump at the hydrant.","Faster still.","The fastest refill."] },
     pay:     { title:"Money per Job",  icon:"coin", costs:[100,260,560],
-      desc:["Pay +12% on every job. Pricier clients bring 4% tougher dirt.","Pay +24% in total. Dirt +8%.","Pay +36% in total. Dirt +12%."] },
+      desc:["Pricier clients: more pay, 4% tougher dirt.","More pay, dirt +8% in total.","More pay, dirt +12% in total."] },
     patience:{ title:"Patience",       icon:"hourglass", costs:[80,210,460],
-      desc:["Customer patience +10 s (40 → 50 s)","Customer patience +10 s (50 → 60 s)","Customer patience +10 s (60 → 70 s)"] },
-    morale:  { title:"Crew Morale",    icon:"heart", costs:[350,900,2200],
-      desc:["Crew income +15%. Wages +10%.","Crew income +30% in total. Wages +20%.","Crew income +45% in total. Wages +30%."] },
+      desc:["Customers wait 10 s longer.","Another 10 s.","Another 10 s."] },
+    morale:  { title:"Crew Morale",    icon:"heart", costs:[250,650,1500],
+      desc:["Happier crew: income +15%, wages +5%.","Income +30% in total, wages +10%.","Income +45% in total, wages +15%."] },
     watergun:{ title:"Water Gun",      icon:"watergun", costs:[120,300,650],
-      desc:["Your son's water gun +1.2 px: his spray area +95%. Pocket money +$5 a week.","+1.2 px: spray area +65% more. +$5 a week.","+1.2 px: spray area +50% more. +$5 a week."] },
+      desc:["A bigger water gun for your son: wider and stronger. Pocket money +$5 a week.","Bigger still. +$5 a week.","The Super Soaker. +$5 a week."] },
     cone:    { title:"Even Cone",      icon:"cone", costs:[130,320,700],
-      desc:["A flatter spray: the cone's edge strips 60% as hard as the centre (was 50%). Peak power −4%.","Edge at 70%. Peak power −8%.","Edge at 80% — the whole cone works. Peak power −12%."] },
+      desc:["A flatter spray: the cone's edge strips 60% as hard as the centre (was 50%), the centre a bit softer.","Edge at 70%.","Edge at 80% — the whole cone works."] },
     flow:    { title:"Flow Control",   icon:"valve", costs:[100,260,560],
-      desc:["Water use −15% per pass. Spray power −3%.","Water −30% in total. Power −6%.","Water −45% in total — the tank lasts nearly twice as long. Power −9%."] },
+      desc:["Less water per pass, a touch less power.","Less again.","The tank lasts nearly twice as long."] },
     contracts:{ title:"Contracts",     icon:"scroll", costs:[200,450,900],
-      desc:["Customers start offering contracts: leave a marked patch spotless for +15% pay. Miss one and it costs a reputation star.","Contract bonus +20%","Contract bonus +25%, and they come more often"] },
+      desc:["Customers start offering contracts on about half your jobs: leave a marked patch spotless for +15% pay. Miss one and it costs a reputation star.","Contract bonus +20%.","Contract bonus +25%, and they come more often."] },
     overtime:{ title:"Overtime",       icon:"calendar", costs:[300,700,1500],
-      desc:["Crew work Saturdays. Wages +15%.","Crew work Sundays too.","Weekend crew income +20%."] },
+      desc:["Crew work Saturdays — even when you rest. Wages +15%.","Crew work Sundays too. Wages +10% more.","Weekend crew income +20%."] },
 
     /* trunks - each one opens the two branches above it */
     powercore:{ title:"Pump Core",    icon:"pump", costs:[150],
-      desc:["Spray power +0.12. Opens the Pressure and Nozzle branches."] },
+      desc:["Opens the Pressure, Nozzle and Cone branches."] },
     tankcore: { title:"Plumbing",     icon:"wrench", costs:[150],
-      desc:["Tank +70 L. Opens the Capacity and Refill branches."] },
+      desc:["Opens the Capacity, Refill and Flow branches."] },
     bizcore:  { title:"Paperwork",    icon:"briefcase", costs:[150],
-      desc:["Pay +6%. Opens the Money and Patience branches."] },
+      desc:["Opens the Money, Patience and Contracts branches."] },
     crewcore: { title:"Crew Van",     icon:"hardhat", costs:[400],
-      desc:["Crew income +10%. Opens the Morale and Water Gun branches."] },
+      desc:["Opens the Morale, Water Gun and Overtime branches."] },
 
     /* capstones - each needs BOTH branches of its trunk maxed */
     surge:    { title:"Surge Lance",  icon:"lance", costs:[1500],
-      desc:["Spray power +0.4 and nozzle +1.5 px (spray area +36%). Needs all three water branches maxed."] },
+      desc:["The last word in lances. Needs all three water branches maxed."] },
     bigrig:   { title:"Big Rig Tank", icon:"truck", costs:[1500],
-      desc:["Tank +200 L and every refill 30% faster."] },
+      desc:["A tank the size of a pool, and every refill 30% faster."] },
     empire:   { title:"Franchise",    icon:"crown", costs:[1700],
-      desc:["Pay +20% and customer patience +12 s."] },
+      desc:["Your name on other people's vans."] },
     family:   { title:"Family Business", icon:"family", costs:[2400],
-      desc:["Crew income +30%, and your son fires twice as often."] }
+      desc:["Everybody pitches in: your son fires a third more often."] }
   };
   var SHOP = {
     mosskiller: { title:"Moss Killer",  icon:"flaskMoss", costs:[150], chem:true,
@@ -199,13 +199,13 @@
     rustremover:{ title:"Rust Remover", icon:"flaskRust", costs:[300], chem:true,
       desc:["Dissolves rust bloom — and only rust. Switch to it mid-job (or press 5)."] },
     prowasher: { title:"Pro Pressure Washer", icon:"wand", costs:[900],
-      desc:["Spray power +0.42 and nozzle +2 px (spray area +55% or more). Drinks 10% more water."] },
+      desc:["A commercial unit: much more power and a wider spray."] },
     foamcannon:{ title:"Foam Cannon", icon:"foam", costs:[260,540],
-      desc:["Auto-cleans a random spot every 1.35 s. Each shot uses 8 L from the tank.","Auto-cleans every 0.8 s, with a wider blast. 8 L a shot."] },
+      desc:["Blasts foam onto the dirtiest patch it can see every 1.35 s. 5 L a shot from your tank.","Every 0.8 s, a wider, stronger blast."] },
     tipjar:    { title:"Tip Jar", icon:"jar", costs:[190],
-      desc:["Customers tip for speed: the jar starts full and empties as the timer runs. Needs an 80% clean."] },
+      desc:["Customers tip for a clean job done fast. The tip grows as the job gets cleaner (from 50%) and shrinks as time passes — even a job that runs out of time can earn a little."] },
     lease:     { title:"Cheaper Lease", icon:"book", costs:[300,700,1500],
-      desc:["Weekly payments −10%","−20% in total","−30% in total"] }
+      desc:["A better deal on the van.","Better still.","The best deal in town."] }
   };
   /* Legacy perks: bought with reputation stars (earned on every bill you pay), permanent. */
   var PERKS = {
@@ -226,9 +226,9 @@
   };
   /* Crew work their own jobs (income per job you finish) and draw wages on every overhead bill. */
   var CREW = [
-    { id:"jordan", name:"Jordan", icon:"p_jordan", hire:320,  rate:45,  ups:[260,600,1400],    blurb:"Your cousin. Shows up. Mostly." },
-    { id:"mimi",   name:"Mimi",   icon:"p_mimi", hire:1400, rate:120, ups:[900,2000,4500],   blurb:"Fast, thorough, headphones always in." },
-    { id:"rex",    name:"Rex",    icon:"p_rex", hire:4200, rate:300, ups:[2800,6000,12000], blurb:"Ex-ferry mechanic. Fears no barnacle." }
+    { id:"jordan", name:"Jordan", icon:"p_jordan", hire:600,  rate:45,  ups:[400,900,2000],     blurb:"Your cousin. Shows up. Mostly." },
+    { id:"mimi",   name:"Mimi",   icon:"p_mimi", hire:3200, rate:120, ups:[1600,3600,8000],   blurb:"Fast, thorough, headphones always in." },
+    { id:"rex",    name:"Rex",    icon:"p_rex", hire:9000, rate:300, ups:[4500,10000,22000], blurb:"Ex-ferry mechanic. Fears no barnacle." }
   ];
   /* Your son: no income, but he stands next to you on every job with a water gun. */
   var SON = { id:"son", name:"Ollie (your son)", icon:"p_son", hire:150, wage:10,
@@ -325,14 +325,21 @@
   function progressToughness(){ return Math.min(1.9, 0.85 + state.jobsCompleted * 0.02) * (REGION_TOUGH[state.region] || 1) * (state.perks.neighbourly && state.region === "grove" ? 0.95 : 1); }
   function grimeToughness(){ return progressToughness() * Math.pow(rigMult(), 1 - RIG_KEEPS) * (1 + lvl("pay")*0.04); }   /* pricier clients bring worse dirt */
   function sonHired(){ return state.son > 0; }
-  function sonRadius(){ return 3.5 + lvl("watergun")*1.2; }
-  function sonIntervalMs(){ return lvl("family")>0 ? 350 : 700; }
+  function sonRadius(){ return 4.5 + lvl("watergun")*0.8; }
+  function sonPower(){ return 1.1 + lvl("watergun")*0.08; }       /* per shot, before the dirt's toughness (he keeps pace with the job) */
+  function foamPower(){ return foamLevel() >= 2 ? 0.55 : 0.7; }
+  var FOAM_WATER = 5;                                                /* litres from your tank per foam shot */
+  function sonIntervalMs(){ return lvl("family")>0 ? 520 : 700; }
   function crewMult(){ return 1 + lvl("crewcore")*0.10 + lvl("morale")*0.15 + lvl("family")*0.30 + (state.perks.legend ? 0.25 : 0); }
   /* wages drawn on every overhead bill */
+  /* A worker's weekly wage: WAGE_DAYS days of what they bring in on this route (before crew
+     upgrades), so wages keep pace with a better route. Morale and overtime add to it. */
+  var WAGE_DAYS = 1.5;
+  function wageMult(){ return 1 + lvl("morale")*0.05 + (lvl("overtime") >= 1 ? 0.15 : 0) + (lvl("overtime") >= 2 ? 0.10 : 0); }
+  function crewWage(c, level){ return Math.round(c.rate * (1 + level*0.6) * regionDef().pay * WAGE_DAYS * wageMult()); }
   function crewSalary(){
     var s = 0;
-    CREW.forEach(function(c){ if(crewHired(c.id)) s += Math.round(c.rate * 0.5 * (1 + crewLevel(c.id)*0.6)); });
-    s = Math.round(s * (1 + lvl("morale")*0.10 + (lvl("overtime") ? 0.15 : 0)));   /* morale and overtime cost wages */
+    CREW.forEach(function(c){ if(crewHired(c.id)) s += crewWage(c, crewLevel(c.id)); });
     if(sonHired()) s += SON.wage + lvl("watergun")*5;
     return s;
   }
@@ -360,7 +367,7 @@
   function waterPerSecond(){ return waterPerTick() * (1000/70); }
   function contractsUnlocked(){ return lvl("contracts") > 0; }
   function contractBonus(){ return [0, 0.15, 0.20, 0.25][Math.min(3, lvl("contracts"))]; }
-  function contractChance(){ return lvl("contracts") >= 3 ? 0.65 : 0.45; }
+  function contractChance(){ return lvl("contracts") >= 3 ? 0.55 : 0.40; }   /* plus a pity rule: never three in a row without */
   function foamLevel(){ return lvl("foamcannon"); }
   function tipChance(){ return lvl("tipjar")>0 ? 0.35 : 0; }
   function billEvery(){ return 5; }   /* five working days a week */
@@ -428,6 +435,8 @@
     return Math.round(total * regionDef().pay * crewMult() * weekendCrewMult());
   }
   function crewIncomeToday(){ return crewWorksToday() ? crewIncome() : 0; }
+  /* what the crew earn on a given day of the week, whether or not you work it yourself */
+  function crewIncomeOn(d){ var keep = state.day; state.day = d; var v = crewIncomeToday(); state.day = keep; return v; }
   function regionUnlocked(id){
     return state.jobsCompleted >= REGIONS[id].unlock;
   }

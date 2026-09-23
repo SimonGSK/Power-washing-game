@@ -89,7 +89,7 @@
     <div class="pw-screen-head">
       <div><h2 class="pw-title" id="jobName">Driveway</h2><p class="pw-small" id="jobSub">Everyday Dirt · Maple Grove</p>
         <div class="pw-row job-dirt" id="jobDirt"></div>
-        <p class="pw-small contract-line hidden" id="contractLine"><span class="ico" data-ic="bill"></span> Contract: leave the marked patch spotless for +30% pay — <b id="contractVal">0%</b></p></div>
+        <p class="pw-small contract-line hidden" id="contractLine"><span class="ico" data-ic="scroll"></span> Contract +<span id="contractPct">15%</span>: marked patch spotless — <b id="contractVal">0%</b></p></div>
       <div class="job-right">
         <div class="pw-counter pw-counter--cash hidden" id="tipBadge" title="Tip for speed"><span class="ico" data-ic="jar"></span><span id="tipVal">$0</span></div>
         <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnPauseJob" title="Pause (P)">Pause</button>
@@ -106,6 +106,7 @@
       <canvas id="grimeCanvas" width="240" height="150"></canvas>
       <canvas id="fxCanvas" width="240" height="150"></canvas>
       <div id="stageTint"></div>
+      <div id="stageBanner" class="pw-panel pw-panel--tight stage-banner hidden"></div>
       <div id="stageOverlay" class="hidden">
         <div class="pw-panel overlay-card">
           <span id="overlayIcon"><span class="ico" data-ic="drop"></span></span>

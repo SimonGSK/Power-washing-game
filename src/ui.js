@@ -48,7 +48,7 @@
     pay = Math.round(pay);
 
     var leftMs = Math.max(0, job.duration - elapsed);
-    var tip = (lvl("tipjar") > 0 && pct >= 80) ? tipNow(leftMs) : 0;
+    var tip = lvl("tipjar") > 0 ? tipNow(leftMs, pct/100) : 0;
     var contractMet = !!(job.contract && contractProgress() >= 0.999);
     var contractBonus = contractMet ? Math.round(pay * job.contract.bonus) : 0;
     pay += contractBonus;
@@ -86,8 +86,8 @@
     ];
     if(contractMet) rows.push(mRow(ic("bill")+"Contract met", "+"+money(contractBonus), "pw-stats__val--up"));
     else if(job.contract) rows.push(mRow(ic("bill")+"Contract missed", Math.floor(contractProgress()*100)+"% — −1 reputation", "pw-stats__val--down"));
-    if(tip>0)  rows.push(mRow(ic("jar")+"Tip for speed", "+"+money(tip), "pw-stats__val--up"));
-    else if(lvl("tipjar") > 0) rows.push(mRow(ic("jar")+"Tip", pct >= 80 ? "too slow — nothing" : "under 80% — nothing", "pw-stats__val--down"));
+    if(tip>0)  rows.push(mRow(ic("jar")+"Tip", "+"+money(tip)+(mode === "timeout" ? " (out of time)" : ""), "pw-stats__val--up"));
+    else if(lvl("tipjar") > 0) rows.push(mRow(ic("jar")+"Tip", "under 50% clean — nothing", "pw-stats__val--down"));
     if(crew>0) rows.push(mRow(ic("hardhat")+"Crew jobs", "+"+money(crew), "pw-stats__val--up"));
     else if(crewIncome()>0) rows.push(mRow(ic("hardhat")+"Crew", "off — it’s the weekend"));
     if(state.streak>1) rows.push(mRow(ic("flame")+"Streak", "×"+state.streak+(state.streak>=STREAK_MAX ? " (max)" : "")+" · pay +"+Math.round((streakMult()-1)*100)+"%"));
@@ -102,12 +102,12 @@
   }
 
   /* every dirt type a route's jobs can throw at you, in unlock order */
-  function regionDirt(regionId){
+  function regionDirt(regionId, onlyNow){
     var seen = {}, out = [];
     REGIONS[regionId].jobs.forEach(function(key){
       var d = JOBS[key], list = (d.grimes || REGIONS[regionId].grimes).slice();
       if(d.graffitiChance) list.push("graffiti");
-      list.forEach(function(id){ if(!seen[id]){ seen[id] = 1; out.push(GRIME_TYPES[id]); } });
+      list.forEach(function(id){ if(!seen[id] && (!onlyNow || DIRT_UNLOCK[id] <= state.jobsCompleted)){ seen[id] = 1; out.push(GRIME_TYPES[id]); } });
     });
     return out.sort(function(a, b){ return DIRT_UNLOCK[a.id] - DIRT_UNLOCK[b.id]; });
   }
@@ -137,21 +137,33 @@
       if(state.jobsCompleted >= REGIONS[id].unlock && !state.story[id+"Unlock"]) unlocked = id;
     });
     if(unlocked){
+      regionDirt(unlocked, true).forEach(function(t){ state.info["soon_"+t.id] = 1; });   /* listed here: no second heads-up */
       return tellStory(unlocked+"Unlock", function(){
         showModal(
           mHead(REGIONS[unlocked].icon, REGIONS[unlocked].name+' unlocked!', REGIONS[unlocked].tag, "New route") +
           mRows([mRow("Pay rate", "×"+REGIONS[unlocked].pay.toFixed(2), "pw-stats__val--up")]) +
-          '<div class="pw-label" style="margin-top:10px">Dirt on this route</div>' + dirtRows(regionDirt(unlocked)) +
-          mNote("Each chemical cuts one kind of dirt; the rest is plain water. Stock the rack in the Shop before you drive out. Switch routes any time from the map."),
+          '<div class="pw-label" style="margin-top:10px">Dirt on this route</div>' + dirtRows(regionDirt(unlocked, true)) +
+          mNote("Each chemical cuts one kind of dirt; the rest is plain water." + (regionDirt(unlocked).length > regionDirt(unlocked, true).length ? " More kinds of dirt turn up here later — you’ll get a heads-up." : "") + " Switch routes any time from the map."),
           [{ label:"Nice", cls:"pw-btn--primary", action: afterJob3 }]
         );
       });
     }
     afterJob3();
   }
+  /* a new kind of dirt can now turn up on your route: say what it is and what cuts it, once */
+  function newDirtNotice(then){
+    var fresh = regionDirt(state.region, true).filter(function(t){ return DIRT_UNLOCK[t.id] > 0 && !state.info["soon_"+t.id] && !state.info["dirt_"+t.id]; });
+    if(!fresh.length) return then();
+    fresh.forEach(function(t){ state.info["soon_"+t.id] = 1; }); save();
+    var need = fresh.filter(function(t){ return t.chem; });
+    showModal(mHead(fresh[0].icon, "New dirt on " + regionDef().name, fresh.map(function(t){ return t.name; }).join(" and ") + " can turn up on your jobs from now on.", "Heads up") +
+      dirtRows(fresh) +
+      (need.length ? mNote(need.map(function(t){ return CHEMS[t.chem].name + " is " + money(costOf(t.chem, 0)) + " in the Shop."; }).join(" ")) : mNote("Plain water does it — it’s just thick.")),
+      [{ label:"Got it", cls:"pw-btn--primary", action: then }]);
+  }
   function afterJob3(){
     if(!state.ownedOutright && state.cash >= BUYOUT_TARGET) return offerBuyout(advanceDay);
-    advanceDay();
+    newDirtNotice(advanceDay);
   }
   function offerBuyout(then){
     showModal(
@@ -169,10 +181,10 @@
       var due = overheadAmount(state.billNumber), canRest = state.cash >= due;
       var go = function(){
         showModal(
-          mHead("clock", "It’s the weekend", "Sunday night the weekly payment of <b>"+money(due)+"</b> is due. "+(crewWorksToday() ? "" : "Your crew don’t work weekends"+(lvl("overtime") ? " yet" : "")+".")+(canRest ? " You can afford it — rest, or squeeze in a job." : " You can’t cover it yet — better work "+dayName+"."), "Week "+state.week) +
+          mHead("clock", "It’s the weekend", "Sunday night the weekly payment of <b>"+money(due)+"</b> is due. "+(crewIncome() <= 0 ? "" : (crewWorksToday() ? "Your crew work "+dayName+" whether you rest or not." : "Your crew don’t work "+dayName+"s"+(lvl("overtime") ? " yet" : "")+"."))+(canRest ? " You can afford it — rest, or squeeze in a job." : " You can’t cover it yet — better work "+dayName+"."), "Week "+state.week) +
           mRows([mRow(ic("coin")+"You have", money(state.cash), canRest ? "pw-stats__val--up" : "pw-stats__val--down"), mRow(ic("bill")+"Due Sunday", money(due))]),
           [ { label:"Work "+dayName, cls:"pw-btn--primary", icon:"wand", action:function(){ showScreen("screen-home"); } },
-            canRest ? { label:"Rest until Monday", cls:"pw-btn--ghost", action:function(){ state.day = 7; save(); advanceDay(); } }
+            canRest ? { label:"Rest until Monday", cls:"pw-btn--ghost", action:function(){ restWeekend(); } }
                     : { label:"Can’t rest — you’d miss the payment", cls:"pw-btn--ghost", disabled:true } ]
         );
       };
@@ -184,6 +196,22 @@
     }
     showScreen("screen-home");
   }
+
+  /* you take the weekend off; the crew with Overtime don't */
+  function restWeekend(){
+    var earned = 0, days = [];
+    for(var d = state.day; d <= 6; d++){ var v = crewIncomeOn(d); if(v > 0){ earned += v; days.push(DAYS_LONG[d]); } }
+    state.day = 7;
+    if(earned > 0){
+      state.cash += earned; state.cashSinceRepo += earned; state.lifetimeEarnings += earned; state.stats.crewEarnings += earned;
+      save(); renderTop();
+      return showModal(mHead("calendar", "Your crew worked " + days.join(" and "), "You put your feet up; the crew put in the overtime.", "Weekend") +
+        mRows([mRow(ic("hardhat")+"Crew jobs", "+"+money(earned), "pw-stats__val--up")]),
+        [{ label:"Monday", cls:"pw-btn--primary", icon:"arrow-right", action: advanceDay }]);
+    }
+    save(); advanceDay();
+  }
+  var DAYS_LONG = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
   function doBuyout(){
     state.ownedOutright = true;
@@ -487,12 +515,12 @@
       '<div class="pw-panel__head"><span class="pw-heading">'+ic("coin","pw-icon--24")+' Cash</span><span class="pw-label'+(after < 0 ? '" style="color:var(--danger-text)' : '')+'">'+money(state.cash)+'</span></div>' +
       (state.loan > 0
         ? '<p class="pw-small pw-soft">'+LENDER.name+'’s tab: <b>'+money(state.loan)+'</b> — he takes '+Math.round(LENDER.cut*100)+'% of every job until it’s square.</p>'
-        : '<p class="pw-small pw-soft">'+(after >= 0 ? 'After Sunday’s payment you keep <b>'+money(after)+'</b>.' : '<b>'+money(-after)+' short</b> of Sunday’s payment — keep washing.')+'</p>');
+        : '<p class="pw-small pw-soft">'+(after >= 0 ? 'After Sunday you keep <b>'+money(after)+'</b>.' : '<b>'+money(-after)+' short</b> for Sunday — keep washing.')+'</p>');
     /* the next thing worth buying */
     var rec = recommendBuy();
     $("advicePanel").innerHTML = rec
-      ? '<div class="pw-panel__head"><span class="pw-heading">'+ic(rec.icon,"pw-icon--24")+' Recommended</span><span class="pw-label '+(rec.afford ? 'pw-tag--ok' : '')+'">'+money(rec.cost)+'</span></div>' +
-        '<p class="pw-small pw-soft"><b>'+rec.title+'</b>'+(rec.level ? ' lv.'+rec.level : '')+' — '+rec.why+(rec.afford ? '' : ' Save up '+money(rec.cost - state.cash)+' more.')+'</p>'
+      ? '<div class="pw-panel__head"><span class="pw-heading">'+ic(rec.icon,"pw-icon--24")+' Recommended</span></div>' +
+        '<p class="pw-small pw-soft"><b>'+rec.title+'</b>'+(rec.level ? ' lv.'+rec.level : '')+' · <b class="'+(rec.afford ? 'pw-tag--ok' : '')+'">'+money(rec.cost)+'</b> — '+rec.why+'</p>'
       : '<div class="pw-panel__head"><span class="pw-heading">'+ic("check","pw-icon--24")+' Rig complete</span></div><p class="pw-small pw-soft">Nothing left to buy — it’s all profit now.</p>';
     $("advicePanel").onclick = rec ? function(){ showScreen(rec.screen); } : null;
     $("advicePanel").style.cursor = rec ? "pointer" : "";
@@ -516,8 +544,8 @@
   var BUY_ORDER = ["powercore","nozzle","pressure","tankcore","tank","bizcore","patience","nozzle","refill","pressure","flow","pay","cone","tank","tipjar","nozzle","pressure","refill","patience","pay","foamcannon","contracts","lease","prowasher","cone","flow","tank","refill","patience","pay","contracts","cone","flow","lease","foamcannon","contracts","lease","surge","bigrig","empire"];
   function recommendBuy(){
     var jobs = state.jobsCompleted;
-    var dirt = regionDirt(state.region).filter(function(t){ return t.chem && !chemOwned(t.chem) && DIRT_UNLOCK[t.id] <= jobs + 2; });
-    if(dirt.length){ var ch = dirt[0].chem, cc = costOf(ch, 0); return { key:ch, title:SHOP[ch].title, icon:SHOP[ch].icon, cost:cc, afford:state.cash >= cc, level:0, screen:"screen-shop", why:dirt[0].name + " is on this route and only " + SHOP[ch].title + " cuts it." }; }
+    var dirt = regionDirt(state.region, true).filter(function(t){ return t.chem && !chemOwned(t.chem); });
+    if(dirt.length){ var ch = dirt[0].chem, cc = costOf(ch, 0); return { key:ch, title:SHOP[ch].title, icon:SHOP[ch].icon, cost:cc, afford:state.cash >= cc, level:0, screen:"screen-shop", why:"the only thing that cuts " + dirt[0].name + "." }; }
     var want = {};
     for(var i=0;i<BUY_ORDER.length;i++){
       var k = BUY_ORDER[i], def = GEAR[k] || SHOP[k]; want[k] = (want[k] || 0) + 1;
@@ -525,7 +553,8 @@
       if(lvl(k) !== level || level >= def.costs.length) continue;      /* not the next step for this one */
       if(GEAR[k] && treeGate(k, level)) continue;                       /* locked behind the tree */
       var cost = costOf(k, level);
-      return { key:k, title:def.title, icon:def.icon, cost:cost, afford:state.cash >= cost, level:def.costs.length > 1 ? level+1 : 0, screen: GEAR[k] ? "screen-upgrades" : "screen-shop", why: def.desc[level].split(".")[0] + "." };
+      var d0 = gearDelta(k, level)[0];
+      return { key:k, title:def.title, icon:def.icon, cost:cost, afford:state.cash >= cost, level:def.costs.length > 1 ? level+1 : 0, screen: GEAR[k] ? "screen-upgrades" : "screen-shop", why: d0 ? d0.label.toLowerCase() + " " + d0.delta + "." : def.desc[level].split(".")[0] + "." };
     }
     return null;
   }
@@ -643,6 +672,55 @@
 
   /* ---- skill tree: trunks at the bottom, two straight branches each, a capstone on top ---- */
   var treeTip = null, lastTapped = null;
+  /* What buying level `level` of `key` changes, in the game's own numbers: each row is
+     { label, from, to, delta } — only stats that actually move are returned. */
+  function statSnapshot(){
+    return {
+      power: sprayPower(), area: Math.pow(sprayRadius()/BASE_RADIUS, 2), water: waterPerSecond(), tank: tankMax(),
+      refill: refillMs()/1000, patience: jobMs()/1000, pay: (payMult()-1)*100, edge: (1-coneEdge())*100,
+      crew: crewIncome(), wages: crewSalary(), bill: overheadAmount(state.billNumber), contract: contractBonus()*100,
+      son: sonRadius(), sonPower: sonPower(), foam: foamLevel() ? 1000/Math.max(700, 1900 - foamLevel()*550) : 0
+    };
+  }
+  var STAT_ROWS = [
+    ["power", "Spray power", function(v){ return v.toFixed(2); }, ""],
+    ["area", "Spray area", function(v){ return "×" + v.toFixed(2); }, ""],
+    ["water", "Water usage", function(v){ return v.toFixed(1); }, " L/s", -1],
+    ["tank", "Tank", function(v){ return Math.round(v); }, " L"],
+    ["refill", "Refill time", function(v){ return v.toFixed(2); }, " s", -1],
+    ["patience", "Customer patience", function(v){ return Math.round(v); }, " s"],
+    ["pay", "Pay bonus", function(v){ return "+" + Math.round(v); }, "%"],
+    ["edge", "Cone edge strength", function(v){ return Math.round(v); }, "%"],
+    ["contract", "Contract bonus", function(v){ return Math.round(v); }, "%"],
+    ["crew", "Crew income", function(v){ return money(v); }, " /job"],
+    ["wages", "Wages", function(v){ return money(v); }, " /week", -1],
+    ["bill", "Weekly payment", function(v){ return money(v); }, "", -1],
+    ["son", "Water gun reach", function(v){ return v.toFixed(1); }, " px"],
+    ["sonPower", "Water gun power", function(v){ return v.toFixed(2); }, ""],
+    ["foam", "Foam shots", function(v){ return v.toFixed(2); }, " /s"]
+  ];
+  function gearDelta(key, level){
+    var keep = state.gear[key];
+    state.gear[key] = level; var a = statSnapshot();
+    state.gear[key] = level + 1; var b = statSnapshot();
+    state.gear[key] = keep;
+    var rows = [];
+    STAT_ROWS.forEach(function(r){
+      var k = r[0], d = b[k] - a[k];
+      if(Math.abs(d) < 0.005) return;
+      var up = d > 0, unit = r[3], fmtD = r[2](Math.abs(d)).replace(/^[+×]/, "");
+      if(k === "area"){ fmtD = Math.round((b[k]/a[k] - 1)*100) + "%"; unit = ""; }
+      rows.push({ label: r[1], from: String(r[2](a[k])), to: r[2](b[k]) + r[3], delta: (up ? "+" : "−") + fmtD + unit, good: up === ((r[4] || 1) > 0) });
+    });
+    return rows;
+  }
+  function deltaHTML(rows){
+    if(!rows.length) return "";
+    return '<div class="stat-delta">' + rows.map(function(r){
+      return '<div><span>' + r.label + ':</span> <b class="' + (r.good ? "is-good" : "is-bad") + '">' + r.delta + '</b> <span class="pw-soft">(' + r.from + ' → ' + r.to + ')</span></div>';
+    }).join("") + '</div>';
+  }
+
   function renderTree(){
     var wrap = $("treeWrap");
     wrap.innerHTML = "";
@@ -668,7 +746,7 @@
       var status = have > level ? { text:"Installed", cls:"pw-tag--ok" }
         : gate ? { text:gate, cls:"pw-soft" }
         : { text:"Buy for " + money(costOf(key, level)), cls: state.cash >= costOf(key, level) ? "pw-tag--price" : "pw-tag--cannot" };
-      return { title: def.title + (multi ? " · Lv " + (level+1) : ""), desc: def.desc[level], status: status };
+      return { title: def.title + (multi ? " · Lv " + (level+1) : ""), desc: def.desc[level], stats: have > level ? "" : deltaHTML(gearDelta(key, level)), status: status };
     }
     function addNode(x, y, cls, key, level, badge){
       var n = document.createElement("button");
@@ -689,12 +767,12 @@
       n.setAttribute("data-key", key); n.setAttribute("data-level", level);
       var show = function(){
         var info = nodeInfo(key, level);
-        treeTip.innerHTML = '<div class="pw-heading">'+info.title+'</div><p class="pw-small">'+info.desc+'</p><p class="pw-caption '+info.status.cls+'">'+info.status.text+'</p>';
+        treeTip.innerHTML = '<div class="pw-heading">'+info.title+'</div><p class="pw-small">'+info.desc+'</p>'+info.stats+'<p class="pw-caption '+info.status.cls+'">'+info.status.text+'</p>';
         treeTip.classList.remove("hidden");
-        var W = wrap.clientWidth, H = wrap.clientHeight;
-        var left = Math.max(0, Math.min(W - 220, x/100*W - 110));
+        var W = wrap.clientWidth, H = wrap.clientHeight, TW = treeTip.offsetWidth, TH = treeTip.offsetHeight;
+        var left = Math.max(0, Math.min(W - TW, x/100*W - TW/2));
         var top = y/100*H + 30;
-        if(top + 96 > H) top = y/100*H - 30 - 96;
+        if(top + TH > H) top = Math.max(0, y/100*H - 30 - TH);
         treeTip.style.left = left + "px"; treeTip.style.top = top + "px";
       };
       n.onmouseenter = show; n.onfocus = show;
@@ -763,7 +841,7 @@
   function openGearModal(key, level){
     var def = GEAR[key] || SHOP[key];
     var multi = def.costs.length > 1;
-    var head = mHead(def.icon, def.title+(multi ? ' — Lv '+(level+1) : ''), def.desc[level], GEAR[key] ? "Upgrade" : "Shop");
+    var head = mHead(def.icon, def.title+(multi ? ' — Lv '+(level+1) : ''), def.desc[level], GEAR[key] ? "Upgrade" : "Shop") + (lvl(key) > level ? "" : deltaHTML(gearDelta(key, level)));
     var closeBtn = { label:"Close", cls:"pw-btn--ghost" };
 
     if(lvl(key) > level){
@@ -801,7 +879,7 @@
     grid.innerHTML = "";
     Object.keys(SHOP).forEach(function(key){
       var def = SHOP[key], l = lvl(key), maxed = l >= def.costs.length;
-      var card = cardEl(def.icon, def.title, maxed ? def.desc[def.desc.length-1] : def.desc[l],
+      var card = cardEl(def.icon, def.title, (maxed ? def.desc[def.desc.length-1] : def.desc[l]) + (maxed ? "" : deltaHTML(gearDelta(key, l))),
         def.costs.length>1 ? 'Level '+l+' / '+def.costs.length : '', maxed ? "pw-card--owned" : "");
       var foot = footEl();
       if(maxed){
@@ -815,7 +893,7 @@
         btn.disabled = state.cash < cost;
         btn.onclick = function(){
           buyGear(key, cost); SFX.buy();
-          if(key === "tipjar") tellInfo("tipjar", "jar", "The Tip Jar", "Customers tip for <b>speed</b>. On every job the jar starts full and drains as the timer runs — you’ll see it counting down in the top-right corner. Finish at least 80% clean and what’s left in the jar is yours.");
+          if(key === "tipjar") tellInfo("tipjar", "jar", "The Tip Jar", "Customers tip for a <b>clean job done fast</b>. The jar in the top-right fills as the job gets cleaner (from 50% clean) and drains as the clock runs. Even when time runs out you keep a little of it — so a nearly-clean job still earns a tip.");
           else if(def.chem) tellInfo("chem_"+key, "flask", def.title, "It’s in the wand now. During a job, switch between water and your chemicals with the buttons under the stage or the number keys. Dirt that needs a chemical barely moves under the wrong one.");
         };
         foot.appendChild(btn);
@@ -868,7 +946,7 @@
       card.innerHTML = '<div class="pw-card__title">'+portraitSVG(c.id).replace('pw-portrait__art','pw-icon--32')+'<h3 class="pw-heading">'+c.name+'</h3></div>' +
         '<p class="pw-small pw-card__body">'+c.blurb+'</p>' +
         '<div class="pw-caption pw-soft">'+(c.id === "mimi" ? 'Works jobs on her own' : 'Works jobs on his own')+' — every weekday you finish a job, so does '+c.name.split(" ")[0]+'.</div>' +
-        '<div class="pw-caption pw-soft">'+(hired ? 'Level '+(l+1)+' · brings in '+money(rate)+' per job · wages '+money(Math.round(c.rate*0.5*(1+l*0.6)))+' per bill' : 'Brings in '+money(Math.round(c.rate*regionDef().pay*crewMult()))+' per job · wages '+money(Math.round(c.rate*0.5))+' per bill')+'</div>';
+        '<div class="pw-caption pw-soft">'+(hired ? 'Level '+(l+1)+' · brings in '+money(rate)+' per job · wages '+money(crewWage(c, l))+' a week' : 'Brings in '+money(Math.round(c.rate*regionDef().pay*crewMult()))+' per job · wages '+money(crewWage(c, 0))+' a week')+'</div>';
       var foot = footEl();
       if(!hired){
         foot.innerHTML = '<span class="pw-label pw-tag '+(state.cash < c.hire ? 'pw-tag--cannot' : 'pw-tag--price')+'">'+ic("coin")+money(c.hire)+'</span>';
@@ -1075,6 +1153,10 @@
     },
     spray: function(x, y, radius, power, chem){ return sprayGrime(x, y, radius, power, chem); },
     pause: pauseJob, resume: resumeJob, paused: function(){ return paused; }, spraying: function(){ return spraying; },
+    /* run only the helpers (son, foam cannon, WashBot) for `ms` of game time, no hero; returns cleanliness */
+    helpersFor: function(ms){ if(!job) return 0; for(var t=0; t<ms && !job.ended; t+=16){ sonTick(16); foamTick(16); botTick(16); if(refilling){ refillT += 16; if(refillT >= refillMs()){ refilling = false; job.tank = tankMax(); } } } return cleanliness(); },
+    tipNow: function(msLeft, clean){ return tipNow(msLeft, clean); }, restWeekend: restWeekend, crewIncomeOn: crewIncomeOn,
+    gearDelta: gearDelta, crewWage: function(id, l){ return crewWage(CREW.filter(function(c){ return c.id === id; })[0], l || 0); }, CREW: CREW,
     cleanliness: cleanliness,
     advanceDay: advanceDay,
     triggerBill: triggerBill,

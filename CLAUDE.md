@@ -21,7 +21,7 @@ npm test                   # builds, then runs the Playwright suite in tests/
 
 `npm install` once (and `npx playwright install chromium`) to get the test runner. CI (`.github/workflows/test.yml`) runs the same on every PR and fails if `index.html` is out of date with `src/`, so commit the rebuilt `index.html` together with the source change.
 
-When adding a feature, add or extend a test in `tests/` that would have caught it breaking: the content tests in `tests/content.spec.js` cover the data tables, `job.spec.js` the wash-and-pay loop, `economy.spec.js` bills and upgrades, `sprites.spec.js` the sprite grids. Drive the game through `window.PowerWashDebug` (see the bottom of `src/ui.js`) rather than through private closure state.
+When adding a feature, add or extend a test in `tests/` that would have caught it breaking: the content tests in `tests/content.spec.js` cover the data tables, `job.spec.js` the wash-and-pay loop, `economy.spec.js` bills and upgrades, `helpers.spec.js` the son, foam cannon, tips, overtime, contracts and crew pay (measured by running the helpers alone via `PowerWashDebug.helpersFor`), `sprites.spec.js` the sprite grids. Drive the game through `window.PowerWashDebug` (see the bottom of `src/ui.js`) rather than through private closure state.
 
 ## Git workflow — do this without asking
 

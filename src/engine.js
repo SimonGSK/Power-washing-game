@@ -269,12 +269,21 @@
     var a = job.area;
     return { cx:cx, cy:cy, cw:cw, ch:ch, mask:mask, total:total, x:a.x+cx*CELL, y:a.y+cy*CELL, w:cw*CELL, h:ch*CELL, bonus:0.30 };
   }
+  /* a marching dashed frame with ink behind it, so it reads over any dirt */
   function drawContract(){
     var z = job.contract; if(!z) return;
-    var done = contractProgress() >= 0.999, col = done ? P.leafHi : P.sunHi;
-    for(var x=z.x; x<z.x+z.w; x+=4){ FX(x, z.y-1, 2, 1, col); FX(x, z.y+z.h, 2, 1, col); }
-    for(var y=z.y; y<z.y+z.h; y+=4){ FX(z.x-1, y, 1, 2, col); FX(z.x+z.w, y, 1, 2, col); }
-    FX(z.x-2, z.y-2, 3, 3, col); FX(z.x+z.w-1, z.y-2, 3, 3, col); FX(z.x-2, z.y+z.h-1, 3, 3, col); FX(z.x+z.w-1, z.y+z.h-1, 3, 3, col);
+    var done = contractProgress() >= 0.999, col = done ? P.leafHi : P.sunHi, off = Math.floor(now()/160) % 6;
+    FX(z.x-2, z.y-2, z.w+4, 1, P.ink); FX(z.x-2, z.y+z.h+1, z.w+4, 1, P.ink); FX(z.x-2, z.y-2, 1, z.h+4, P.ink); FX(z.x+z.w+1, z.y-2, 1, z.h+4, P.ink);
+    for(var x=z.x-1+off; x<z.x+z.w; x+=6){ FX(x, z.y-1, 3, 2, col); FX(x, z.y+z.h-1, 3, 2, col); }
+    for(var y=z.y-1+off; y<z.y+z.h; y+=6){ FX(z.x-1, y, 2, 3, col); FX(z.x+z.w-1, y, 2, 3, col); }
+    FX(z.x-3, z.y-3, 4, 4, col); FX(z.x+z.w-1, z.y-3, 4, 4, col); FX(z.x-3, z.y+z.h-1, 4, 4, col); FX(z.x+z.w-1, z.y+z.h-1, 4, 4, col);
+  }
+  /* a short message across the top of the stage that doesn't block the wand */
+  var bannerTimer = null;
+  function flashBanner(html){
+    var b = $("stageBanner"); b.innerHTML = html; b.classList.remove("hidden");
+    if(bannerTimer) clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(function(){ b.classList.add("hidden"); }, 3200);
   }
   function cleanliness(){
     if(!grimeTotal) return 1;
@@ -368,6 +377,23 @@
 
   /* Your son stands a few steps from you and plinks at the dirt near your aim */
   var son = { x:0, y:0, target:null, flash:0, acc:0 };
+  /* the Foam Cannon on the truck: every so often it lands a blob of foam on the dirtiest patch it
+     can see (that your chemical can cut), 8 L from your tank a shot */
+  function foamTick(dt){
+    if(foamLevel() <= 0 || refilling) return;
+    foamAcc += dt;
+    if(foamAcc < Math.max(700, 1900 - foamLevel()*550)) return;
+    foamAcc = 0;
+    var ci = pickCell(state.activeChem, foamCell, 40); if(ci == null) return;
+    foamCell = ci;   /* it works outward from the last blast, so patches actually come clean */
+    var a = job.area, fxp = a.x + (ci % gCols)*CELL + 1, fyp = a.y + Math.floor(ci/gCols)*CELL + 1;
+    sprayGrime(fxp, fyp, 8 + foamLevel()*2, foamPower() * job.tough, state.activeChem);
+    splash(fxp, fyp, "#ffffff", 6); splash(fxp, fyp, job.grime.splash, 3);
+    job.tank = Math.max(0, job.tank - FOAM_WATER); setTank(job.tank);
+    if(job.tank <= 0) beginRefill();
+    updateClean();
+  }
+  var foamCell = null;
   function sonPos(){ return job.def.son || { x: job.def.hero.x - 24, y: job.def.hero.y - 16 }; }
   function sonTick(dt){
     if(!sonHired()) return;
@@ -375,18 +401,29 @@
     if(son.flash > 0) son.flash -= dt;
     if(son.acc < sonIntervalMs()) return;
     son.acc = 0;
-    /* he looks for dirt on his own: a handful of random cells, the dirtiest wins */
-    var a = job.area, best = null, bestHp = 0.2;
-    for(var s=0; s<24 && grime; s++){
-      var ci = Math.floor(Math.random()*grime.length);
-      if(grime[ci] > bestHp){ bestHp = grime[ci]; best = ci; }
-    }
-    if(best === null) return;
-    var tx = a.x + (best % gCols)*CELL + 1, ty = a.y + Math.floor(best/gCols)*CELL + 1;
+    /* he works one patch until it's clean, then moves to the nearest dirt his gun can shift
+       with whatever is in the tank (your active chemical); he keeps pace with the job's toughness */
+    var chem = state.activeChem, cur = son.cell;
+    if(cur == null || grime[cur] <= 0.03 || !cellCuttable(cur, chem)) son.cell = cur = pickCell(chem, cur, 50);
+    if(cur == null) return;
+    var a = job.area, tx = a.x + (cur % gCols)*CELL + 1, ty = a.y + Math.floor(cur/gCols)*CELL + 1;
     son.target = { x:tx, y:ty }; son.flash = 420;
-    var removed = sprayGrime(tx, ty, sonRadius(), 0.32, state.activeChem);
+    var removed = sprayGrime(tx, ty, sonRadius(), sonPower() * job.tough, chem);
     if(removed > 0.2) splash(tx, ty, job.grime.splash, 2);
     updateClean();
+  }
+  /* can this cell's dirt be cut with this chemical at full strength? */
+  function cellCuttable(i, chem){ var t = job.types[cellType ? cellType[i] : 0] || job.grime; return chem === "auto" || chemFactor(t, chem) >= 1; }
+  /* a dirty cell worth aiming at: dirtier is better, close to `near` is better */
+  function pickCell(chem, near, samples){
+    var best = null, bestScore = -1e9, nx = near != null ? near % gCols : 0, ny = near != null ? Math.floor(near/gCols) : 0;
+    for(var k=0; k<samples && grime; k++){
+      var ci = Math.floor(Math.random()*grime.length);
+      if(grime[ci] <= 0.2 || !cellCuttable(ci, chem)) continue;
+      var score = grime[ci] - (near != null ? Math.hypot(ci % gCols - nx, Math.floor(ci/gCols) - ny) / 6 : 0);
+      if(score > bestScore){ bestScore = score; best = ci; }
+    }
+    return best;
   }
   function drawSon(){
     if(!sonHired()) return;
@@ -519,8 +556,12 @@
     bx.clearRect(0,0,CW,CH);
     def.scene(def.area, rng);
     buildGrime(rng);
-    job.contract = (contractsUnlocked() && rng() < contractChance()) ? makeContract(rng) : null;
-    if(job.contract) job.contract.bonus = contractBonus();
+    job.contract = null;
+    if(contractsUnlocked() && (rng() < contractChance() || (state.sinceContract || 0) >= 2)){
+      for(var ctry=0; ctry<4 && !job.contract; ctry++) job.contract = makeContract(rng);
+    }
+    if(contractsUnlocked()) state.sinceContract = job.contract ? 0 : (state.sinceContract || 0) + 1;
+    if(job.contract){ job.contract.bonus = contractBonus(); $("contractPct").textContent = Math.round(job.contract.bonus*100) + "%"; }
     if(chemList().indexOf(state.activeChem) < 0) state.activeChem = "water";
     renderChemBar();
     job.tipMax = tipJarMax();
@@ -530,15 +571,16 @@
     aim = { x: def.area.x + def.area.w/2, y: def.area.y + def.area.h/2 };
     spraying = false; hovering = false; pressed = false; lastSprayPt = null; refilling = false; paused = false; $("btnPauseJob").textContent = "Pause";
     sprayAcc = foamAcc = rainAcc = 0;
-    son = { x:0, y:0, target:null, flash:0, acc:0 }; bot = { target:null, flash:0, acc:0 };
+    son = { x:0, y:0, target:null, flash:0, acc:0, cell:null }; bot = { target:null, flash:0, acc:0 }; foamCell = null;
     setTank(job.tank); setClean(0); setTimer(job.duration);
-    $("stageOverlay").classList.add("hidden");
+    $("stageOverlay").classList.add("hidden"); $("stageBanner").classList.add("hidden");
 
     var fresh = types.filter(function(t){ return !state.info["dirt_"+t.id]; });
     var startIt = function(){ playIntro(function(){
       if(!job || job.ended) return;
       job.started = true;
       job.start = now();
+      if(job.contract) flashBanner(ic("scroll", "pw-icon") + "Contract! Leave the marked patch spotless for +" + Math.round(job.contract.bonus*100) + "% pay");
       lastTs = 0;
       rafId = requestAnimationFrame(frame);
     }); };
@@ -596,20 +638,7 @@
       sprayAcc = 0;
     }
 
-    if(foamLevel() > 0){
-      foamAcc += dt;
-      var iv = Math.max(700, 1900 - foamLevel()*550);
-      if(foamAcc >= iv){
-        foamAcc = 0;
-        var a = job.area;
-        var fxp = a.x + 8 + Math.random()*(a.w-16), fyp = a.y + 8 + Math.random()*(a.h-16);
-        sprayGrime(fxp, fyp, 10 + foamLevel()*2.5, 0.5, state.activeChem);
-        splash(fxp, fyp, job.grime.splash, 5);
-        job.tank = Math.max(0, job.tank - 8); setTank(job.tank);
-        if(job.tank <= 0) beginRefill();
-        updateClean();
-      }
-    }
+    foamTick(dt);
 
     if(job.weather.rain){
       rainAcc += dt;
@@ -709,11 +738,16 @@
     var list = chemList(); if(list[n-1]){ state.activeChem = list[n-1]; renderChemBar(); }
   });
   /* the tip you'd get right now: it shrinks as the customer waits */
-  function tipJarMax(){ return 12 + Math.round(state.jobsCompleted*1.5) + Math.round(regionDef().pay*8); }
-  function tipNow(msLeft){ if(lvl("tipjar") <= 0) return 0; return Math.round(job.tipMax * clamp(msLeft/job.duration, 0, 1)); }
+  function tipJarMax(){ return 15 + Math.round(state.jobsCompleted*2) + Math.round(regionDef().pay*10); }
+  /* the tip: nothing under 50% clean, the full jar at 100%; time takes it down to a quarter */
+  function tipNow(msLeft, clean){
+    if(lvl("tipjar") <= 0) return 0;
+    var byClean = clamp((clean - 0.5) / 0.5, 0, 1), byTime = 0.25 + 0.75*clamp(msLeft/job.duration, 0, 1);
+    return Math.round(job.tipMax * byClean * byTime);
+  }
   function renderJobHud(msLeft){
     var tipEl = $("tipBadge");
-    if(lvl("tipjar") > 0){ tipEl.classList.remove("hidden"); $("tipVal").textContent = money(tipNow(msLeft)); }
+    if(lvl("tipjar") > 0){ tipEl.classList.remove("hidden"); $("tipVal").textContent = money(tipNow(msLeft, cleanliness())); }
     else tipEl.classList.add("hidden");
     if(job.contract){
       var pr = contractProgress();

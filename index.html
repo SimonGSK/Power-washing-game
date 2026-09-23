@@ -408,7 +408,7 @@ body{
   .home-col:last-child > *{flex:none;}
   .home-col:last-child .stat-grid{gap:14px;}
   .home-col:last-child .stat-grid .pw-panel{padding:10px 14px;}
-  .home-col:last-child .stat-grid .pw-panel > p.pw-small{display:block;margin:0;font-size:12px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .home-col:last-child .stat-grid .pw-panel > p.pw-small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin:0;font-size:12px;line-height:16px;overflow:hidden;}
   .home-col:last-child .stat-grid .pw-panel > p.pw-small b{font-weight:700;}
   .home-col:last-child .stat-grid .pw-panel__head{margin-bottom:4px;}
   .home-col:last-child .stat-grid .pw-meter__row{margin-bottom:6px;}
@@ -451,7 +451,7 @@ body{
 .tree-wrap .pw-node--available.is-poor{--face:#b8532f;--face-hi:#d4744f;--face-lo:#7a2b12;}
 @keyframes pw-nope{0%{transform:translateX(0)}25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
 .tree-wrap .pw-node.is-bought{animation:pw-bump .3s steps(2,end);}
-.tree-tip{position:absolute;z-index:5;width:220px;padding:9px 12px;pointer-events:none;
+.tree-tip{position:absolute;z-index:5;width:260px;padding:9px 12px;pointer-events:none;
   background:linear-gradient(var(--parchment-hi),var(--parchment-hi)) top / 100% var(--px-line) no-repeat,var(--parchment);
   box-shadow:var(--ring-ink), var(--drop-hard);color:var(--ink);}
 .tree-tip .pw-heading{font-size:16px;line-height:20px;}
@@ -528,6 +528,31 @@ body{
   #screen-job .pw-stage{flex:1;min-height:0;width:auto;max-width:100%;aspect-ratio:8/5;margin:0 auto;align-self:center;max-height:100%;}
   #screen-job .pw-meters{margin-top:0;}
 }
+
+/* an upgrade's exact effect, computed from the formulas */
+.stat-delta{margin:6px 0 4px;font-size:12px;line-height:16px;color:var(--ink);}
+.stat-delta b{font-weight:700;}
+.stat-delta b.is-good{color:var(--leaf-lo);}
+.stat-delta b.is-bad{color:var(--danger-text);}
+.stat-delta .pw-soft{color:var(--ink-soft);}
+.pw-modal .stat-delta{font-size:14px;line-height:19px;text-align:left;}
+
+.stage-banner{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:5;pointer-events:none;display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:14px;line-height:18px;font-weight:700;max-width:calc(100% - 24px);}
+.contract-line{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;background:var(--sun-hi);color:var(--ink) !important;box-shadow:var(--ring-ink);font-weight:700;}
+.contract-line.is-done{background:var(--leaf-hi);}
+
+/* the small home boxes: the heading gives way before the number does, nothing leaves the box */
+.stat-grid .pw-panel__head{min-width:0;}
+.stat-grid .pw-panel__head .pw-heading{min-width:0;flex:1 1 auto;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:flex;}
+.stat-grid .pw-panel__head .pw-heading .pw-icon--24{flex:none;}
+.stat-grid .pw-panel__head .pw-label{flex:none;white-space:nowrap;}
+.stat-grid .pw-meter__row > span:first-child{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.stat-grid .pw-meter__row > .pw-label{flex:none;white-space:nowrap;}
+@media (min-width:900px) and (min-height:600px){ .stat-grid .pw-panel__head .pw-heading{font-size:16px;line-height:20px;} }
+/* the job header: title and dirt on the left, one row of buttons on the right */
+#screen-job .pw-screen-head > div:first-child{flex:1 1 auto;min-width:0;}
+#screen-job .job-right{flex:none;flex-wrap:nowrap;}
+@media (max-width:640px){ #screen-job .pw-screen-head{flex-direction:column;} #screen-job .job-right{flex-wrap:wrap;justify-content:flex-start;} }
 </style>
 </head>
 <body class="pw">
@@ -621,7 +646,7 @@ body{
     <div class="pw-screen-head">
       <div><h2 class="pw-title" id="jobName">Driveway</h2><p class="pw-small" id="jobSub">Everyday Dirt · Maple Grove</p>
         <div class="pw-row job-dirt" id="jobDirt"></div>
-        <p class="pw-small contract-line hidden" id="contractLine"><span class="ico" data-ic="bill"></span> Contract: leave the marked patch spotless for +30% pay — <b id="contractVal">0%</b></p></div>
+        <p class="pw-small contract-line hidden" id="contractLine"><span class="ico" data-ic="scroll"></span> Contract +<span id="contractPct">15%</span>: marked patch spotless — <b id="contractVal">0%</b></p></div>
       <div class="job-right">
         <div class="pw-counter pw-counter--cash hidden" id="tipBadge" title="Tip for speed"><span class="ico" data-ic="jar"></span><span id="tipVal">$0</span></div>
         <button class="pw-btn pw-btn--small pw-btn--ghost" id="btnPauseJob" title="Pause (P)">Pause</button>
@@ -638,6 +663,7 @@ body{
       <canvas id="grimeCanvas" width="240" height="150"></canvas>
       <canvas id="fxCanvas" width="240" height="150"></canvas>
       <div id="stageTint"></div>
+      <div id="stageBanner" class="pw-panel pw-panel--tight stage-banner hidden"></div>
       <div id="stageOverlay" class="hidden">
         <div class="pw-panel overlay-card">
           <span id="overlayIcon"><span class="ico" data-ic="drop"></span></span>
@@ -759,7 +785,7 @@ body{
       perks: {},
       crew: {},
       son: 0,
-      recentPays: [],
+      recentPays: [], sinceContract: 0,
       day: 0, week: 1, activeChem: "water", info: {},
       stats: { bestClean:0, longestStreak:0, repoCount:0, crewEarnings:0, grove:0, city:0, harbor:0 },
       story: {}
@@ -874,49 +900,49 @@ body{
   }
   var GEAR = {
     pressure:{ title:"Water Pressure", icon:"bolt", costs:[110,290,640],
-      desc:["Spray power +0.3 (0.5 → 0.8): grime strips 60% faster. Uses a little more water.","Spray power +0.3 (0.8 → 1.1). More water.","Spray power +0.3 (1.1 → 1.4). More water."] },
+      desc:["A stronger pump: grime strips faster.","Stronger still.","The strongest pump you can fit."] },
     nozzle:  { title:"Nozzle Width",   icon:"nozzle", costs:[90,240,520],
-      desc:["Nozzle +1.25 px: spray area +46%. A wider spray drinks more water (+21%).","Nozzle +1.25 px: spray area +37%. Water +17%.","Nozzle +1.25 px: spray area +32%. Water +15%."] },
+      desc:["A wider nozzle: more ground per pass.","Wider still.","The widest nozzle."] },
     tank:    { title:"Tank Capacity",  icon:"barrel", costs:[80,210,480],
-      desc:["Tank +110 L (260 → 370 L). A bigger tank fills 10% slower.","Tank +130 L (370 → 500 L). Fills 20% slower.","Tank +160 L (500 → 660 L). Fills 30% slower."] },
+      desc:["A bigger tank — it takes a little longer to fill.","A bigger tank.","The biggest tank."] },
     refill:  { title:"Refill Speed",   icon:"faucet", costs:[90,230,470],
-      desc:["Refill 1.7 s → 1.3 s","Refill 1.3 s → 0.9 s","Refill 0.9 s → 0.55 s"] },
+      desc:["A faster pump at the hydrant.","Faster still.","The fastest refill."] },
     pay:     { title:"Money per Job",  icon:"coin", costs:[100,260,560],
-      desc:["Pay +12% on every job. Pricier clients bring 4% tougher dirt.","Pay +24% in total. Dirt +8%.","Pay +36% in total. Dirt +12%."] },
+      desc:["Pricier clients: more pay, 4% tougher dirt.","More pay, dirt +8% in total.","More pay, dirt +12% in total."] },
     patience:{ title:"Patience",       icon:"hourglass", costs:[80,210,460],
-      desc:["Customer patience +10 s (40 → 50 s)","Customer patience +10 s (50 → 60 s)","Customer patience +10 s (60 → 70 s)"] },
-    morale:  { title:"Crew Morale",    icon:"heart", costs:[350,900,2200],
-      desc:["Crew income +15%. Wages +10%.","Crew income +30% in total. Wages +20%.","Crew income +45% in total. Wages +30%."] },
+      desc:["Customers wait 10 s longer.","Another 10 s.","Another 10 s."] },
+    morale:  { title:"Crew Morale",    icon:"heart", costs:[250,650,1500],
+      desc:["Happier crew: income +15%, wages +5%.","Income +30% in total, wages +10%.","Income +45% in total, wages +15%."] },
     watergun:{ title:"Water Gun",      icon:"watergun", costs:[120,300,650],
-      desc:["Your son's water gun +1.2 px: his spray area +95%. Pocket money +$5 a week.","+1.2 px: spray area +65% more. +$5 a week.","+1.2 px: spray area +50% more. +$5 a week."] },
+      desc:["A bigger water gun for your son: wider and stronger. Pocket money +$5 a week.","Bigger still. +$5 a week.","The Super Soaker. +$5 a week."] },
     cone:    { title:"Even Cone",      icon:"cone", costs:[130,320,700],
-      desc:["A flatter spray: the cone's edge strips 60% as hard as the centre (was 50%). Peak power −4%.","Edge at 70%. Peak power −8%.","Edge at 80% — the whole cone works. Peak power −12%."] },
+      desc:["A flatter spray: the cone's edge strips 60% as hard as the centre (was 50%), the centre a bit softer.","Edge at 70%.","Edge at 80% — the whole cone works."] },
     flow:    { title:"Flow Control",   icon:"valve", costs:[100,260,560],
-      desc:["Water use −15% per pass. Spray power −3%.","Water −30% in total. Power −6%.","Water −45% in total — the tank lasts nearly twice as long. Power −9%."] },
+      desc:["Less water per pass, a touch less power.","Less again.","The tank lasts nearly twice as long."] },
     contracts:{ title:"Contracts",     icon:"scroll", costs:[200,450,900],
-      desc:["Customers start offering contracts: leave a marked patch spotless for +15% pay. Miss one and it costs a reputation star.","Contract bonus +20%","Contract bonus +25%, and they come more often"] },
+      desc:["Customers start offering contracts on about half your jobs: leave a marked patch spotless for +15% pay. Miss one and it costs a reputation star.","Contract bonus +20%.","Contract bonus +25%, and they come more often."] },
     overtime:{ title:"Overtime",       icon:"calendar", costs:[300,700,1500],
-      desc:["Crew work Saturdays. Wages +15%.","Crew work Sundays too.","Weekend crew income +20%."] },
+      desc:["Crew work Saturdays — even when you rest. Wages +15%.","Crew work Sundays too. Wages +10% more.","Weekend crew income +20%."] },
 
     /* trunks - each one opens the two branches above it */
     powercore:{ title:"Pump Core",    icon:"pump", costs:[150],
-      desc:["Spray power +0.12. Opens the Pressure and Nozzle branches."] },
+      desc:["Opens the Pressure, Nozzle and Cone branches."] },
     tankcore: { title:"Plumbing",     icon:"wrench", costs:[150],
-      desc:["Tank +70 L. Opens the Capacity and Refill branches."] },
+      desc:["Opens the Capacity, Refill and Flow branches."] },
     bizcore:  { title:"Paperwork",    icon:"briefcase", costs:[150],
-      desc:["Pay +6%. Opens the Money and Patience branches."] },
+      desc:["Opens the Money, Patience and Contracts branches."] },
     crewcore: { title:"Crew Van",     icon:"hardhat", costs:[400],
-      desc:["Crew income +10%. Opens the Morale and Water Gun branches."] },
+      desc:["Opens the Morale, Water Gun and Overtime branches."] },
 
     /* capstones - each needs BOTH branches of its trunk maxed */
     surge:    { title:"Surge Lance",  icon:"lance", costs:[1500],
-      desc:["Spray power +0.4 and nozzle +1.5 px (spray area +36%). Needs all three water branches maxed."] },
+      desc:["The last word in lances. Needs all three water branches maxed."] },
     bigrig:   { title:"Big Rig Tank", icon:"truck", costs:[1500],
-      desc:["Tank +200 L and every refill 30% faster."] },
+      desc:["A tank the size of a pool, and every refill 30% faster."] },
     empire:   { title:"Franchise",    icon:"crown", costs:[1700],
-      desc:["Pay +20% and customer patience +12 s."] },
+      desc:["Your name on other people's vans."] },
     family:   { title:"Family Business", icon:"family", costs:[2400],
-      desc:["Crew income +30%, and your son fires twice as often."] }
+      desc:["Everybody pitches in: your son fires a third more often."] }
   };
   var SHOP = {
     mosskiller: { title:"Moss Killer",  icon:"flaskMoss", costs:[150], chem:true,
@@ -928,13 +954,13 @@ body{
     rustremover:{ title:"Rust Remover", icon:"flaskRust", costs:[300], chem:true,
       desc:["Dissolves rust bloom — and only rust. Switch to it mid-job (or press 5)."] },
     prowasher: { title:"Pro Pressure Washer", icon:"wand", costs:[900],
-      desc:["Spray power +0.42 and nozzle +2 px (spray area +55% or more). Drinks 10% more water."] },
+      desc:["A commercial unit: much more power and a wider spray."] },
     foamcannon:{ title:"Foam Cannon", icon:"foam", costs:[260,540],
-      desc:["Auto-cleans a random spot every 1.35 s. Each shot uses 8 L from the tank.","Auto-cleans every 0.8 s, with a wider blast. 8 L a shot."] },
+      desc:["Blasts foam onto the dirtiest patch it can see every 1.35 s. 5 L a shot from your tank.","Every 0.8 s, a wider, stronger blast."] },
     tipjar:    { title:"Tip Jar", icon:"jar", costs:[190],
-      desc:["Customers tip for speed: the jar starts full and empties as the timer runs. Needs an 80% clean."] },
+      desc:["Customers tip for a clean job done fast. The tip grows as the job gets cleaner (from 50%) and shrinks as time passes — even a job that runs out of time can earn a little."] },
     lease:     { title:"Cheaper Lease", icon:"book", costs:[300,700,1500],
-      desc:["Weekly payments −10%","−20% in total","−30% in total"] }
+      desc:["A better deal on the van.","Better still.","The best deal in town."] }
   };
   /* Legacy perks: bought with reputation stars (earned on every bill you pay), permanent. */
   var PERKS = {
@@ -955,9 +981,9 @@ body{
   };
   /* Crew work their own jobs (income per job you finish) and draw wages on every overhead bill. */
   var CREW = [
-    { id:"jordan", name:"Jordan", icon:"p_jordan", hire:320,  rate:45,  ups:[260,600,1400],    blurb:"Your cousin. Shows up. Mostly." },
-    { id:"mimi",   name:"Mimi",   icon:"p_mimi", hire:1400, rate:120, ups:[900,2000,4500],   blurb:"Fast, thorough, headphones always in." },
-    { id:"rex",    name:"Rex",    icon:"p_rex", hire:4200, rate:300, ups:[2800,6000,12000], blurb:"Ex-ferry mechanic. Fears no barnacle." }
+    { id:"jordan", name:"Jordan", icon:"p_jordan", hire:600,  rate:45,  ups:[400,900,2000],     blurb:"Your cousin. Shows up. Mostly." },
+    { id:"mimi",   name:"Mimi",   icon:"p_mimi", hire:3200, rate:120, ups:[1600,3600,8000],   blurb:"Fast, thorough, headphones always in." },
+    { id:"rex",    name:"Rex",    icon:"p_rex", hire:9000, rate:300, ups:[4500,10000,22000], blurb:"Ex-ferry mechanic. Fears no barnacle." }
   ];
   /* Your son: no income, but he stands next to you on every job with a water gun. */
   var SON = { id:"son", name:"Ollie (your son)", icon:"p_son", hire:150, wage:10,
@@ -1054,14 +1080,21 @@ body{
   function progressToughness(){ return Math.min(1.9, 0.85 + state.jobsCompleted * 0.02) * (REGION_TOUGH[state.region] || 1) * (state.perks.neighbourly && state.region === "grove" ? 0.95 : 1); }
   function grimeToughness(){ return progressToughness() * Math.pow(rigMult(), 1 - RIG_KEEPS) * (1 + lvl("pay")*0.04); }   /* pricier clients bring worse dirt */
   function sonHired(){ return state.son > 0; }
-  function sonRadius(){ return 3.5 + lvl("watergun")*1.2; }
-  function sonIntervalMs(){ return lvl("family")>0 ? 350 : 700; }
+  function sonRadius(){ return 4.5 + lvl("watergun")*0.8; }
+  function sonPower(){ return 1.1 + lvl("watergun")*0.08; }       /* per shot, before the dirt's toughness (he keeps pace with the job) */
+  function foamPower(){ return foamLevel() >= 2 ? 0.55 : 0.7; }
+  var FOAM_WATER = 5;                                                /* litres from your tank per foam shot */
+  function sonIntervalMs(){ return lvl("family")>0 ? 520 : 700; }
   function crewMult(){ return 1 + lvl("crewcore")*0.10 + lvl("morale")*0.15 + lvl("family")*0.30 + (state.perks.legend ? 0.25 : 0); }
   /* wages drawn on every overhead bill */
+  /* A worker's weekly wage: WAGE_DAYS days of what they bring in on this route (before crew
+     upgrades), so wages keep pace with a better route. Morale and overtime add to it. */
+  var WAGE_DAYS = 1.5;
+  function wageMult(){ return 1 + lvl("morale")*0.05 + (lvl("overtime") >= 1 ? 0.15 : 0) + (lvl("overtime") >= 2 ? 0.10 : 0); }
+  function crewWage(c, level){ return Math.round(c.rate * (1 + level*0.6) * regionDef().pay * WAGE_DAYS * wageMult()); }
   function crewSalary(){
     var s = 0;
-    CREW.forEach(function(c){ if(crewHired(c.id)) s += Math.round(c.rate * 0.5 * (1 + crewLevel(c.id)*0.6)); });
-    s = Math.round(s * (1 + lvl("morale")*0.10 + (lvl("overtime") ? 0.15 : 0)));   /* morale and overtime cost wages */
+    CREW.forEach(function(c){ if(crewHired(c.id)) s += crewWage(c, crewLevel(c.id)); });
     if(sonHired()) s += SON.wage + lvl("watergun")*5;
     return s;
   }
@@ -1089,7 +1122,7 @@ body{
   function waterPerSecond(){ return waterPerTick() * (1000/70); }
   function contractsUnlocked(){ return lvl("contracts") > 0; }
   function contractBonus(){ return [0, 0.15, 0.20, 0.25][Math.min(3, lvl("contracts"))]; }
-  function contractChance(){ return lvl("contracts") >= 3 ? 0.65 : 0.45; }
+  function contractChance(){ return lvl("contracts") >= 3 ? 0.55 : 0.40; }   /* plus a pity rule: never three in a row without */
   function foamLevel(){ return lvl("foamcannon"); }
   function tipChance(){ return lvl("tipjar")>0 ? 0.35 : 0; }
   function billEvery(){ return 5; }   /* five working days a week */
@@ -1157,6 +1190,8 @@ body{
     return Math.round(total * regionDef().pay * crewMult() * weekendCrewMult());
   }
   function crewIncomeToday(){ return crewWorksToday() ? crewIncome() : 0; }
+  /* what the crew earn on a given day of the week, whether or not you work it yourself */
+  function crewIncomeOn(d){ var keep = state.day; state.day = d; var v = crewIncomeToday(); state.day = keep; return v; }
   function regionUnlocked(id){
     return state.jobsCompleted >= REGIONS[id].unlock;
   }
@@ -2682,12 +2717,21 @@ body{
     var a = job.area;
     return { cx:cx, cy:cy, cw:cw, ch:ch, mask:mask, total:total, x:a.x+cx*CELL, y:a.y+cy*CELL, w:cw*CELL, h:ch*CELL, bonus:0.30 };
   }
+  /* a marching dashed frame with ink behind it, so it reads over any dirt */
   function drawContract(){
     var z = job.contract; if(!z) return;
-    var done = contractProgress() >= 0.999, col = done ? P.leafHi : P.sunHi;
-    for(var x=z.x; x<z.x+z.w; x+=4){ FX(x, z.y-1, 2, 1, col); FX(x, z.y+z.h, 2, 1, col); }
-    for(var y=z.y; y<z.y+z.h; y+=4){ FX(z.x-1, y, 1, 2, col); FX(z.x+z.w, y, 1, 2, col); }
-    FX(z.x-2, z.y-2, 3, 3, col); FX(z.x+z.w-1, z.y-2, 3, 3, col); FX(z.x-2, z.y+z.h-1, 3, 3, col); FX(z.x+z.w-1, z.y+z.h-1, 3, 3, col);
+    var done = contractProgress() >= 0.999, col = done ? P.leafHi : P.sunHi, off = Math.floor(now()/160) % 6;
+    FX(z.x-2, z.y-2, z.w+4, 1, P.ink); FX(z.x-2, z.y+z.h+1, z.w+4, 1, P.ink); FX(z.x-2, z.y-2, 1, z.h+4, P.ink); FX(z.x+z.w+1, z.y-2, 1, z.h+4, P.ink);
+    for(var x=z.x-1+off; x<z.x+z.w; x+=6){ FX(x, z.y-1, 3, 2, col); FX(x, z.y+z.h-1, 3, 2, col); }
+    for(var y=z.y-1+off; y<z.y+z.h; y+=6){ FX(z.x-1, y, 2, 3, col); FX(z.x+z.w-1, y, 2, 3, col); }
+    FX(z.x-3, z.y-3, 4, 4, col); FX(z.x+z.w-1, z.y-3, 4, 4, col); FX(z.x-3, z.y+z.h-1, 4, 4, col); FX(z.x+z.w-1, z.y+z.h-1, 4, 4, col);
+  }
+  /* a short message across the top of the stage that doesn't block the wand */
+  var bannerTimer = null;
+  function flashBanner(html){
+    var b = $("stageBanner"); b.innerHTML = html; b.classList.remove("hidden");
+    if(bannerTimer) clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(function(){ b.classList.add("hidden"); }, 3200);
   }
   function cleanliness(){
     if(!grimeTotal) return 1;
@@ -2781,6 +2825,23 @@ body{
 
   /* Your son stands a few steps from you and plinks at the dirt near your aim */
   var son = { x:0, y:0, target:null, flash:0, acc:0 };
+  /* the Foam Cannon on the truck: every so often it lands a blob of foam on the dirtiest patch it
+     can see (that your chemical can cut), 8 L from your tank a shot */
+  function foamTick(dt){
+    if(foamLevel() <= 0 || refilling) return;
+    foamAcc += dt;
+    if(foamAcc < Math.max(700, 1900 - foamLevel()*550)) return;
+    foamAcc = 0;
+    var ci = pickCell(state.activeChem, foamCell, 40); if(ci == null) return;
+    foamCell = ci;   /* it works outward from the last blast, so patches actually come clean */
+    var a = job.area, fxp = a.x + (ci % gCols)*CELL + 1, fyp = a.y + Math.floor(ci/gCols)*CELL + 1;
+    sprayGrime(fxp, fyp, 8 + foamLevel()*2, foamPower() * job.tough, state.activeChem);
+    splash(fxp, fyp, "#ffffff", 6); splash(fxp, fyp, job.grime.splash, 3);
+    job.tank = Math.max(0, job.tank - FOAM_WATER); setTank(job.tank);
+    if(job.tank <= 0) beginRefill();
+    updateClean();
+  }
+  var foamCell = null;
   function sonPos(){ return job.def.son || { x: job.def.hero.x - 24, y: job.def.hero.y - 16 }; }
   function sonTick(dt){
     if(!sonHired()) return;
@@ -2788,18 +2849,29 @@ body{
     if(son.flash > 0) son.flash -= dt;
     if(son.acc < sonIntervalMs()) return;
     son.acc = 0;
-    /* he looks for dirt on his own: a handful of random cells, the dirtiest wins */
-    var a = job.area, best = null, bestHp = 0.2;
-    for(var s=0; s<24 && grime; s++){
-      var ci = Math.floor(Math.random()*grime.length);
-      if(grime[ci] > bestHp){ bestHp = grime[ci]; best = ci; }
-    }
-    if(best === null) return;
-    var tx = a.x + (best % gCols)*CELL + 1, ty = a.y + Math.floor(best/gCols)*CELL + 1;
+    /* he works one patch until it's clean, then moves to the nearest dirt his gun can shift
+       with whatever is in the tank (your active chemical); he keeps pace with the job's toughness */
+    var chem = state.activeChem, cur = son.cell;
+    if(cur == null || grime[cur] <= 0.03 || !cellCuttable(cur, chem)) son.cell = cur = pickCell(chem, cur, 50);
+    if(cur == null) return;
+    var a = job.area, tx = a.x + (cur % gCols)*CELL + 1, ty = a.y + Math.floor(cur/gCols)*CELL + 1;
     son.target = { x:tx, y:ty }; son.flash = 420;
-    var removed = sprayGrime(tx, ty, sonRadius(), 0.32, state.activeChem);
+    var removed = sprayGrime(tx, ty, sonRadius(), sonPower() * job.tough, chem);
     if(removed > 0.2) splash(tx, ty, job.grime.splash, 2);
     updateClean();
+  }
+  /* can this cell's dirt be cut with this chemical at full strength? */
+  function cellCuttable(i, chem){ var t = job.types[cellType ? cellType[i] : 0] || job.grime; return chem === "auto" || chemFactor(t, chem) >= 1; }
+  /* a dirty cell worth aiming at: dirtier is better, close to `near` is better */
+  function pickCell(chem, near, samples){
+    var best = null, bestScore = -1e9, nx = near != null ? near % gCols : 0, ny = near != null ? Math.floor(near/gCols) : 0;
+    for(var k=0; k<samples && grime; k++){
+      var ci = Math.floor(Math.random()*grime.length);
+      if(grime[ci] <= 0.2 || !cellCuttable(ci, chem)) continue;
+      var score = grime[ci] - (near != null ? Math.hypot(ci % gCols - nx, Math.floor(ci/gCols) - ny) / 6 : 0);
+      if(score > bestScore){ bestScore = score; best = ci; }
+    }
+    return best;
   }
   function drawSon(){
     if(!sonHired()) return;
@@ -2932,8 +3004,12 @@ body{
     bx.clearRect(0,0,CW,CH);
     def.scene(def.area, rng);
     buildGrime(rng);
-    job.contract = (contractsUnlocked() && rng() < contractChance()) ? makeContract(rng) : null;
-    if(job.contract) job.contract.bonus = contractBonus();
+    job.contract = null;
+    if(contractsUnlocked() && (rng() < contractChance() || (state.sinceContract || 0) >= 2)){
+      for(var ctry=0; ctry<4 && !job.contract; ctry++) job.contract = makeContract(rng);
+    }
+    if(contractsUnlocked()) state.sinceContract = job.contract ? 0 : (state.sinceContract || 0) + 1;
+    if(job.contract){ job.contract.bonus = contractBonus(); $("contractPct").textContent = Math.round(job.contract.bonus*100) + "%"; }
     if(chemList().indexOf(state.activeChem) < 0) state.activeChem = "water";
     renderChemBar();
     job.tipMax = tipJarMax();
@@ -2943,15 +3019,16 @@ body{
     aim = { x: def.area.x + def.area.w/2, y: def.area.y + def.area.h/2 };
     spraying = false; hovering = false; pressed = false; lastSprayPt = null; refilling = false; paused = false; $("btnPauseJob").textContent = "Pause";
     sprayAcc = foamAcc = rainAcc = 0;
-    son = { x:0, y:0, target:null, flash:0, acc:0 }; bot = { target:null, flash:0, acc:0 };
+    son = { x:0, y:0, target:null, flash:0, acc:0, cell:null }; bot = { target:null, flash:0, acc:0 }; foamCell = null;
     setTank(job.tank); setClean(0); setTimer(job.duration);
-    $("stageOverlay").classList.add("hidden");
+    $("stageOverlay").classList.add("hidden"); $("stageBanner").classList.add("hidden");
 
     var fresh = types.filter(function(t){ return !state.info["dirt_"+t.id]; });
     var startIt = function(){ playIntro(function(){
       if(!job || job.ended) return;
       job.started = true;
       job.start = now();
+      if(job.contract) flashBanner(ic("scroll", "pw-icon") + "Contract! Leave the marked patch spotless for +" + Math.round(job.contract.bonus*100) + "% pay");
       lastTs = 0;
       rafId = requestAnimationFrame(frame);
     }); };
@@ -3009,20 +3086,7 @@ body{
       sprayAcc = 0;
     }
 
-    if(foamLevel() > 0){
-      foamAcc += dt;
-      var iv = Math.max(700, 1900 - foamLevel()*550);
-      if(foamAcc >= iv){
-        foamAcc = 0;
-        var a = job.area;
-        var fxp = a.x + 8 + Math.random()*(a.w-16), fyp = a.y + 8 + Math.random()*(a.h-16);
-        sprayGrime(fxp, fyp, 10 + foamLevel()*2.5, 0.5, state.activeChem);
-        splash(fxp, fyp, job.grime.splash, 5);
-        job.tank = Math.max(0, job.tank - 8); setTank(job.tank);
-        if(job.tank <= 0) beginRefill();
-        updateClean();
-      }
-    }
+    foamTick(dt);
 
     if(job.weather.rain){
       rainAcc += dt;
@@ -3122,11 +3186,16 @@ body{
     var list = chemList(); if(list[n-1]){ state.activeChem = list[n-1]; renderChemBar(); }
   });
   /* the tip you'd get right now: it shrinks as the customer waits */
-  function tipJarMax(){ return 12 + Math.round(state.jobsCompleted*1.5) + Math.round(regionDef().pay*8); }
-  function tipNow(msLeft){ if(lvl("tipjar") <= 0) return 0; return Math.round(job.tipMax * clamp(msLeft/job.duration, 0, 1)); }
+  function tipJarMax(){ return 15 + Math.round(state.jobsCompleted*2) + Math.round(regionDef().pay*10); }
+  /* the tip: nothing under 50% clean, the full jar at 100%; time takes it down to a quarter */
+  function tipNow(msLeft, clean){
+    if(lvl("tipjar") <= 0) return 0;
+    var byClean = clamp((clean - 0.5) / 0.5, 0, 1), byTime = 0.25 + 0.75*clamp(msLeft/job.duration, 0, 1);
+    return Math.round(job.tipMax * byClean * byTime);
+  }
   function renderJobHud(msLeft){
     var tipEl = $("tipBadge");
-    if(lvl("tipjar") > 0){ tipEl.classList.remove("hidden"); $("tipVal").textContent = money(tipNow(msLeft)); }
+    if(lvl("tipjar") > 0){ tipEl.classList.remove("hidden"); $("tipVal").textContent = money(tipNow(msLeft, cleanliness())); }
     else tipEl.classList.add("hidden");
     if(job.contract){
       var pr = contractProgress();
@@ -3264,7 +3333,7 @@ body{
     pay = Math.round(pay);
 
     var leftMs = Math.max(0, job.duration - elapsed);
-    var tip = (lvl("tipjar") > 0 && pct >= 80) ? tipNow(leftMs) : 0;
+    var tip = lvl("tipjar") > 0 ? tipNow(leftMs, pct/100) : 0;
     var contractMet = !!(job.contract && contractProgress() >= 0.999);
     var contractBonus = contractMet ? Math.round(pay * job.contract.bonus) : 0;
     pay += contractBonus;
@@ -3302,8 +3371,8 @@ body{
     ];
     if(contractMet) rows.push(mRow(ic("bill")+"Contract met", "+"+money(contractBonus), "pw-stats__val--up"));
     else if(job.contract) rows.push(mRow(ic("bill")+"Contract missed", Math.floor(contractProgress()*100)+"% — −1 reputation", "pw-stats__val--down"));
-    if(tip>0)  rows.push(mRow(ic("jar")+"Tip for speed", "+"+money(tip), "pw-stats__val--up"));
-    else if(lvl("tipjar") > 0) rows.push(mRow(ic("jar")+"Tip", pct >= 80 ? "too slow — nothing" : "under 80% — nothing", "pw-stats__val--down"));
+    if(tip>0)  rows.push(mRow(ic("jar")+"Tip", "+"+money(tip)+(mode === "timeout" ? " (out of time)" : ""), "pw-stats__val--up"));
+    else if(lvl("tipjar") > 0) rows.push(mRow(ic("jar")+"Tip", "under 50% clean — nothing", "pw-stats__val--down"));
     if(crew>0) rows.push(mRow(ic("hardhat")+"Crew jobs", "+"+money(crew), "pw-stats__val--up"));
     else if(crewIncome()>0) rows.push(mRow(ic("hardhat")+"Crew", "off — it’s the weekend"));
     if(state.streak>1) rows.push(mRow(ic("flame")+"Streak", "×"+state.streak+(state.streak>=STREAK_MAX ? " (max)" : "")+" · pay +"+Math.round((streakMult()-1)*100)+"%"));
@@ -3318,12 +3387,12 @@ body{
   }
 
   /* every dirt type a route's jobs can throw at you, in unlock order */
-  function regionDirt(regionId){
+  function regionDirt(regionId, onlyNow){
     var seen = {}, out = [];
     REGIONS[regionId].jobs.forEach(function(key){
       var d = JOBS[key], list = (d.grimes || REGIONS[regionId].grimes).slice();
       if(d.graffitiChance) list.push("graffiti");
-      list.forEach(function(id){ if(!seen[id]){ seen[id] = 1; out.push(GRIME_TYPES[id]); } });
+      list.forEach(function(id){ if(!seen[id] && (!onlyNow || DIRT_UNLOCK[id] <= state.jobsCompleted)){ seen[id] = 1; out.push(GRIME_TYPES[id]); } });
     });
     return out.sort(function(a, b){ return DIRT_UNLOCK[a.id] - DIRT_UNLOCK[b.id]; });
   }
@@ -3353,21 +3422,33 @@ body{
       if(state.jobsCompleted >= REGIONS[id].unlock && !state.story[id+"Unlock"]) unlocked = id;
     });
     if(unlocked){
+      regionDirt(unlocked, true).forEach(function(t){ state.info["soon_"+t.id] = 1; });   /* listed here: no second heads-up */
       return tellStory(unlocked+"Unlock", function(){
         showModal(
           mHead(REGIONS[unlocked].icon, REGIONS[unlocked].name+' unlocked!', REGIONS[unlocked].tag, "New route") +
           mRows([mRow("Pay rate", "×"+REGIONS[unlocked].pay.toFixed(2), "pw-stats__val--up")]) +
-          '<div class="pw-label" style="margin-top:10px">Dirt on this route</div>' + dirtRows(regionDirt(unlocked)) +
-          mNote("Each chemical cuts one kind of dirt; the rest is plain water. Stock the rack in the Shop before you drive out. Switch routes any time from the map."),
+          '<div class="pw-label" style="margin-top:10px">Dirt on this route</div>' + dirtRows(regionDirt(unlocked, true)) +
+          mNote("Each chemical cuts one kind of dirt; the rest is plain water." + (regionDirt(unlocked).length > regionDirt(unlocked, true).length ? " More kinds of dirt turn up here later — you’ll get a heads-up." : "") + " Switch routes any time from the map."),
           [{ label:"Nice", cls:"pw-btn--primary", action: afterJob3 }]
         );
       });
     }
     afterJob3();
   }
+  /* a new kind of dirt can now turn up on your route: say what it is and what cuts it, once */
+  function newDirtNotice(then){
+    var fresh = regionDirt(state.region, true).filter(function(t){ return DIRT_UNLOCK[t.id] > 0 && !state.info["soon_"+t.id] && !state.info["dirt_"+t.id]; });
+    if(!fresh.length) return then();
+    fresh.forEach(function(t){ state.info["soon_"+t.id] = 1; }); save();
+    var need = fresh.filter(function(t){ return t.chem; });
+    showModal(mHead(fresh[0].icon, "New dirt on " + regionDef().name, fresh.map(function(t){ return t.name; }).join(" and ") + " can turn up on your jobs from now on.", "Heads up") +
+      dirtRows(fresh) +
+      (need.length ? mNote(need.map(function(t){ return CHEMS[t.chem].name + " is " + money(costOf(t.chem, 0)) + " in the Shop."; }).join(" ")) : mNote("Plain water does it — it’s just thick.")),
+      [{ label:"Got it", cls:"pw-btn--primary", action: then }]);
+  }
   function afterJob3(){
     if(!state.ownedOutright && state.cash >= BUYOUT_TARGET) return offerBuyout(advanceDay);
-    advanceDay();
+    newDirtNotice(advanceDay);
   }
   function offerBuyout(then){
     showModal(
@@ -3385,10 +3466,10 @@ body{
       var due = overheadAmount(state.billNumber), canRest = state.cash >= due;
       var go = function(){
         showModal(
-          mHead("clock", "It’s the weekend", "Sunday night the weekly payment of <b>"+money(due)+"</b> is due. "+(crewWorksToday() ? "" : "Your crew don’t work weekends"+(lvl("overtime") ? " yet" : "")+".")+(canRest ? " You can afford it — rest, or squeeze in a job." : " You can’t cover it yet — better work "+dayName+"."), "Week "+state.week) +
+          mHead("clock", "It’s the weekend", "Sunday night the weekly payment of <b>"+money(due)+"</b> is due. "+(crewIncome() <= 0 ? "" : (crewWorksToday() ? "Your crew work "+dayName+" whether you rest or not." : "Your crew don’t work "+dayName+"s"+(lvl("overtime") ? " yet" : "")+"."))+(canRest ? " You can afford it — rest, or squeeze in a job." : " You can’t cover it yet — better work "+dayName+"."), "Week "+state.week) +
           mRows([mRow(ic("coin")+"You have", money(state.cash), canRest ? "pw-stats__val--up" : "pw-stats__val--down"), mRow(ic("bill")+"Due Sunday", money(due))]),
           [ { label:"Work "+dayName, cls:"pw-btn--primary", icon:"wand", action:function(){ showScreen("screen-home"); } },
-            canRest ? { label:"Rest until Monday", cls:"pw-btn--ghost", action:function(){ state.day = 7; save(); advanceDay(); } }
+            canRest ? { label:"Rest until Monday", cls:"pw-btn--ghost", action:function(){ restWeekend(); } }
                     : { label:"Can’t rest — you’d miss the payment", cls:"pw-btn--ghost", disabled:true } ]
         );
       };
@@ -3400,6 +3481,22 @@ body{
     }
     showScreen("screen-home");
   }
+
+  /* you take the weekend off; the crew with Overtime don't */
+  function restWeekend(){
+    var earned = 0, days = [];
+    for(var d = state.day; d <= 6; d++){ var v = crewIncomeOn(d); if(v > 0){ earned += v; days.push(DAYS_LONG[d]); } }
+    state.day = 7;
+    if(earned > 0){
+      state.cash += earned; state.cashSinceRepo += earned; state.lifetimeEarnings += earned; state.stats.crewEarnings += earned;
+      save(); renderTop();
+      return showModal(mHead("calendar", "Your crew worked " + days.join(" and "), "You put your feet up; the crew put in the overtime.", "Weekend") +
+        mRows([mRow(ic("hardhat")+"Crew jobs", "+"+money(earned), "pw-stats__val--up")]),
+        [{ label:"Monday", cls:"pw-btn--primary", icon:"arrow-right", action: advanceDay }]);
+    }
+    save(); advanceDay();
+  }
+  var DAYS_LONG = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
   function doBuyout(){
     state.ownedOutright = true;
@@ -3742,12 +3839,12 @@ body{
       '<div class="pw-panel__head"><span class="pw-heading">'+ic("coin","pw-icon--24")+' Cash</span><span class="pw-label'+(after < 0 ? '" style="color:var(--danger-text)' : '')+'">'+money(state.cash)+'</span></div>' +
       (state.loan > 0
         ? '<p class="pw-small pw-soft">'+LENDER.name+'’s tab: <b>'+money(state.loan)+'</b> — he takes '+Math.round(LENDER.cut*100)+'% of every job until it’s square.</p>'
-        : '<p class="pw-small pw-soft">'+(after >= 0 ? 'After Sunday’s payment you keep <b>'+money(after)+'</b>.' : '<b>'+money(-after)+' short</b> of Sunday’s payment — keep washing.')+'</p>');
+        : '<p class="pw-small pw-soft">'+(after >= 0 ? 'After Sunday you keep <b>'+money(after)+'</b>.' : '<b>'+money(-after)+' short</b> for Sunday — keep washing.')+'</p>');
     /* the next thing worth buying */
     var rec = recommendBuy();
     $("advicePanel").innerHTML = rec
-      ? '<div class="pw-panel__head"><span class="pw-heading">'+ic(rec.icon,"pw-icon--24")+' Recommended</span><span class="pw-label '+(rec.afford ? 'pw-tag--ok' : '')+'">'+money(rec.cost)+'</span></div>' +
-        '<p class="pw-small pw-soft"><b>'+rec.title+'</b>'+(rec.level ? ' lv.'+rec.level : '')+' — '+rec.why+(rec.afford ? '' : ' Save up '+money(rec.cost - state.cash)+' more.')+'</p>'
+      ? '<div class="pw-panel__head"><span class="pw-heading">'+ic(rec.icon,"pw-icon--24")+' Recommended</span></div>' +
+        '<p class="pw-small pw-soft"><b>'+rec.title+'</b>'+(rec.level ? ' lv.'+rec.level : '')+' · <b class="'+(rec.afford ? 'pw-tag--ok' : '')+'">'+money(rec.cost)+'</b> — '+rec.why+'</p>'
       : '<div class="pw-panel__head"><span class="pw-heading">'+ic("check","pw-icon--24")+' Rig complete</span></div><p class="pw-small pw-soft">Nothing left to buy — it’s all profit now.</p>';
     $("advicePanel").onclick = rec ? function(){ showScreen(rec.screen); } : null;
     $("advicePanel").style.cursor = rec ? "pointer" : "";
@@ -3771,8 +3868,8 @@ body{
   var BUY_ORDER = ["powercore","nozzle","pressure","tankcore","tank","bizcore","patience","nozzle","refill","pressure","flow","pay","cone","tank","tipjar","nozzle","pressure","refill","patience","pay","foamcannon","contracts","lease","prowasher","cone","flow","tank","refill","patience","pay","contracts","cone","flow","lease","foamcannon","contracts","lease","surge","bigrig","empire"];
   function recommendBuy(){
     var jobs = state.jobsCompleted;
-    var dirt = regionDirt(state.region).filter(function(t){ return t.chem && !chemOwned(t.chem) && DIRT_UNLOCK[t.id] <= jobs + 2; });
-    if(dirt.length){ var ch = dirt[0].chem, cc = costOf(ch, 0); return { key:ch, title:SHOP[ch].title, icon:SHOP[ch].icon, cost:cc, afford:state.cash >= cc, level:0, screen:"screen-shop", why:dirt[0].name + " is on this route and only " + SHOP[ch].title + " cuts it." }; }
+    var dirt = regionDirt(state.region, true).filter(function(t){ return t.chem && !chemOwned(t.chem); });
+    if(dirt.length){ var ch = dirt[0].chem, cc = costOf(ch, 0); return { key:ch, title:SHOP[ch].title, icon:SHOP[ch].icon, cost:cc, afford:state.cash >= cc, level:0, screen:"screen-shop", why:"the only thing that cuts " + dirt[0].name + "." }; }
     var want = {};
     for(var i=0;i<BUY_ORDER.length;i++){
       var k = BUY_ORDER[i], def = GEAR[k] || SHOP[k]; want[k] = (want[k] || 0) + 1;
@@ -3780,7 +3877,8 @@ body{
       if(lvl(k) !== level || level >= def.costs.length) continue;      /* not the next step for this one */
       if(GEAR[k] && treeGate(k, level)) continue;                       /* locked behind the tree */
       var cost = costOf(k, level);
-      return { key:k, title:def.title, icon:def.icon, cost:cost, afford:state.cash >= cost, level:def.costs.length > 1 ? level+1 : 0, screen: GEAR[k] ? "screen-upgrades" : "screen-shop", why: def.desc[level].split(".")[0] + "." };
+      var d0 = gearDelta(k, level)[0];
+      return { key:k, title:def.title, icon:def.icon, cost:cost, afford:state.cash >= cost, level:def.costs.length > 1 ? level+1 : 0, screen: GEAR[k] ? "screen-upgrades" : "screen-shop", why: d0 ? d0.label.toLowerCase() + " " + d0.delta + "." : def.desc[level].split(".")[0] + "." };
     }
     return null;
   }
@@ -3898,6 +3996,55 @@ body{
 
   /* ---- skill tree: trunks at the bottom, two straight branches each, a capstone on top ---- */
   var treeTip = null, lastTapped = null;
+  /* What buying level `level` of `key` changes, in the game's own numbers: each row is
+     { label, from, to, delta } — only stats that actually move are returned. */
+  function statSnapshot(){
+    return {
+      power: sprayPower(), area: Math.pow(sprayRadius()/BASE_RADIUS, 2), water: waterPerSecond(), tank: tankMax(),
+      refill: refillMs()/1000, patience: jobMs()/1000, pay: (payMult()-1)*100, edge: (1-coneEdge())*100,
+      crew: crewIncome(), wages: crewSalary(), bill: overheadAmount(state.billNumber), contract: contractBonus()*100,
+      son: sonRadius(), sonPower: sonPower(), foam: foamLevel() ? 1000/Math.max(700, 1900 - foamLevel()*550) : 0
+    };
+  }
+  var STAT_ROWS = [
+    ["power", "Spray power", function(v){ return v.toFixed(2); }, ""],
+    ["area", "Spray area", function(v){ return "×" + v.toFixed(2); }, ""],
+    ["water", "Water usage", function(v){ return v.toFixed(1); }, " L/s", -1],
+    ["tank", "Tank", function(v){ return Math.round(v); }, " L"],
+    ["refill", "Refill time", function(v){ return v.toFixed(2); }, " s", -1],
+    ["patience", "Customer patience", function(v){ return Math.round(v); }, " s"],
+    ["pay", "Pay bonus", function(v){ return "+" + Math.round(v); }, "%"],
+    ["edge", "Cone edge strength", function(v){ return Math.round(v); }, "%"],
+    ["contract", "Contract bonus", function(v){ return Math.round(v); }, "%"],
+    ["crew", "Crew income", function(v){ return money(v); }, " /job"],
+    ["wages", "Wages", function(v){ return money(v); }, " /week", -1],
+    ["bill", "Weekly payment", function(v){ return money(v); }, "", -1],
+    ["son", "Water gun reach", function(v){ return v.toFixed(1); }, " px"],
+    ["sonPower", "Water gun power", function(v){ return v.toFixed(2); }, ""],
+    ["foam", "Foam shots", function(v){ return v.toFixed(2); }, " /s"]
+  ];
+  function gearDelta(key, level){
+    var keep = state.gear[key];
+    state.gear[key] = level; var a = statSnapshot();
+    state.gear[key] = level + 1; var b = statSnapshot();
+    state.gear[key] = keep;
+    var rows = [];
+    STAT_ROWS.forEach(function(r){
+      var k = r[0], d = b[k] - a[k];
+      if(Math.abs(d) < 0.005) return;
+      var up = d > 0, unit = r[3], fmtD = r[2](Math.abs(d)).replace(/^[+×]/, "");
+      if(k === "area"){ fmtD = Math.round((b[k]/a[k] - 1)*100) + "%"; unit = ""; }
+      rows.push({ label: r[1], from: String(r[2](a[k])), to: r[2](b[k]) + r[3], delta: (up ? "+" : "−") + fmtD + unit, good: up === ((r[4] || 1) > 0) });
+    });
+    return rows;
+  }
+  function deltaHTML(rows){
+    if(!rows.length) return "";
+    return '<div class="stat-delta">' + rows.map(function(r){
+      return '<div><span>' + r.label + ':</span> <b class="' + (r.good ? "is-good" : "is-bad") + '">' + r.delta + '</b> <span class="pw-soft">(' + r.from + ' → ' + r.to + ')</span></div>';
+    }).join("") + '</div>';
+  }
+
   function renderTree(){
     var wrap = $("treeWrap");
     wrap.innerHTML = "";
@@ -3923,7 +4070,7 @@ body{
       var status = have > level ? { text:"Installed", cls:"pw-tag--ok" }
         : gate ? { text:gate, cls:"pw-soft" }
         : { text:"Buy for " + money(costOf(key, level)), cls: state.cash >= costOf(key, level) ? "pw-tag--price" : "pw-tag--cannot" };
-      return { title: def.title + (multi ? " · Lv " + (level+1) : ""), desc: def.desc[level], status: status };
+      return { title: def.title + (multi ? " · Lv " + (level+1) : ""), desc: def.desc[level], stats: have > level ? "" : deltaHTML(gearDelta(key, level)), status: status };
     }
     function addNode(x, y, cls, key, level, badge){
       var n = document.createElement("button");
@@ -3944,12 +4091,12 @@ body{
       n.setAttribute("data-key", key); n.setAttribute("data-level", level);
       var show = function(){
         var info = nodeInfo(key, level);
-        treeTip.innerHTML = '<div class="pw-heading">'+info.title+'</div><p class="pw-small">'+info.desc+'</p><p class="pw-caption '+info.status.cls+'">'+info.status.text+'</p>';
+        treeTip.innerHTML = '<div class="pw-heading">'+info.title+'</div><p class="pw-small">'+info.desc+'</p>'+info.stats+'<p class="pw-caption '+info.status.cls+'">'+info.status.text+'</p>';
         treeTip.classList.remove("hidden");
-        var W = wrap.clientWidth, H = wrap.clientHeight;
-        var left = Math.max(0, Math.min(W - 220, x/100*W - 110));
+        var W = wrap.clientWidth, H = wrap.clientHeight, TW = treeTip.offsetWidth, TH = treeTip.offsetHeight;
+        var left = Math.max(0, Math.min(W - TW, x/100*W - TW/2));
         var top = y/100*H + 30;
-        if(top + 96 > H) top = y/100*H - 30 - 96;
+        if(top + TH > H) top = Math.max(0, y/100*H - 30 - TH);
         treeTip.style.left = left + "px"; treeTip.style.top = top + "px";
       };
       n.onmouseenter = show; n.onfocus = show;
@@ -4018,7 +4165,7 @@ body{
   function openGearModal(key, level){
     var def = GEAR[key] || SHOP[key];
     var multi = def.costs.length > 1;
-    var head = mHead(def.icon, def.title+(multi ? ' — Lv '+(level+1) : ''), def.desc[level], GEAR[key] ? "Upgrade" : "Shop");
+    var head = mHead(def.icon, def.title+(multi ? ' — Lv '+(level+1) : ''), def.desc[level], GEAR[key] ? "Upgrade" : "Shop") + (lvl(key) > level ? "" : deltaHTML(gearDelta(key, level)));
     var closeBtn = { label:"Close", cls:"pw-btn--ghost" };
 
     if(lvl(key) > level){
@@ -4056,7 +4203,7 @@ body{
     grid.innerHTML = "";
     Object.keys(SHOP).forEach(function(key){
       var def = SHOP[key], l = lvl(key), maxed = l >= def.costs.length;
-      var card = cardEl(def.icon, def.title, maxed ? def.desc[def.desc.length-1] : def.desc[l],
+      var card = cardEl(def.icon, def.title, (maxed ? def.desc[def.desc.length-1] : def.desc[l]) + (maxed ? "" : deltaHTML(gearDelta(key, l))),
         def.costs.length>1 ? 'Level '+l+' / '+def.costs.length : '', maxed ? "pw-card--owned" : "");
       var foot = footEl();
       if(maxed){
@@ -4070,7 +4217,7 @@ body{
         btn.disabled = state.cash < cost;
         btn.onclick = function(){
           buyGear(key, cost); SFX.buy();
-          if(key === "tipjar") tellInfo("tipjar", "jar", "The Tip Jar", "Customers tip for <b>speed</b>. On every job the jar starts full and drains as the timer runs — you’ll see it counting down in the top-right corner. Finish at least 80% clean and what’s left in the jar is yours.");
+          if(key === "tipjar") tellInfo("tipjar", "jar", "The Tip Jar", "Customers tip for a <b>clean job done fast</b>. The jar in the top-right fills as the job gets cleaner (from 50% clean) and drains as the clock runs. Even when time runs out you keep a little of it — so a nearly-clean job still earns a tip.");
           else if(def.chem) tellInfo("chem_"+key, "flask", def.title, "It’s in the wand now. During a job, switch between water and your chemicals with the buttons under the stage or the number keys. Dirt that needs a chemical barely moves under the wrong one.");
         };
         foot.appendChild(btn);
@@ -4123,7 +4270,7 @@ body{
       card.innerHTML = '<div class="pw-card__title">'+portraitSVG(c.id).replace('pw-portrait__art','pw-icon--32')+'<h3 class="pw-heading">'+c.name+'</h3></div>' +
         '<p class="pw-small pw-card__body">'+c.blurb+'</p>' +
         '<div class="pw-caption pw-soft">'+(c.id === "mimi" ? 'Works jobs on her own' : 'Works jobs on his own')+' — every weekday you finish a job, so does '+c.name.split(" ")[0]+'.</div>' +
-        '<div class="pw-caption pw-soft">'+(hired ? 'Level '+(l+1)+' · brings in '+money(rate)+' per job · wages '+money(Math.round(c.rate*0.5*(1+l*0.6)))+' per bill' : 'Brings in '+money(Math.round(c.rate*regionDef().pay*crewMult()))+' per job · wages '+money(Math.round(c.rate*0.5))+' per bill')+'</div>';
+        '<div class="pw-caption pw-soft">'+(hired ? 'Level '+(l+1)+' · brings in '+money(rate)+' per job · wages '+money(crewWage(c, l))+' a week' : 'Brings in '+money(Math.round(c.rate*regionDef().pay*crewMult()))+' per job · wages '+money(crewWage(c, 0))+' a week')+'</div>';
       var foot = footEl();
       if(!hired){
         foot.innerHTML = '<span class="pw-label pw-tag '+(state.cash < c.hire ? 'pw-tag--cannot' : 'pw-tag--price')+'">'+ic("coin")+money(c.hire)+'</span>';
@@ -4330,6 +4477,10 @@ body{
     },
     spray: function(x, y, radius, power, chem){ return sprayGrime(x, y, radius, power, chem); },
     pause: pauseJob, resume: resumeJob, paused: function(){ return paused; }, spraying: function(){ return spraying; },
+    /* run only the helpers (son, foam cannon, WashBot) for `ms` of game time, no hero; returns cleanliness */
+    helpersFor: function(ms){ if(!job) return 0; for(var t=0; t<ms && !job.ended; t+=16){ sonTick(16); foamTick(16); botTick(16); if(refilling){ refillT += 16; if(refillT >= refillMs()){ refilling = false; job.tank = tankMax(); } } } return cleanliness(); },
+    tipNow: function(msLeft, clean){ return tipNow(msLeft, clean); }, restWeekend: restWeekend, crewIncomeOn: crewIncomeOn,
+    gearDelta: gearDelta, crewWage: function(id, l){ return crewWage(CREW.filter(function(c){ return c.id === id; })[0], l || 0); }, CREW: CREW,
     cleanliness: cleanliness,
     advanceDay: advanceDay,
     triggerBill: triggerBill,

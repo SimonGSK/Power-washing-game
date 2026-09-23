@@ -4,3 +4,4 @@ playwright-report/
 tools/icon-sheet.html
 .DS_Store
 tools/sprite-preview.html
+tools/_main-build.html

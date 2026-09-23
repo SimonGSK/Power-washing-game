@@ -145,29 +145,29 @@
   }
   var GEAR = {
     pressure:{ title:"Water Pressure", icon:"bolt", costs:[110,290,640],
-      desc:["A stronger pump: grime strips faster.","Stronger still.","The strongest pump you can fit."] },
+      desc:["Grime strips faster.","",""] },
     nozzle:  { title:"Nozzle Width",   icon:"nozzle", costs:[90,240,520],
-      desc:["A wider nozzle: more ground per pass.","Wider still.","The widest nozzle."] },
+      desc:["More ground per pass.","",""] },
     tank:    { title:"Tank Capacity",  icon:"barrel", costs:[80,210,480],
-      desc:["A bigger tank — it takes a little longer to fill.","A bigger tank.","The biggest tank."] },
+      desc:["","",""] },
     refill:  { title:"Refill Speed",   icon:"faucet", costs:[90,230,470],
-      desc:["A faster pump at the hydrant.","Faster still.","The fastest refill."] },
+      desc:["","",""] },
     pay:     { title:"Money per Job",  icon:"coin", costs:[100,260,560],
       desc:["Pricier clients: more pay, 4% tougher dirt.","More pay, dirt +8% in total.","More pay, dirt +12% in total."] },
     patience:{ title:"Patience",       icon:"hourglass", costs:[80,210,460],
-      desc:["Customers wait 10 s longer.","Another 10 s.","Another 10 s."] },
+      desc:["","",""] },
     morale:  { title:"Crew Morale",    icon:"heart", costs:[250,650,1500],
-      desc:["Happier crew: income +15%, wages +5%.","Income +30% in total, wages +10%.","Income +45% in total, wages +15%."] },
-    watergun:{ title:"Water Gun",      icon:"watergun", costs:[120,300,650],
+      desc:["Happier crew bring in more.","",""] },
+    watergun:{ title:"Water Gun",      icon:"watergun", costs:[260,600,1300],
       desc:["A bigger water gun for your son: wider and stronger. Pocket money +$5 a week.","Bigger still. +$5 a week.","The Super Soaker. +$5 a week."] },
     cone:    { title:"Even Cone",      icon:"cone", costs:[130,320,700],
       desc:["A flatter spray: the cone's edge strips 60% as hard as the centre (was 50%), the centre a bit softer.","Edge at 70%.","Edge at 80% — the whole cone works."] },
     flow:    { title:"Flow Control",   icon:"valve", costs:[100,260,560],
-      desc:["Less water per pass, a touch less power.","Less again.","The tank lasts nearly twice as long."] },
+      desc:["","","The tank lasts nearly twice as long."] },
     contracts:{ title:"Contracts",     icon:"scroll", costs:[200,450,900],
       desc:["Customers start offering contracts on about half your jobs: leave a marked patch spotless for +15% pay. Miss one and it costs a reputation star.","Contract bonus +20%.","Contract bonus +25%, and they come more often."] },
     overtime:{ title:"Overtime",       icon:"calendar", costs:[300,700,1500],
-      desc:["Crew work Saturdays — even when you rest. Wages +15%.","Crew work Sundays too. Wages +10% more.","Weekend crew income +20%."] },
+      desc:["Crew work Saturdays — even when you rest.","Crew work Sundays too.","Weekend crew jobs pay 20% more."] },
 
     /* trunks - each one opens the two branches above it */
     powercore:{ title:"Pump Core",    icon:"pump", costs:[150],
@@ -205,7 +205,7 @@
     tipjar:    { title:"Tip Jar", icon:"jar", costs:[190],
       desc:["Customers tip for a clean job done fast. The tip grows as the job gets cleaner (from 50%) and shrinks as time passes — even a job that runs out of time can earn a little."] },
     lease:     { title:"Cheaper Lease", icon:"book", costs:[300,700,1500],
-      desc:["A better deal on the van.","Better still.","The best deal in town."] }
+      desc:["","",""] }
   };
   /* Legacy perks: bought with reputation stars (earned on every bill you pay), permanent. */
   var PERKS = {
@@ -245,7 +245,8 @@
     { icon:"drop", title:"Take Your Kid to Work", desc:"Hire your son.",               cond:function(s){ return s.son>0; } },
     { icon:"city", title:"Whole Operation",desc:"Have all three crew on payroll.",   cond:function(s){ return Object.keys(s.crew).length>=3; } },
     { icon:"truck", title:"Rock Bottom",    desc:"Get the van repossessed once.",     cond:function(s){ return s.stats.repoCount>=1; } },
-    { icon:"trophy", title:"Debt Free",      desc:"Own Power Wash Co. outright.",      cond:function(s){ return !!s.ownedOutright; } }
+    { icon:"trophy", title:"Debt Free",      desc:"Own Power Wash Co. outright.",      cond:function(s){ return !!s.ownedOutright; } },
+    { icon:"crown", title:"Fully Loaded",   desc:"Own every upgrade in the tree and everything in the Shop.", cond:function(s){ return Object.keys(GEAR).concat(Object.keys(SHOP)).every(function(k){ return (s.gear[k] || 0) >= (GEAR[k] || SHOP[k]).costs.length; }); } }
   ];
 
   /* =========================================================

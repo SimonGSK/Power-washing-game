@@ -98,7 +98,7 @@ body{
 .tree-wrap .pw-node--core{margin:-27px 0 0 -27px;}
 .tree-wrap .pw-tree__edge{margin-left:-1px;}
 .tree-wrap .pw-tree__edge--h{margin-top:-1px;}
-.tree-wrap .pw-tree__label{width:72px;margin-left:-36px;text-align:center;}
+.tree-wrap .pw-tree__label{width:auto;min-width:56px;transform:translateX(-50%);margin-left:0;text-align:center;z-index:2;padding:1px 6px;background:var(--parchment-hi);color:var(--ink);box-shadow:var(--ring-ink);}
 .tree-wrap .pw-tree__edge{z-index:1;}
 .tree-wrap .pw-node{z-index:2;}
 .tree-wrap .pw-node:hover{z-index:4;}

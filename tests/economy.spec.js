@@ -74,3 +74,25 @@ test.describe("economy", () => {
     expect(t.rigged).toBeLessThan(t.later * t.rigMult);
   });
 });
+
+test.describe("home recommendations", () => {
+  test("the Recommended box works at every stage of the rig, without script errors", async ({ page }) => {
+    const errors = await openGame(page);
+    await newGame(page);
+    const seen = await page.evaluate(() => {
+      const D = window.PowerWashDebug, titles = [];
+      const order = ["powercore","nozzle","pressure","tankcore","tank","bizcore","patience","refill","flow","pay","cone","contracts","lease","tipjar","foamcannon","prowasher"];
+      D.patch({ cash: 99999, jobsCompleted: 40, gear: { mosskiller: 1, degreaser: 1, stripper: 1, rustremover: 1 } });
+      for(const k of order){
+        for(let l = 0; l < 3; l++){
+          D.patch({ gear: { [k]: Math.min(l + 1, (D.data.GEAR[k] || D.data.SHOP[k]).costs.length) } });
+          D.show("screen-home");
+          titles.push(document.getElementById("advicePanel").textContent.trim().slice(0, 40));
+        }
+      }
+      return titles;
+    });
+    expect(seen.every((t) => t.length > 5)).toBe(true);
+    expect(errors).toEqual([]);
+  });
+});

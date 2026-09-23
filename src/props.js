@@ -20,7 +20,20 @@
     nightCache[c] = k; return k;
   }
   function lit(fn){ var was = LIT; LIT = true; fn(); LIT = was; }
-  function R(x,y,w,h,c){ bx.fillStyle = shade(c); bx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+  var PROPREC = null;   /* set while measuring a job's props: every rect they'd draw */
+  function R(x,y,w,h,c){ if(PROPREC){ PROPREC.push([Math.round(x),Math.round(y),Math.round(w),Math.round(h)]); return; } if(AUDIT && bx === AUDIT.ctx) auditRect(x,y,w,h); bx.fillStyle = shade(c); bx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+  /* the prop audit (tests only): which prop drew each rect into the scene, by the calling function's name */
+  var AUDIT = null, AUDIT_SKIP = { R:1, box:1, dither:1, blob:1, auditRect:1, auditCaller:1, lit:1, Error:1, raster:1, draw:1, drawAt:1, glowCone:1, glowDisc:1, shade:1, mix:1, ellipseRows:1, pxText:1 };
+  function auditCaller(){
+    var lines = (new Error().stack || "").split("\n");
+    for(var i=1;i<lines.length;i++){ var m = /at (?:Object\.)?([A-Za-z_$][\w$]*) \(/.exec(lines[i]); if(m && !AUDIT_SKIP[m[1]]) return m[1]; }
+    return "?";
+  }
+  /* surface painters: what they draw inside the wash area IS the thing being washed */
+  var AUDIT_SURFACE = { startJob:1, paintArea:1, sky:1, stars:1, moon:1, cloud:1, grassField:1, fireflies:1, waterField:1, pavement:1, towerSlab:1, skyline:1, pillar:1, pipes:1, winPane:1, glowCone:1, glowDisc:1 };
+  /* scenes that paint their surface by hand mark where it ends, for the audit */
+  function surfaceDone(){ if(AUDIT) AUDIT.list.push({ x:0, y:0, w:0, h:0, by:"paintArea" }); }
+  function auditRect(x,y,w,h){ AUDIT.list.push({ x:Math.round(x), y:Math.round(y), w:Math.round(w), h:Math.round(h), by:auditCaller() }); }
   /* a lamp's throw: a widening checkerboard of warm pixels under a light (x = centre of the top edge) */
   function glowCone(x, y, topW, bottomW, h, col){
     if(!NIGHT) return;

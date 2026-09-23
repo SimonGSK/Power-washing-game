@@ -101,3 +101,59 @@ test.describe("content tables", () => {
     expect(bad).toEqual([]);
   });
 });
+
+test.describe("scenes", () => {
+  test("no prop in any level is hidden under the dirt, day or night", async ({ page }) => {
+    await openGame(page);
+    const found = await page.evaluate(() => {
+      const D = window.PowerWashDebug, out = {};
+      const info = { dirt_dust: 1, dirt_mud: 1, dirt_moss: 1, dirt_grease: 1, dirt_soot: 1, dirt_salt: 1, dirt_rust: 1, dirt_graffiti: 1, contracts: 1, tipjar: 1, weekend: 1 };
+      D.patch({ story: { intro: 1, firstJob: 1 }, info, gear: { mosskiller: 1, degreaser: 1, stripper: 1, rustremover: 1 } });
+      for(const theme of ["day", "night"]){
+        D.applyTheme(theme);
+        for(const key of Object.keys(D.data.JOBS)){
+          D.patch({ region: D.data.JOBS[key].region });
+          for(let j = 30; j < 36; j++){
+            D.patch({ jobsCompleted: j });
+            const r = D.auditJob(key);
+            for(const p in r) out[theme + " " + key + ": " + p] = Math.max(out[theme + " " + key + ": " + p] || 0, r[p]);
+          }
+        }
+      }
+      return out;
+    });
+    expect(found).toEqual({});
+  });
+});
+
+test.describe("upgrade tips", () => {
+  test("every node in the tree shows a tip with its own title and something to read", async ({ page }) => {
+    const { newGame } = require("./game");
+    await openGame(page);
+    await newGame(page);
+    const bad = await page.evaluate(() => {
+      const D = window.PowerWashDebug, out = [];
+      D.patch({ cash: 3000, son: 1, crew: { jordan: 0 }, gear: { powercore: 1, tankcore: 1, bizcore: 1, crewcore: 1, tank: 1 } });
+      D.show("screen-upgrades");
+      for(const n of document.querySelectorAll("#treeWrap .pw-node")){
+        const key = n.dataset.key, def = D.data.GEAR[key];
+        try { D.gearDelta(key, +n.dataset.level); } catch(e){ out.push(key + ": " + e.message); continue; }
+        n.dispatchEvent(new MouseEvent("mouseenter"));
+        const t = document.querySelector(".tree-tip");
+        if(!t.textContent.startsWith(def.title)) out.push(key + ":" + n.dataset.level + " shows " + t.textContent.slice(0, 30));
+        const body = t.querySelectorAll(".stat-delta > div").length + (t.querySelector("p.pw-small") ? 1 : 0);
+        if(!body) out.push(key + ":" + n.dataset.level + " has no description");
+        n.dispatchEvent(new MouseEvent("mouseleave"));
+      }
+      return out;
+    });
+    expect(bad).toEqual([]);
+  });
+
+  test("crew upgrades don't list the same wage change twice", async ({ page }) => {
+    await openGame(page);
+    const rows = await page.evaluate(() => { const D = window.PowerWashDebug; D.patch({ crew: { jordan: 0 } }); return D.gearDelta("overtime", 0).concat(D.gearDelta("morale", 0)).map((r) => r.label); });
+    expect(rows.filter((l) => /wage/i.test(l)).length).toBe(2);   /* one each */
+    expect(rows).not.toContain("Weekly payment");
+  });
+});

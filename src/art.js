@@ -190,19 +190,23 @@ __SCENES__
                  over:function(){ var cx0=60, cw=120, py=126; FX(cx0+12,0,1,py,P.ink); FX(cx0+13,0,1,py,P.c1); FX(cx0+cw-12,0,1,py,P.ink); FX(cx0+cw-11,0,1,py,P.c1); } },
     storefront:{ name:"Storefront Glass",region:"city",   scene:sceneStorefront, area:{x:43,y:46,w:120,h:62}, hero:{x:198,y:130}, son:{x:170,y:126}, hose:{x:248,y:140}, vertical:true,
                  grimes:["soot","grease","soot","soot"], graffitiChance:0.4,
-                 props:function(a){ bike(a.x+34, a.y+a.h+6); } },
+                 props:function(a){ bike(a.x+34, a.y+a.h+6); flowerBed(a.x-7, a.y+a.h-6, 30, 7, makeRng(5)); } },
     garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:59,y:30,w:118,h:76}, hero:{x:46,y:138}, son:{x:74,y:132}, hose:{x:-8,y:146}, vertical:true, patchChance:0.3,
                  grimes:["grease","soot","grease","soot"], graffitiChance:0.45,
                  props:function(a){ cone(a.x+18, a.y+a.h+2); bin(a.x+a.w-16, a.y+a.h+2); } },
     hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:66,y:50,w:132,h:36}, hero:{x:36,y:104}, son:{x:14,y:104}, hose:{x:-8,y:106}, mask:maskHull, vertical:true, ragged:false,
                  grimes:["moss","rust","rust","salt","rust"],
                  props:function(a){ ladder(a.x+a.w-46, a.y+4, 30); } },
-    dock:      { name:"Pier Railing",    region:"harbor", scene:sceneDock,       area:{x:60,y:60,w:120,h:44}, hero:{x:40,y:104}, son:{x:204,y:104}, hose:{x:-8,y:106}, vertical:true, patchChance:0.3,
+    dock:      { name:"Pier Railing",    region:"harbor", scene:sceneDock,       area:{x:60,y:60,w:120,h:43}, hero:{x:40,y:104}, son:{x:204,y:104}, hose:{x:-8,y:106}, vertical:true, patchChance:0.3,
                  grimes:["moss","salt","moss","salt"],
                  props:function(a){ lobsterTrap(a.x+14, a.y+a.h+2); ropeCoil(a.x+a.w-14, a.y+a.h+2); } },
-    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:60,y:40,w:120,h:66}, hero:{x:38,y:106}, son:{x:194,y:106}, hose:{x:-8,y:108}, vertical:true, patchChance:0.3,
+    shack:     { name:"Fish Shack",      region:"harbor", scene:sceneShack,      area:{x:60,y:40,w:120,h:65}, hero:{x:38,y:106}, son:{x:194,y:106}, hose:{x:-8,y:108}, vertical:true, patchChance:0.3,
                  grimes:["salt","grease","salt","salt"],
-                 props:function(a){ crate(a.x+16, a.y+a.h-6, 9); barrel(a.x+a.w-12, a.y+a.h-5); } }
+                 props:function(a){
+                   netHang(a.x+8, a.y+10, 30, 38);
+                   buoy(a.x+a.w-18, a.y+22); buoy(a.x+a.w-30, a.y+35); lifeRing(a.x+a.w-12, a.y+50);
+                   if(NIGHT) lit(function(){ sign(a.x+a.w/2-20, a.y+4, 40, P.parchHi); }); else sign(a.x+a.w/2-20, a.y+4, 40, P.parchHi);
+                   crate(a.x+16, a.y+a.h-6, 9); barrel(a.x+a.w-12, a.y+a.h-5); } }
   };
 
 

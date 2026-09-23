@@ -31,6 +31,8 @@
       /* draw with the sprite's bottom-centre at (x, y) — feet on the ground */
       draw: function(ctx, name, frame, x, y, flip){
         var cv = raster(name, frame, flip); if(!cv) return;
+        if(PROPREC){ PROPREC.push([Math.round(x - cv.width/2), Math.round(y - cv.height + 1), cv.width, cv.height]); return; }
+        if(AUDIT && ctx === AUDIT.ctx) AUDIT.list.push({ x:Math.round(x - cv.width/2), y:Math.round(y - cv.height + 1), w:cv.width, h:cv.height, by:name });
         ctx.drawImage(cv, Math.round(x - cv.width/2), Math.round(y - cv.height + 1));
       },
       /* draw with the top-left at (x, y) */

@@ -169,7 +169,7 @@
     showModal(
       mHead("trophy", "You can buy the business", "You’ve got <b>"+money(BUYOUT_TARGET)+"</b> in hand — enough to pay off every cent Uncle Lenny’s company ever owed and own Power Wash Co. outright.", "The big one") +
       mRows([mRow(ic("coin")+"You have", money(state.cash), "pw-stats__val--up"), mRow(ic("bill")+"Buyout", money(BUYOUT_TARGET))]),
-      [ { label:"Buy it out", cls:"pw-btn--primary", icon:"trophy", action:function(){ state.cash -= BUYOUT_TARGET; doBuyout(); } },
+      [ { label:"Buy it out", cls:"pw-btn--primary", icon:"trophy", action:function(){ state.cash -= BUYOUT_TARGET; doBuyout(then); } },
         { label:"Not yet", cls:"pw-btn--ghost", action:then } ]
     );
   }
@@ -213,17 +213,18 @@
   }
   var DAYS_LONG = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
-  function doBuyout(){
+  function doBuyout(then){
     state.ownedOutright = true;
     state.rep += 20;
     save(); renderTop();
+    var carryOn = function(){ if(then) then(); else showScreen("screen-home"); };
     tellStory("buyout", function(){
       showModal(
         mHead("trophy", "You own it — outright!", "Every cent Uncle Lenny’s business ever owed is paid off. Power Wash Co. is yours, free and clear.", "Debt free") +
         mRows([mRow(ic("star")+"Legacy earned", "+20", "pw-stats__val--up")]) +
         mNote("Overhead is pocket change from here. Keep washing — it’s all profit now."),
         [{ label:"Back to work", cls:"pw-btn--primary", action:function(){
-            if(state.jobsSinceBill >= billEvery()) triggerBill(); else showScreen("screen-home");
+            tellInfo("legacyOpen", "star", "The Legacy shop is open", "You own the business, so the <b>Legacy</b> tab is open for good — no repossession needed. Spend your reputation stars on permanent perks whenever you like. You have <b>" + state.rep + "</b> stars.", carryOn);
         } }]
       );
     });
@@ -486,7 +487,7 @@
     var nextDef = pickJobDef();
     $("routeNote").textContent = "Next job: " + nextDef.name;
     $("homeGreeting").textContent = state.jobsCompleted === 0 ? "Grab the wand. Make it shine. Repeat." :
-      (state.streak >= 3 ? "On a roll — " + state.streak + " good jobs in a row." : state.jobsCompleted + " jobs done. The van's still yours.");
+      (state.streak >= 3 ? "On a roll — " + state.streak + " good jobs in a row." : state.jobsCompleted + " jobs done. " + (state.ownedOutright ? "The business is all yours." : "The van's still yours."));
     var areaMult = Math.pow(sprayRadius()/BASE_RADIUS, 2);
     $("rigStats").innerHTML = mRows([
       mRow(ic("bolt")+"Spray power", sprayPower().toFixed(2)),
@@ -527,8 +528,8 @@
 
     if(state.ownedOutright){
       $("buyoutPanel").innerHTML =
-        '<div class="pw-panel__head"><span class="pw-heading">'+ic("trophy","pw-icon--24")+' Owned outright</span><span class="pw-label pw-tag--ok">Debt free</span></div>' +
-        '<p class="pw-small pw-soft">Every cent paid off. The weekly bills are pocket change now.</p>';
+        '<div class="pw-panel__head"><span class="pw-heading">'+ic("trophy","pw-icon--24")+' Owned outright</span></div>' +
+        '<p class="pw-small pw-soft">Debt free. The Legacy shop is open for good.</p>';
     } else {
       var shown = Math.min(state.cash, BUYOUT_TARGET);
       $("buyoutPanel").innerHTML = meterHTML("trophy", "Buyout", money(shown)+' / '+money(BUYOUT_TARGET), "pw-track--gold pw-track--segmented", shown/BUYOUT_TARGET*100);
@@ -583,58 +584,95 @@
   }
 
   /* ---- the route map: a 240×100 pixel painting + chip markers ---- */
-  var MARKERS = { grove:[15,58], city:[49,74], harbor:[80,36] };
-  /* the coast: the sea fills the bottom-right corner; land is everything left of shoreX(y) */
-  function shoreX(y){ return y < 40 ? 240 : 236 - Math.round((y-40)*1.4) + Math.round(Math.sin(y/7)*2); }
+  /* ---- the route map: a 240×100 pixel painting + chip markers (x%, y% of the canvas) ---- */
+  var MARKERS = { grove:[15,31], city:[56,60], harbor:[86,25] };
+  /* a smooth line through waypoints (Catmull-Rom), sampled every few pixels */
+  function curve(way, step){
+    var pts = [];
+    for(var i=0; i<way.length-1; i++){
+      var p0 = way[Math.max(0,i-1)], p1 = way[i], p2 = way[i+1], p3 = way[Math.min(way.length-1,i+2)];
+      var n = Math.max(2, Math.ceil(Math.hypot(p2[0]-p1[0], p2[1]-p1[1]) / (step || 1)));
+      for(var k=0; k<n; k++){ var t = k/n, t2 = t*t, t3 = t2*t;
+        pts.push([ 0.5*((2*p1[0]) + (-p0[0]+p2[0])*t + (2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2 + (-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3),
+                   0.5*((2*p1[1]) + (-p0[1]+p2[1])*t + (2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2 + (-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3) ]); }
+    }
+    pts.push(way[way.length-1]);
+    return pts;
+  }
+  /* the coast: land is everything left of shoreX(y); the sea fills the bottom-right */
+  var SHORE = [[108,101],[138,90],[166,79],[192,66],[214,54],[240,44]];
+  function shoreX(y){
+    if(y < 44) return 999;
+    for(var i=0;i<SHORE.length-1;i++){ var a = SHORE[i], b = SHORE[i+1]; if(y <= a[1] && y >= b[1]) return Math.round(a[0] + (b[0]-a[0]) * (a[1]-y)/(a[1]-b[1]) + Math.sin(y/4)*1.2); }
+    return 999;
+  }
   function paintMap(){
     var mc = $("mapCanvas").getContext("2d"); mc.imageSmoothingEnabled = false;
     var keep = bx; bx = mc;
-    var rng = makeRng(99);
-    sky("#bfe6f4", "#e9f4da", 34); sun(214, 4);
-    cloud(40, 8, 22); cloud(120, 12, 16); cloud(176, 6, 18);
-    blob(30, 24, ellipseRows(70, 22, true), function(r){ return r < 3 ? P.g3 : P.g2; }, P.g1);
-    blob(96, 26, ellipseRows(56, 18, true), function(r){ return r < 3 ? P.g3 : P.g2; }, P.g1);
-    blob(150, 28, ellipseRows(50, 14, true), function(r){ return r < 2 ? P.g3 : P.g2; }, P.g1);
-    grassField(0, 34, 240, 66, rng);
-    /* the sea, with a sandy shoreline */
-    for(var sy=40; sy<100; sy++){ var sx0 = shoreX(sy); if(sx0 >= 240) continue; R(sx0, sy, 240-sx0, 1, sy < 70 ? P.w3 : P.w2); R(sx0-1, sy, 2, 1, P.parchHi); R(sx0-2, sy, 1, 1, P.parchLo); }
-    for(var w=0;w<16;w++){ var wy=44+Math.floor(rng()*54), wx=shoreX(wy)+4+Math.floor(rng()*Math.max(4, 236-shoreX(wy))); R(wx,wy,4,1,P.w4); R(wx+1,wy-1,2,1,P.w4); }
-    if(NIGHT) lit(function(){ for(var gy=46; gy<100; gy+=2){ var gx0 = 214 + Math.round((rng()-0.5)*(6+(gy-46)*0.4)); if(gx0 > shoreX(gy)) R(gx0, gy, 2, 1, (gy&2) ? "#cfd8ff" : "#8d99cf"); } });
-    /* the river, from the hills down to the sea, with a bridge on the road */
-    for(var ry=30; ry<100; ry++){ var rx = 84 + Math.round(Math.sin(ry/9)*3) + Math.round((ry-30)*0.12); R(rx, ry, 8, 1, ry%7===0 ? P.w4 : P.w3); R(rx, ry, 1, 1, P.w1); R(rx+7, ry, 1, 1, P.w1); }
-    /* suburb (a house is ~22 px, a car 10, a tree 12) */
-    miniHouse(14, 44, 14, 8, P.parch, P.coral); miniHouse(40, 40, 12, 7, P.parchLo, P.berry);
-    miniHouse(24, 62, 14, 8, P.parchHi, "#4d7f6f"); miniHouse(54, 58, 12, 7, P.parch, P.coral);
-    for(var fx=8; fx<40; fx+=3){ R(fx, 80, 2, 3, P.parchHi); } R(8,81,32,1,P.parchLo);
-    miniTree(8, 60); miniTree(70, 52); miniTree(48, 78); bush(66, 82, 0.5);
+    var rng = makeRng(99), W = 240, H = 100;
+    /* sky and the far hills, with a lake in the hills where the river starts */
+    sky("#bfe6f4", "#e9f4da", 26); sun(206, 3);
+    cloud(34, 6, 20); cloud(116, 9, 14); cloud(164, 4, 16);
+    blob(34, 13, ellipseRows(86, 22, true), function(r){ return r < 3 ? P.g2 : P.g1; }, null);
+    blob(118, 15, ellipseRows(96, 20, true), function(r){ return r < 3 ? P.g2 : P.g1; }, null);
+    blob(196, 17, ellipseRows(92, 16, true), function(r){ return r < 2 ? P.g2 : P.g1; }, null);
+    grassField(0, 24, W, H-24, rng);
+    /* farm fields on the slopes above the suburb */
+    [[6,27,22,7,P.s4],[30,26,18,8,P.g4],[50,28,16,6,P.s3]].forEach(function(f){ R(f[0],f[1],f[2],f[3],f[4]); for(var fy=f[1]+1; fy<f[1]+f[3]; fy+=2) R(f[0],fy,f[2],1,mix(f[4],"#000000",0.12)); });
+    /* the sea and its beach */
+    for(var sy=44; sy<H; sy++){ var sx0 = shoreX(sy); if(sx0 >= W) continue;
+      R(sx0-3, sy, 3, 1, P.parchLo); R(sx0-1, sy, 1, 1, P.parchHi);
+      R(sx0, sy, W-sx0, 1, sy < 70 ? P.w3 : P.w2); R(sx0, sy, 2, 1, P.w4); }
+    for(var w=0; w<22; w++){ var wy = 48 + Math.floor(rng()*50), wx = shoreX(wy) + 6 + Math.floor(rng()*Math.max(4, W-shoreX(wy)-10)); if(wx < W-4){ R(wx,wy,4,1,P.w4); R(wx+1,wy-1,2,1,P.w4); } }
+    if(NIGHT) lit(function(){ for(var gy=50; gy<H; gy+=2){ var gx0 = 214 + Math.round((rng()-0.5)*(6+(gy-50)*0.5)); if(gx0 > shoreX(gy)+2) R(gx0, gy, 2, 1, (gy&2) ? "#cfd8ff" : "#8d99cf"); } });
+    /* the river: from the lake in the hills, winding down to the bay */
+    var river = curve([[86,23],[84,32],[77,44],[80,57],[90,69],[103,80],[114,91],[118,101]], 1);
+    var wet = new Uint8Array(W*H);
+    blob(86, 20, ellipseRows(22, 6, false), function(r, dx){ return r === 1 && dx < -2 && dx > -7 ? P.w4 : P.w3; }, P.w1);   /* the lake */
+    river.forEach(function(q, i){ var hw = 2 + Math.floor(i/60); R(q[0]-hw-1, q[1], hw*2+3, 1, P.w1); });
+    river.forEach(function(q, i){ var hw = 2 + Math.floor(i/60);
+      R(q[0]-hw, q[1], hw*2+1, 1, P.w3); if(i % 7 === 0) R(q[0]-1, q[1], 2, 1, P.w4);
+      for(var xx=Math.round(q[0]-hw-1); xx<=Math.round(q[0]+hw+1); xx++){ var yy = Math.round(q[1]); if(xx>=0 && xx<W && yy>=0 && yy<H) wet[yy*W+xx] = 1; } });
+    /* woods along the river banks */
+    [[70,40],[92,46],[68,52],[98,60],[108,72],[84,78],[122,82]].forEach(function(t){ miniTree(t[0], t[1]); });
 
-    /* downtown, inland east of the river — towers dwarf the houses */
-    towerSlab(100, 28, 10, 34, P.c3, P.waterHi); towerSlab(112, 36, 8, 26, P.c4, P.waterHi); towerSlab(122, 20, 11, 42, P.c2, P.waterHi); towerSlab(135, 34, 9, 28, P.c3, P.waterHi);
-    antenna(127, 20, 7);
-    R(96, 64, 52, 3, P.c3); R(96, 64, 52, 1, P.c4); crosswalk(104, 64, 20);
-    /* harbour, up the coast: a quay along the shore, a pier into the sea, boats, the lighthouse on the point */
-    var qx = shoreX(54);
-    R(qx-28, 50, 28, 4, P.c3); R(qx-28, 50, 28, 1, P.c4);
-    box(qx-3, 58, 26, 3, P.p3, P.p4, P.p1); R(qx+1,61,2,6,P.p1); R(qx+11,61,2,6,P.p1); R(qx+20,61,2,6,P.p1);
-    miniBoat(shoreX(86)+24, 86, P.coral); miniBoat(shoreX(72)+40, 72, "#4d7f6f"); sailboat(shoreX(96)+50, 96); sailboat(shoreX(66)+18, 66);
-    lighthouse(230, 40, 14); buoy(shoreX(78)+6, 78); seagull(170, 44); seagull(190, 40); seagull(224, 36);
-    if(NIGHT){ lit(function(){ R(qx-24, 46, 1, 4, P.stoneLo); R(qx-25, 45, 3, 1, "#fff0c4"); R(qx-8, 46, 1, 4, P.stoneLo); R(qx-9, 45, 3, 1, "#fff0c4"); }); glowDisc(qx-23, 50, 6, 3, "#8a7448"); glowDisc(qx-7, 50, 6, 3, "#8a7448"); }
-    /* the road: suburb → bridge → downtown, then it winds up the coast to the quay, keeping to the land.
-       A smooth curve through waypoints, stamped as a band: dark edges, grey top, a broken centre line */
-    var way = [[-4,93],[30,90],[60,91],[89,90],[118,91],[142,89],[158,82],[170,72],[184,62],[198,54],[qx-4,49]];
-    var pts = [];
-    for(var w0=0; w0<way.length-1; w0++){
-      var p0 = way[Math.max(0,w0-1)], p1 = way[w0], p2 = way[w0+1], p3 = way[Math.min(way.length-1,w0+2)];
-      for(var tt=0; tt<1; tt+=0.04){ var t2=tt*tt, t3=t2*tt;   /* Catmull-Rom */
-        pts.push([ 0.5*((2*p1[0]) + (-p0[0]+p2[0])*tt + (2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2 + (-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3),
-                   0.5*((2*p1[1]) + (-p0[1]+p2[1])*tt + (2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2 + (-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3) ]); }
-    }
-    pts.forEach(function(q){ R(q[0]-2, q[1]-2, 5, 5, P.c1); });
-    pts.forEach(function(q){ R(q[0]-1, q[1]-1, 3, 3, P.c3); });
-    pts.forEach(function(q, i){ if((i % 10) < 4) R(q[0], q[1], 1, 1, P.parchHi); });
-    var roadY = function(x){ var best = pts[0]; pts.forEach(function(q){ if(Math.abs(q[0]-x) < Math.abs(best[0]-x)) best = q; }); return Math.round(best[1]) - 1; };
-    box(82, 86, 14, 6, P.p3, P.p4, P.p1); R(82,84,14,1,P.p1); R(82,93,14,1,P.p1);
-    miniCar(40, roadY(40)+1, P.coral); miniCar(112, roadY(112)+1, P.sun); miniCar(176, roadY(176)+1, P.water);
+    /* Maple Grove: houses around a lane, a park, a fence */
+    R(10, 55, 56, 3, P.c3); R(10, 55, 56, 1, P.c4); R(36, 40, 3, 15, P.c3);       /* the lane */
+    miniHouse(8, 40, 14, 8, P.parch, P.coral); miniHouse(44, 38, 12, 7, P.parchLo, P.berry);
+    miniHouse(12, 60, 13, 8, P.parchHi, "#4d7f6f"); miniHouse(44, 61, 14, 8, P.parch, P.coral); miniHouse(26, 36, 8, 6, P.parchHi, P.p2);
+    for(var fx=6; fx<64; fx+=3) R(fx, 74, 2, 3, P.parchHi); R(6, 75, 58, 1, P.parchLo);
+    miniTree(6, 56); miniTree(62, 48); miniTree(30, 70); bush(64, 64, 0.5);
+    /* Downtown: towers on a plaza, inland from the bay */
+    R(106, 48, 58, 6, P.c3); R(106, 48, 58, 1, P.c4); R(106, 53, 58, 1, P.c1);
+    towerSlab(110, 22, 10, 26, P.c3, P.waterHi); towerSlab(122, 12, 12, 36, P.c2, P.waterHi); towerSlab(136, 24, 9, 24, P.c4, P.waterHi); towerSlab(147, 18, 11, 30, P.c3, P.waterHi);
+    antenna(128, 12, 7); miniTree(108, 50); miniTree(161, 50);
+    /* Saltwick Harbor: a stone quay along the shore, sheds, a pier with boats, the lighthouse on the point */
+    var qTop = 38, qBot = 58;
+    for(var qy=qTop; qy<qBot; qy++){ var qx = Math.min(shoreX(qy), W) ; R(qx-14, qy, 14, 1, qy === qTop ? P.c4 : P.c3); if(qy % 4 === 0) R(qx-14, qy, 14, 1, P.c2); }
+    box(190, 36, 16, 9, P.coralLo, mix(P.coralLo,"#ffffff",0.3), null); R(189, 33, 18, 3, P.c1); R(194, 40, 5, 5, P.p1);   /* warehouse */
+    box(208, 38, 10, 7, P.parchLo, P.parchHi, null); R(207, 35, 12, 3, "#4d7f6f"); lit(function(){ R(210, 40, 3, 2, NIGHT ? "#ffd57a" : P.waterHi); });  /* fish shack */
+    var pierX = shoreX(54);
+    R(pierX-2, 53, 24, 3, P.p3); R(pierX-2, 53, 24, 1, P.p4); R(pierX-2, 56, 24, 1, P.p1); for(var pp=pierX; pp<pierX+22; pp+=6) R(pp, 57, 1, 3, P.p1);
+    miniBoat(pierX+14, 62, P.coral); miniBoat(shoreX(72)+22, 72, "#4d7f6f");
+    R(222, 42, 12, 3, P.c2); R(222, 42, 12, 1, P.c3); lighthouse(228, 42, 14);
+    sailboat(160, 94); sailboat(196, 84); buoy(180, 74);
+    if(NIGHT){ [[196,54],[212,50]].forEach(function(l){ glowDisc(l[0], l[1]-2, 5, 3, "#8a7448"); lit(function(){ R(l[0], l[1]-4, 1, 4, P.stoneLo); R(l[0]-1, l[1]-5, 3, 1, "#fff0c4"); }); }); }
+    seagull(170, 40); seagull(186, 34); seagull(222, 30);
+
+    /* the road: suburb → over the river → under downtown → up the coast to the quay */
+    var road = curve([[-4,86],[22,84],[48,86],[72,84],[94,78],[114,72],[136,70],[158,66],[178,59],[192,52],[200,50]], 1);
+    road.forEach(function(q){ R(q[0]-2, q[1]-2, 5, 5, P.c1); });
+    road.forEach(function(q){ R(q[0]-1, q[1]-1, 3, 3, P.c3); });
+    road.forEach(function(q, i){ if((i % 8) < 3) R(q[0], q[1], 1, 1, P.parchHi); });
+    /* a bridge wherever the road crosses water: planks, rails and a shadow on the river */
+    road.forEach(function(q){ var x = Math.round(q[0]), y = Math.round(q[1]), onWater = false;
+      for(var dy=-3; dy<=3; dy++) for(var dx=-1; dx<=1; dx++){ var xx = x+dx, yy = y+dy; if(xx>=0 && xx<W && yy>=0 && yy<H && wet[yy*W+xx]) onWater = true; }
+      if(!onWater) return;
+      R(x-1, y+4, 3, 1, P.w1);                                   /* its shadow on the water */
+      R(x-1, y-3, 3, 1, P.p1); R(x-1, y+3, 3, 1, P.p1);          /* rails */
+      R(x-1, y-2, 3, 5, P.p3); if(x % 2 === 0) R(x, y-2, 1, 5, P.p2); });
+    var roadAt = function(x){ var best = road[0]; road.forEach(function(q){ if(Math.abs(q[0]-x) < Math.abs(best[0]-x)) best = q; }); return Math.round(best[1]); };
+    miniCar(30, roadAt(30), P.coral); miniCar(126, roadAt(126), P.sun); miniCar(170, roadAt(170), P.water);
     bx = keep;
   }
   function renderMap(){
@@ -660,7 +698,7 @@
       card.innerHTML =
         '<div class="pw-card__title">'+ic(open ? r.icon : "lock")+'<h3 class="pw-heading">'+r.name+'</h3></div>' +
         '<p class="pw-small pw-card__body">'+r.tag+'</p>' +
-        '<div class="pw-caption pw-soft">Pay ×'+r.pay.toFixed(2)+' · dirt per job ×'+(r.dirt||1).toFixed(1)+'</div>' +
+        '<div class="pw-caption pw-soft">Dirt per job ×'+(r.dirt||1).toFixed(1)+'</div>' +
         '<div class="pw-card__foot"><span class="pw-label pw-tag pw-tag--price">'+ic("coin")+'×'+r.pay.toFixed(2)+' pay</span>' +
         '<span class="pw-caption pw-tag'+(open && active ? ' pw-tag--ok' : '')+'">'+(open ? (active ? ic("check")+"Current route" : "Tap to switch") : "Unlocks at "+r.unlock+" jobs")+'</span></div>';
       if(open){
@@ -678,7 +716,7 @@
     return {
       power: sprayPower(), area: Math.pow(sprayRadius()/BASE_RADIUS, 2), water: waterPerSecond(), tank: tankMax(),
       refill: refillMs()/1000, patience: jobMs()/1000, pay: (payMult()-1)*100, edge: (1-coneEdge())*100,
-      crew: crewIncome(), wages: crewSalary(), bill: overheadAmount(state.billNumber), contract: contractBonus()*100,
+      crew: crewIncome(), wages: crewSalary(), bill: overheadBase(state.billNumber), contract: contractBonus()*100,
       son: sonRadius(), sonPower: sonPower(), foam: foamLevel() ? 1000/Math.max(700, 1900 - foamLevel()*550) : 0
     };
   }
@@ -686,15 +724,15 @@
     ["power", "Spray power", function(v){ return v.toFixed(2); }, ""],
     ["area", "Spray area", function(v){ return "×" + v.toFixed(2); }, ""],
     ["water", "Water usage", function(v){ return v.toFixed(1); }, " L/s", -1],
-    ["tank", "Tank", function(v){ return Math.round(v); }, " L"],
-    ["refill", "Refill time", function(v){ return v.toFixed(2); }, " s", -1],
+    ["tank", "Tank capacity", function(v){ return Math.round(v); }, " L"],
+    ["refill", "Refill", function(v){ return v.toFixed(2); }, " s", -1],
     ["patience", "Customer patience", function(v){ return Math.round(v); }, " s"],
     ["pay", "Pay bonus", function(v){ return "+" + Math.round(v); }, "%"],
     ["edge", "Cone edge strength", function(v){ return Math.round(v); }, "%"],
     ["contract", "Contract bonus", function(v){ return Math.round(v); }, "%"],
     ["crew", "Crew income", function(v){ return money(v); }, " /job"],
     ["wages", "Wages", function(v){ return money(v); }, " /week", -1],
-    ["bill", "Weekly payment", function(v){ return money(v); }, "", -1],
+    ["bill", "Water, power & lease", function(v){ return money(v); }, " /week", -1],
     ["son", "Water gun reach", function(v){ return v.toFixed(1); }, " px"],
     ["sonPower", "Water gun power", function(v){ return v.toFixed(2); }, ""],
     ["foam", "Foam shots", function(v){ return v.toFixed(2); }, " /s"]
@@ -708,7 +746,7 @@
     STAT_ROWS.forEach(function(r){
       var k = r[0], d = b[k] - a[k];
       if(Math.abs(d) < 0.005) return;
-      var up = d > 0, unit = r[3], fmtD = r[2](Math.abs(d)).replace(/^[+×]/, "");
+      var up = d > 0, unit = r[3], fmtD = String(r[2](Math.abs(d))).replace(/^[+×]/, "");
       if(k === "area"){ fmtD = Math.round((b[k]/a[k] - 1)*100) + "%"; unit = ""; }
       rows.push({ label: r[1], from: String(r[2](a[k])), to: r[2](b[k]) + r[3], delta: (up ? "+" : "−") + fmtD + unit, good: up === ((r[4] || 1) > 0) });
     });
@@ -746,7 +784,7 @@
       var status = have > level ? { text:"Installed", cls:"pw-tag--ok" }
         : gate ? { text:gate, cls:"pw-soft" }
         : { text:"Buy for " + money(costOf(key, level)), cls: state.cash >= costOf(key, level) ? "pw-tag--price" : "pw-tag--cannot" };
-      return { title: def.title + (multi ? " · Lv " + (level+1) : ""), desc: def.desc[level], stats: have > level ? "" : deltaHTML(gearDelta(key, level)), status: status };
+      return { title: def.title + (multi ? " · Lv " + (level+1) : ""), desc: def.desc[level], stats: deltaHTML(gearDelta(key, level)), status: status };
     }
     function addNode(x, y, cls, key, level, badge){
       var n = document.createElement("button");
@@ -767,7 +805,7 @@
       n.setAttribute("data-key", key); n.setAttribute("data-level", level);
       var show = function(){
         var info = nodeInfo(key, level);
-        treeTip.innerHTML = '<div class="pw-heading">'+info.title+'</div><p class="pw-small">'+info.desc+'</p>'+info.stats+'<p class="pw-caption '+info.status.cls+'">'+info.status.text+'</p>';
+        treeTip.innerHTML = '<div class="pw-heading">'+info.title+'</div>'+(info.desc ? '<p class="pw-small">'+info.desc+'</p>' : '')+info.stats+'<p class="pw-caption '+info.status.cls+'">'+info.status.text+'</p>';
         treeTip.classList.remove("hidden");
         var W = wrap.clientWidth, H = wrap.clientHeight, TW = treeTip.offsetWidth, TH = treeTip.offsetHeight;
         var left = Math.max(0, Math.min(W - TW, x/100*W - TW/2));
@@ -841,7 +879,7 @@
   function openGearModal(key, level){
     var def = GEAR[key] || SHOP[key];
     var multi = def.costs.length > 1;
-    var head = mHead(def.icon, def.title+(multi ? ' — Lv '+(level+1) : ''), def.desc[level], GEAR[key] ? "Upgrade" : "Shop") + (lvl(key) > level ? "" : deltaHTML(gearDelta(key, level)));
+    var head = mHead(def.icon, def.title+(multi ? ' — Lv '+(level+1) : ''), def.desc[level] || null, GEAR[key] ? "Upgrade" : "Shop") + deltaHTML(gearDelta(key, level));
     var closeBtn = { label:"Close", cls:"pw-btn--ghost" };
 
     if(lvl(key) > level){
@@ -879,7 +917,7 @@
     grid.innerHTML = "";
     Object.keys(SHOP).forEach(function(key){
       var def = SHOP[key], l = lvl(key), maxed = l >= def.costs.length;
-      var card = cardEl(def.icon, def.title, (maxed ? def.desc[def.desc.length-1] : def.desc[l]) + (maxed ? "" : deltaHTML(gearDelta(key, l))),
+      var card = cardEl(def.icon, def.title, (maxed ? def.desc[def.desc.length-1] : def.desc[l]) + deltaHTML(gearDelta(key, maxed ? def.costs.length-1 : l)),
         def.costs.length>1 ? 'Level '+l+' / '+def.costs.length : '', maxed ? "pw-card--owned" : "");
       var foot = footEl();
       if(maxed){
@@ -984,11 +1022,12 @@
     });
   }
 
+  function legacyOpen(){ return !!(state.legacyAvailable || state.ownedOutright); }
   function renderLegacy(){
-    var can = !!state.legacyAvailable;
-    $("legacyStatus").textContent = can
-      ? "Spend your stars now — this window closes when you leave this screen."
-      : "Stars are locked until your next repossession. When you lose the rig, this is what you keep.";
+    var can = legacyOpen();
+    $("legacyStatus").textContent = state.ownedOutright ? "You own the business: the Legacy shop is open for good."
+      : can ? "Spend your stars now — this window closes when you leave this screen."
+      : "Stars are locked until your next repossession — or until you own the business outright.";
     var grid = $("perkGrid");
     grid.innerHTML = "";
     Object.keys(PERKS).forEach(function(k){
@@ -1004,7 +1043,7 @@
         b.textContent = can ? "Take it" : "Locked";
         b.disabled = !can || state.rep < def.cost;
         b.onclick = function(){
-          if(!state.legacyAvailable || state.rep < def.cost) return;
+          if(!legacyOpen() || state.rep < def.cost) return;
           state.rep -= def.cost; state.perks[k] = true;
           save(); renderTop(); renderLegacy();
           if(k === "washbot") tellInfo("washbot", "truck", "WashBot 3000", "It rides along on every job and blasts the dirtiest spot it can find three times a second, with the right chemical built in. Enjoy retirement.");
@@ -1156,7 +1195,32 @@
     /* run only the helpers (son, foam cannon, WashBot) for `ms` of game time, no hero; returns cleanliness */
     helpersFor: function(ms){ if(!job) return 0; for(var t=0; t<ms && !job.ended; t+=16){ sonTick(16); foamTick(16); botTick(16); if(refilling){ refillT += 16; if(refillT >= refillMs()){ refilling = false; job.tank = tankMax(); } } } return cleanliness(); },
     tipNow: function(msLeft, clean){ return tipNow(msLeft, clean); }, restWeekend: restWeekend, crewIncomeOn: crewIncomeOn,
-    gearDelta: gearDelta, crewWage: function(id, l){ return crewWage(CREW.filter(function(c){ return c.id === id; })[0], l || 0); }, CREW: CREW,
+    gearDelta: gearDelta,
+    /* which scene props sit on dirty cells of a job (they'd be hidden under the dirt): { prop: cells }.
+       The scene's own surface detail (planks, bricks, the facade) doesn't count. */
+    auditJob: function(key){
+      AUDIT = { ctx: bx, list: [] };
+      try { forcedJob = key; startJob(); } finally { forcedJob = null; }
+      var list = AUDIT.list, a = job.area, out = {}; AUDIT = null;
+      /* only what's drawn after the washable surface can end up on top of it */
+      var from = 0; list.forEach(function(r, i){ if(r.by === "paintArea") from = i + 1; });
+      list = list.slice(from).filter(function(r){ return !AUDIT_SURFACE[r.by]; });
+      list.forEach(function(r){
+        var seen = {};
+        for(var y=Math.max(r.y, a.y); y<Math.min(r.y+r.h, a.y+a.h); y++) for(var x=Math.max(r.x, a.x); x<Math.min(r.x+r.w, a.x+a.w); x++){
+          var ci = Math.floor((y-a.y)/CELL)*gCols + Math.floor((x-a.x)/CELL);
+          if(!seen[ci] && grime[ci] > 0.03){ seen[ci] = 1; out[r.by] = (out[r.by] || 0) + 1; }
+        }
+      });
+      /* and the props drawn in front of the dirt must not have dirt hiding under them */
+      (job.propRects || []).forEach(function(r){
+        for(var y=Math.max(r[1], a.y); y<Math.min(r[1]+r[3], a.y+a.h); y++) for(var x=Math.max(r[0], a.x); x<Math.min(r[0]+r[2], a.x+a.w); x++){
+          var ci = Math.floor((y-a.y)/CELL)*gCols + Math.floor((x-a.x)/CELL);
+          if(grime[ci] > 0.03) out["under a front prop"] = (out["under a front prop"] || 0) + 1;
+        }
+      });
+      return out;
+    }, crewWage: function(id, l){ return crewWage(CREW.filter(function(c){ return c.id === id; })[0], l || 0); }, CREW: CREW,
     cleanliness: cleanliness,
     advanceDay: advanceDay,
     triggerBill: triggerBill,

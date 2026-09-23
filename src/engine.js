@@ -43,6 +43,11 @@
     var patches = [];
     for(var pi=0; pi<nPatches; pi++) patches.push({ x: 0.1 + rng()*0.8, y: 0.1 + rng()*0.8, r: 0.14 + rng()*0.16, sx: 0.7 + rng()*0.8 });
     var patchN = nPatches ? makeNoise(gCols,gRows, 4, rng) : null;
+    var blocked = new Uint8Array(gCols*gRows);
+    (job.propRects || []).forEach(function(r){
+      for(var by=Math.floor((r[1]-a.y)/CELL); by<=Math.floor((r[1]+r[3]-1-a.y)/CELL); by++) for(var bxx=Math.floor((r[0]-a.x)/CELL); bxx<=Math.floor((r[0]+r[2]-1-a.x)/CELL); bxx++)
+        if(bxx>=0 && by>=0 && bxx<gCols && by<gRows) blocked[by*gCols+bxx] = 1;
+    });
     var pass = 0;
     while(true){
     grimeTotal = 0;
@@ -51,7 +56,7 @@
         var i = cy*gCols+cx;
         jitter[i] = rng();
         var px = a.x + cx*CELL + CELL/2, py = a.y + cy*CELL + CELL/2;
-        if(def.mask && !def.mask(px,py,a)){ grime[i] = 0; continue; }
+        if((def.mask && !def.mask(px,py,a)) || blocked[i]){ grime[i] = 0; continue; }
         var v = n1[i]*0.74 + n2[i]*0.26;
         /* which dirt sits here: the strongest of the type fields, first type favoured a little */
         var tBest = 0, tVal = -1;
@@ -529,6 +534,8 @@
   }
 
   function startJob(){
+    if(job && !job.ended){ stopJobLoop(); job.ended = true; }
+    job = null; syncScene();   /* a fresh job is painted in the theme of the moment */
     var def = pickJobDef();
     var weather = WEATHERS[Math.floor(Math.random()*WEATHERS.length)];
     var seed = (state.jobsCompleted+1) * 2654435761 % 4294967296;
@@ -555,6 +562,10 @@
     loadPalette(); resetLight();
     bx.clearRect(0,0,CW,CH);
     def.scene(def.area, rng);
+    /* the props that stand on the surface (a ball, a pot, a sign) are drawn over the dirt every
+       frame; nothing gets dirty underneath them, or you'd be scrubbing dirt you can't see */
+    job.propRects = [];
+    if(def.props){ PROPREC = job.propRects; try { def.props(def.area); } finally { PROPREC = null; } }
     buildGrime(rng);
     job.contract = null;
     if(contractsUnlocked() && (rng() < contractChance() || (state.sinceContract || 0) >= 2)){

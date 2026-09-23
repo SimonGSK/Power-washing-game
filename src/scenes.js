@@ -104,6 +104,7 @@
       for(var cx=fx0+8; cx<fx0+fw; cx+=36) if(((cx+band)&7)===0) R(cx, band+12, 5, 3, P.parchLo);   /* a blind, half down */
     }
     R(fx0, 0, 1, CH, P.c4); R(fx0+fw-1, 0, 1, CH, P.c1);
+    surfaceDone();
     /* the cradle: cables from the roof, a platform, a bucket, a cone */
     var py = a.y + a.h + 12;
     var a2 = { x: 60, y: 0, w: 120, h: 0 }; a = { x: 60, y: a.y + a.h - 82, w: 120, h: 82 };  /* the cradle keeps its old span under the wider area */
@@ -132,12 +133,11 @@
     lit(function(){ box(173, 70, 18, 7, NIGHT ? "#ffd57a" : P.parchHi, null, null); pxText(175, 71, "OPEN", NIGHT ? "#c0392b" : P.leafLo, 1); });
     box(84, 10, 72, 11, P.p1, P.p2, null); lit(function(){ pxText(98, 13, "CAFE", NIGHT ? "#fff0c4" : P.sunHi, 1); R(88,13,3,5,NIGHT ? "#ff9a6a" : P.coral); R(89,12,1,1,NIGHT ? "#ff9a6a" : P.coral); R(145,13,3,5,NIGHT ? "#ff9a6a" : P.coral); R(146,12,1,1,NIGHT ? "#ff9a6a" : P.coral); });
     if(NIGHT){ lit(function(){ for(var lx=36; lx<204; lx+=12) R(lx, 36, 3, 1, "#fff0c4"); }); glowCone(120, 37, 172, 176, 10, "#8a7448"); }
-    flowerBed(36, 100, 30, 8, rng);
     streetLamp(22, 118); hydrant(222, 118); bin(234, 124); dumpster(18, 134); cone(64, 130);
     R(44,118,6,12,P.p3); R(45,116,4,2,P.p3); R(44,118,1,12,P.p1); R(49,118,1,12,P.p1); R(46,121,2,3,P.parchHi);
     cafeChair(78, 130, true); cafeTable(92, 130); cafeChair(106, 130, false);
     cafeChair(124, 132, true); cafeTable(138, 132); cafeChair(152, 132, false);
-    cat(120, 106);
+    cat(60, 126);
     seagull(72, 30); bird(150, 6, P.sun);
   }
 
@@ -154,6 +154,7 @@
     pillar(12, 16, 16, 92); pillar(212, 16, 16, 92);
     /* the wash section is just more of the same wall; the yellow line runs right through it */
     R(0,60,CW,3,P.sun); R(0,63,CW,1,P.sunLo);
+    surfaceDone();
     /* floor with bay lines */
     pavement(0, 108, CW, 42, P.c3);
     for(var bay=30; bay<CW; bay+=50){ R(bay, 112, 2, 30, P.sunHi); }
@@ -195,6 +196,7 @@
     for(var pl=a.y+6; pl<wl-8; pl+=5) for(var px2=a.x+6; px2<bowX-10; px2+=2) if(maskHull(px2+0.5,pl+0.5,a) && maskHull(px2+6,pl+0.5,a)) R(px2,pl,1,1,P.c3);
     for(var ph=a.x+22; ph<bowX-30; ph+=22){ R(ph, a.y+8, 5, 5, P.ink); R(ph+1, a.y+9, 3, 3, NIGHT ? "#ffd57a" : P.waterHi); }   /* portholes */
     pxText(a.x+8, a.y+18, "MARY B", P.waterLo, 1);
+    surfaceDone();
     /* the boat sits in the water: foam along the hull, its dark reflection underneath */
     foamLine(a.x-2, wl, a.w+4);
     for(var rr=wl+2; rr<wl+14; rr+=2){ var inset = Math.round((rr-wl)*1.6); R(a.x+4+inset, rr, a.w-8-inset*2, 1, mix(P.w2, P.ink, 0.35)); }
@@ -241,9 +243,6 @@
     paintArea(a, P.p4);
     for(var py=a.y+6; py<a.y+a.h; py+=7){ R(a.x,py,a.w,1,P.p3); }
     for(var k=0;k<6;k++){ R(a.x+3+Math.floor(rng()*(a.w-6)), a.y+2+Math.floor(rng()*(a.h-4)), 1, 3, P.p2); }
-    netHang(a.x+8, a.y+10, 30, 38);
-    buoy(a.x+a.w-18, a.y+22); buoy(a.x+a.w-30, a.y+35); lifeRing(a.x+a.w-12, a.y+50);
-    sign(a.x+a.w/2-20, a.y+4, 40, P.parchHi);
     if(NIGHT){ lit(function(){ R(a.x+a.w/2-22, a.y+2, 2, 1, "#fff0c4"); R(a.x+a.w/2+20, a.y+2, 2, 1, "#fff0c4"); }); glowCone(a.x+a.w/2, a.y+3, 44, 52, 8, "#8a7448"); }
     pier(0, 106, CW, 6);
     pierLamp(40, 106); pierLamp(200, 106);

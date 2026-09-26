@@ -159,14 +159,19 @@ __SCENES__
     for(var j=1;j<prow;j++){ if(Math.abs(py-(a.y + a.h*j/prow)) < 2.5) return false; }
     return true;
   }
-  /* the side of a fishing boat, deck rail to waterline: the stem rakes forward at the bow (right),
-     the stern is a rounded transom; below the waterline is the sea's business, not yours */
+  /* The boat's side, seen from the pier, bow to the right. The job's area bottom is the
+     waterline; the top is the highest point of the deck (at the bow).
+       hullDeck(u)  — height of the deck edge above the water, u = 0 (stern) … 1 (bow): a sheer
+                      line that dips amidships and sweeps up to the bow
+       hullBow(h)   — how far forward (u) the stem reaches at height h: raked, slightly convex
+       hullStern(h) — where the transom is at height h: tucked in a little at the waterline */
+  function hullDeck(u, a){ return a.h * (0.66 + 0.34*Math.pow(u, 2.4)) + 1.6*Math.pow(1-u, 4); }
+  function hullBow(h, a){ return 0.84 + 0.16*Math.pow(Math.max(0, h)/a.h, 0.8); }
+  function hullStern(h, a){ return 0.035 * Math.max(0, 1 - h/(a.h*0.7)); }
   function maskHull(px,py,a){
-    var u = (px-a.x)/a.w, v = (py-a.y)/a.h;
-    if(u<0||u>1||v<0||v>1) return false;
-    var bowCut   = Math.pow(v, 1.35) * 0.20;          /* the stem leans back as it goes down */
-    var sternCut = Math.pow(v, 2.2) * 0.07;           /* the transom tucks in a little */
-    return u >= sternCut && u <= 1 - bowCut;
+    var u = (px-a.x)/a.w, h = (a.y + a.h) - py;
+    if(u < 0 || u > 1 || h < 0) return false;
+    return h <= hullDeck(u, a) && u >= hullStern(h, a) && u <= hullBow(h, a);
   }
 
   /* =========================================================
@@ -194,9 +199,10 @@ __SCENES__
     garage:    { name:"Parking Garage",  region:"city",   scene:sceneGarage,     area:{x:59,y:30,w:118,h:76}, hero:{x:46,y:138}, son:{x:74,y:132}, hose:{x:-8,y:146}, vertical:true, patchChance:0.3,
                  grimes:["grease","soot","grease","soot"], graffitiChance:0.45,
                  props:function(a){ cone(a.x+18, a.y+a.h+2); bin(a.x+a.w-16, a.y+a.h+2); } },
-    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:66,y:50,w:132,h:36}, hero:{x:36,y:104}, son:{x:14,y:104}, hose:{x:-8,y:106}, mask:maskHull, vertical:true, ragged:false,
+    hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:58,y:64,w:146,h:28}, hero:{x:36,y:104}, son:{x:14,y:104}, hose:{x:-8,y:106}, mask:maskHull, vertical:true, ragged:false,
                  grimes:["moss","rust","rust","salt","rust"],
-                 props:function(a){ ladder(a.x+a.w-46, a.y+4, 30); } },
+                 props:function(a){ /* fenders hanging over the side, in front of the dirt */
+                   [0.30, 0.62].forEach(function(f){ var fx = Math.round(a.x + a.w*f), top = Math.round(a.y + a.h - hullDeck(f, a)); R(fx, top-1, 1, 5, P.stone); R(fx-2, top+4, 5, 8, P.ink); R(fx-1, top+5, 3, 6, P.water); R(fx-1, top+5, 1, 3, P.waterHi); }); } },
     dock:      { name:"Pier Railing",    region:"harbor", scene:sceneDock,       area:{x:60,y:60,w:120,h:43}, hero:{x:40,y:104}, son:{x:204,y:104}, hose:{x:-8,y:106}, vertical:true, patchChance:0.3,
                  grimes:["moss","salt","moss","salt"],
                  props:function(a){ lobsterTrap(a.x+14, a.y+a.h+2); ropeCoil(a.x+a.w-14, a.y+a.h+2); } },

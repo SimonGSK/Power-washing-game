@@ -360,6 +360,8 @@
     R(x-3,y-19,6,1,P.ink); R(x-3,y-18,1,5,P.ink); R(x+2,y-18,1,5,P.ink); R(x-3,y-13,6,1,P.ink);
     lit(function(){ R(x-2,y-18,4,5, NIGHT ? "#fff0c4" : P.parchHi); R(x-1,y-17,2,3, NIGHT ? "#ffe08a" : P.sunHi); });
   }
+  /* a 1 px line into the scene (ropes, cables) */
+  function rline(x0,y0,x1,y1,c){ var n = Math.max(Math.abs(x1-x0), Math.abs(y1-y0), 1); for(var i=0;i<=n;i++) R(Math.round(x0 + (x1-x0)*i/n), Math.round(y0 + (y1-y0)*i/n), 1, 1, c); }
   function bollard(x,y){ R(x-2,y-6,4,6,P.p1); R(x-2,y-6,1,6,P.p2); R(x-3,y-7,6,1,P.ink); R(x-1,y-4,2,1,P.p3); }
   function ladder(x,y,h){ R(x,y,1,h,P.stone); R(x+4,y,1,h,P.stone); for(var r=2;r<h;r+=3) R(x+1,y+r,3,1,P.stoneLo); }
   function lifeRing(x,y){ R(x-3,y-3,6,6,P.coral); R(x-2,y-2,4,4,P.parchHi); R(x-1,y-1,2,2,P.w2); R(x-3,y-1,1,2,P.parchHi); R(x+2,y-1,1,2,P.parchHi); }

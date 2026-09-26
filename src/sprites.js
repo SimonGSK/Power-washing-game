@@ -41,6 +41,12 @@
         ctx.drawImage(cv, Math.round(x), Math.round(y));
       },
       size: function(name){ var s = SPRITES[name]; return s ? { w:s.w, h:s.h } : null; },
+      /* where a named point of the sprite (e.g. its hand) lands when drawn with draw(…, x, y, flip) */
+      anchor: function(name, key, x, y, flip){
+        var s = SPRITES[name], a = s && s.anchors && s.anchors[key]; if(!a) return [x, y];
+        var ax = flip ? s.w - 1 - a[0] : a[0];
+        return [Math.round(x - s.w/2) + ax, Math.round(y - s.h + 1) + a[1]];
+      },
       raster: raster,
       /* the theme changed: throw the rasters away */
       reset: function(){ cache = {}; }

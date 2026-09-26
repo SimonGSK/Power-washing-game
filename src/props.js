@@ -21,6 +21,14 @@
   }
   function lit(fn){ var was = LIT; LIT = true; fn(); LIT = was; }
   var PROPREC = null;   /* set while measuring a job's props: every rect they'd draw */
+  /* thin things in front of the dirt (a rope, a cable) that don't hide what's behind them:
+     they're left out of the footprint, so the dirt under them stays and can be washed */
+  function thin(fn){ if(!PROPREC) fn(); }
+  /* a rope that sags between two points: 1 px, drawn with R so it can live in a job's props */
+  function rope(x0, y0, x1, y1, sag, c){
+    var n = Math.max(Math.abs(x1-x0), Math.abs(y1-y0), 1);
+    for(var i=0; i<=n; i++){ var t = i/n; R(Math.round(x0 + (x1-x0)*t), Math.round(y0 + (y1-y0)*t + sag*4*t*(1-t)), 1, 1, c); }
+  }
   function R(x,y,w,h,c){ if(PROPREC){ PROPREC.push([Math.round(x),Math.round(y),Math.round(w),Math.round(h)]); return; } if(AUDIT && bx === AUDIT.ctx) auditRect(x,y,w,h); bx.fillStyle = shade(c); bx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
   /* the prop audit (tests only): which prop drew each rect into the scene, by the calling function's name */
   var AUDIT = null, AUDIT_SKIP = { R:1, box:1, dither:1, blob:1, auditRect:1, auditCaller:1, lit:1, Error:1, raster:1, draw:1, drawAt:1, glowCone:1, glowDisc:1, shade:1, mix:1, ellipseRows:1, pxText:1 };

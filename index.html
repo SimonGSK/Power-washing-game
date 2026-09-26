@@ -1617,6 +1617,14 @@ body{
   }
   function lit(fn){ var was = LIT; LIT = true; fn(); LIT = was; }
   var PROPREC = null;   /* set while measuring a job's props: every rect they'd draw */
+  /* thin things in front of the dirt (a rope, a cable) that don't hide what's behind them:
+     they're left out of the footprint, so the dirt under them stays and can be washed */
+  function thin(fn){ if(!PROPREC) fn(); }
+  /* a rope that sags between two points: 1 px, drawn with R so it can live in a job's props */
+  function rope(x0, y0, x1, y1, sag, c){
+    var n = Math.max(Math.abs(x1-x0), Math.abs(y1-y0), 1);
+    for(var i=0; i<=n; i++){ var t = i/n; R(Math.round(x0 + (x1-x0)*t), Math.round(y0 + (y1-y0)*t + sag*4*t*(1-t)), 1, 1, c); }
+  }
   function R(x,y,w,h,c){ if(PROPREC){ PROPREC.push([Math.round(x),Math.round(y),Math.round(w),Math.round(h)]); return; } if(AUDIT && bx === AUDIT.ctx) auditRect(x,y,w,h); bx.fillStyle = shade(c); bx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
   /* the prop audit (tests only): which prop drew each rect into the scene, by the calling function's name */
   var AUDIT = null, AUDIT_SKIP = { R:1, box:1, dither:1, blob:1, auditRect:1, auditCaller:1, lit:1, Error:1, raster:1, draw:1, drawAt:1, glowCone:1, glowDisc:1, shade:1, mix:1, ellipseRows:1, pxText:1 };
@@ -2229,7 +2237,9 @@ body{
       for(var rx2=X(0.04)+inset; rx2<X(0.84)-inset; rx2++) if(((rx2 + rr) % 3) !== 0 && ((rx2 >> 3) + rr) % 4 !== 0) R(rx2, ry2, 1, 1, c);
     }
     /* mooring lines from the stern and bow cleats down to the pier */
-    rline(a.x - 1, deckY(0) - 2, 22, 98, P.p1); rline(X(1) + 1, deckY(1), 206, 98, P.p1);   /* from the stern and bow, clear of the hull side */
+    /* cleats on the rail where the mooring lines are made fast (the lines themselves are props) */
+    R(X(0.02)-1, deckY(0.02)-2, 4, 2, P.ink); R(X(0.02), deckY(0.02)-2, 2, 1, P.stone);
+    R(X(0.93)-1, deckY(0.93)-2, 4, 2, P.ink); R(X(0.93), deckY(0.93)-2, 2, 1, P.stone);
     /* the pier you stand on, and the far end of the quay */
     pier(0, 104, 72, 6); pier(196, 104, 44, 6);
     pierLamp(6, 104); pierLamp(232, 104);
@@ -2328,7 +2338,11 @@ body{
                  props:function(a){ cone(a.x+18, a.y+a.h+2); bin(a.x+a.w-16, a.y+a.h+2); } },
     hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:58,y:64,w:146,h:28}, hero:{x:36,y:104}, son:{x:14,y:104}, hose:{x:-8,y:106}, mask:maskHull, vertical:true, ragged:false,
                  grimes:["moss","rust","rust","salt","rust"],
-                 props:function(a){ /* fenders hanging over the side, in front of the dirt */
+                 props:function(a){
+                   /* mooring lines from the rail cleats down to the pier bollards, sagging a little */
+                   var cs = [0.02, 0.93].map(function(u){ return [Math.round(a.x + a.w*u) + 1, Math.round(a.y + a.h - hullDeck(u, a)) - 2]; });
+                   thin(function(){ rope(cs[0][0], cs[0][1], 22, 97, 3, P.p1); rope(cs[1][0], cs[1][1], 206, 97, 3, P.p1); });
+                   /* fenders hanging over the side, in front of the dirt */
                    [0.30, 0.62].forEach(function(f){ var fx = Math.round(a.x + a.w*f), top = Math.round(a.y + a.h - hullDeck(f, a)); R(fx, top-1, 1, 5, P.stone); R(fx-2, top+4, 5, 8, P.ink); R(fx-1, top+5, 3, 6, P.water); R(fx-1, top+5, 1, 3, P.waterHi); }); } },
     dock:      { name:"Pier Railing",    region:"harbor", scene:sceneDock,       area:{x:60,y:60,w:120,h:43}, hero:{x:40,y:104}, son:{x:204,y:104}, hose:{x:-8,y:106}, vertical:true, patchChance:0.3,
                  grimes:["moss","salt","moss","salt"],
@@ -2681,9 +2695,14 @@ body{
   function makeContract(rng){
     var cw = Math.round(gCols*(0.32 + rng()*0.18)), ch = Math.round(gRows*(0.32 + rng()*0.18));
     var cx = Math.floor(rng()*(gCols-cw)), cy = Math.floor(rng()*(gRows-ch));
+    /* shrink the frame to the dirt inside it, so it never pokes out over sky, cabin or clean wall */
+    var x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+    for(var yy=cy; yy<cy+ch; yy++) for(var xx=cx; xx<cx+cw; xx++) if(grime[yy*gCols+xx] > 0.03){ x0 = Math.min(x0, xx); y0 = Math.min(y0, yy); x1 = Math.max(x1, xx); y1 = Math.max(y1, yy); }
+    if(x1 < 0) return null;
+    cx = x0; cy = y0; cw = x1 - x0 + 1; ch = y1 - y0 + 1;
     var mask = [], total = 0;
     for(var y=cy; y<cy+ch; y++) for(var x=cx; x<cx+cw; x++){ var dirty = grime[y*gCols+x] > 0.03; mask.push(dirty ? 1 : 0); if(dirty) total++; }
-    if(total < 12) return null;
+    if(total < 12 || total < cw*ch*0.6) return null;   /* mostly dirt, or pick another spot */
     var a = job.area;
     return { cx:cx, cy:cy, cw:cw, ch:ch, mask:mask, total:total, x:a.x+cx*CELL, y:a.y+cy*CELL, w:cw*CELL, h:ch*CELL, bonus:0.30 };
   }
@@ -2990,7 +3009,7 @@ body{
     buildGrime(rng);
     job.contract = null;
     if(contractsUnlocked() && (rng() < contractChance() || (state.sinceContract || 0) >= 2)){
-      for(var ctry=0; ctry<4 && !job.contract; ctry++) job.contract = makeContract(rng);
+      for(var ctry=0; ctry<8 && !job.contract; ctry++) job.contract = makeContract(rng);
     }
     if(contractsUnlocked()) state.sinceContract = job.contract ? 0 : (state.sinceContract || 0) + 1;
     if(job.contract){ job.contract.bonus = contractBonus(); $("contractPct").textContent = Math.round(job.contract.bonus*100) + "%"; }
@@ -4542,6 +4561,8 @@ body{
     data: { GEAR: GEAR, SHOP: SHOP, PERKS: PERKS, CHEMS: CHEMS, GRIME_TYPES: GRIME_TYPES, JOBS: JOBS, REGIONS: REGIONS, LIMB_DEFS: LIMB_DEFS, DIRT_UNLOCK: DIRT_UNLOCK, WRONG_CHEM: WRONG_CHEM, icons: Object.keys(ICONS) },
     grimeStats: function(){ var n = 0, hp = 0; if(grime) for(var i=0;i<grime.length;i++){ if(grime[i] > 0.03){ n++; hp += grime[i]; } } return { cells: n, hp: hp, cols: gCols, rows: gRows }; },
     night: function(){ return NIGHT; },
+    /* the contract frame against the dirt: how much of its inside is washable, and its bounds */
+    contractFit: function(){ var z = job && job.contract; if(!z) return null; return { fill: z.total / (z.cw*z.ch), cw: z.cw, ch: z.ch, x0: z.cx, y0: z.cy, cols: gCols, rows: gRows }; },
     theme: function(){ return { pref: themePref, effective: effectiveTheme() }; }, applyTheme: applyTheme,
     Sprites: Sprites,
     SPRITES: SPRITES

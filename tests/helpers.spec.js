@@ -132,3 +132,25 @@ test.describe("helpers", () => {
     expect(tree).not.toMatch(/more water/i);
   });
 });
+
+test("the contract frame sits on the dirt on every level — never mostly over sky, cabin or clean wall", async ({ page }) => {
+  await openGame(page);
+  const bad = await page.evaluate(() => {
+    const D = window.PowerWashDebug, out = [];
+    const info = { dirt_dust: 1, dirt_mud: 1, dirt_moss: 1, dirt_grease: 1, dirt_soot: 1, dirt_salt: 1, dirt_rust: 1, dirt_graffiti: 1, contracts: 1, tipjar: 1, weekend: 1 };
+    D.patch({ story: { intro: 1, firstJob: 1 }, info, gear: { contracts: 3, mosskiller: 1, degreaser: 1, stripper: 1, rustremover: 1 } });
+    for(const key of Object.keys(D.data.JOBS)){
+      let seen = 0;
+      for(let j = 30; j < 50 && seen < 4; j++){
+        D.patch({ region: D.data.JOBS[key].region, jobsCompleted: j, sinceContract: 2 });
+        D.startJob(key);
+        const f = D.contractFit(); if(!f) continue; seen++;
+        if(f.fill < 0.6) out.push(key + ": frame only " + Math.round(f.fill * 100) + "% dirt");
+        if(f.x0 < 0 || f.y0 < 0 || f.x0 + f.cw > f.cols || f.y0 + f.ch > f.rows) out.push(key + ": frame outside the area");
+      }
+      if(!seen) out.push(key + ": never got a contract");
+    }
+    return out;
+  });
+  expect(bad).toEqual([]);
+});

@@ -229,7 +229,9 @@
       for(var rx2=X(0.04)+inset; rx2<X(0.84)-inset; rx2++) if(((rx2 + rr) % 3) !== 0 && ((rx2 >> 3) + rr) % 4 !== 0) R(rx2, ry2, 1, 1, c);
     }
     /* mooring lines from the stern and bow cleats down to the pier */
-    rline(a.x - 1, deckY(0) - 2, 22, 98, P.p1); rline(X(1) + 1, deckY(1), 206, 98, P.p1);   /* from the stern and bow, clear of the hull side */
+    /* cleats on the rail where the mooring lines are made fast (the lines themselves are props) */
+    R(X(0.02)-1, deckY(0.02)-2, 4, 2, P.ink); R(X(0.02), deckY(0.02)-2, 2, 1, P.stone);
+    R(X(0.93)-1, deckY(0.93)-2, 4, 2, P.ink); R(X(0.93), deckY(0.93)-2, 2, 1, P.stone);
     /* the pier you stand on, and the far end of the quay */
     pier(0, 104, 72, 6); pier(196, 104, 44, 6);
     pierLamp(6, 104); pierLamp(232, 104);

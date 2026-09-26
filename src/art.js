@@ -201,7 +201,11 @@ __SCENES__
                  props:function(a){ cone(a.x+18, a.y+a.h+2); bin(a.x+a.w-16, a.y+a.h+2); } },
     hull:      { name:"Boat Hull",       region:"harbor", scene:sceneHull,       area:{x:58,y:64,w:146,h:28}, hero:{x:36,y:104}, son:{x:14,y:104}, hose:{x:-8,y:106}, mask:maskHull, vertical:true, ragged:false,
                  grimes:["moss","rust","rust","salt","rust"],
-                 props:function(a){ /* fenders hanging over the side, in front of the dirt */
+                 props:function(a){
+                   /* mooring lines from the rail cleats down to the pier bollards, sagging a little */
+                   var cs = [0.02, 0.93].map(function(u){ return [Math.round(a.x + a.w*u) + 1, Math.round(a.y + a.h - hullDeck(u, a)) - 2]; });
+                   thin(function(){ rope(cs[0][0], cs[0][1], 22, 97, 3, P.p1); rope(cs[1][0], cs[1][1], 206, 97, 3, P.p1); });
+                   /* fenders hanging over the side, in front of the dirt */
                    [0.30, 0.62].forEach(function(f){ var fx = Math.round(a.x + a.w*f), top = Math.round(a.y + a.h - hullDeck(f, a)); R(fx, top-1, 1, 5, P.stone); R(fx-2, top+4, 5, 8, P.ink); R(fx-1, top+5, 3, 6, P.water); R(fx-1, top+5, 1, 3, P.waterHi); }); } },
     dock:      { name:"Pier Railing",    region:"harbor", scene:sceneDock,       area:{x:60,y:60,w:120,h:43}, hero:{x:40,y:104}, son:{x:204,y:104}, hose:{x:-8,y:106}, vertical:true, patchChance:0.3,
                  grimes:["moss","salt","moss","salt"],

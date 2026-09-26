@@ -268,9 +268,14 @@
   function makeContract(rng){
     var cw = Math.round(gCols*(0.32 + rng()*0.18)), ch = Math.round(gRows*(0.32 + rng()*0.18));
     var cx = Math.floor(rng()*(gCols-cw)), cy = Math.floor(rng()*(gRows-ch));
+    /* shrink the frame to the dirt inside it, so it never pokes out over sky, cabin or clean wall */
+    var x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+    for(var yy=cy; yy<cy+ch; yy++) for(var xx=cx; xx<cx+cw; xx++) if(grime[yy*gCols+xx] > 0.03){ x0 = Math.min(x0, xx); y0 = Math.min(y0, yy); x1 = Math.max(x1, xx); y1 = Math.max(y1, yy); }
+    if(x1 < 0) return null;
+    cx = x0; cy = y0; cw = x1 - x0 + 1; ch = y1 - y0 + 1;
     var mask = [], total = 0;
     for(var y=cy; y<cy+ch; y++) for(var x=cx; x<cx+cw; x++){ var dirty = grime[y*gCols+x] > 0.03; mask.push(dirty ? 1 : 0); if(dirty) total++; }
-    if(total < 12) return null;
+    if(total < 12 || total < cw*ch*0.6) return null;   /* mostly dirt, or pick another spot */
     var a = job.area;
     return { cx:cx, cy:cy, cw:cw, ch:ch, mask:mask, total:total, x:a.x+cx*CELL, y:a.y+cy*CELL, w:cw*CELL, h:ch*CELL, bonus:0.30 };
   }
@@ -577,7 +582,7 @@
     buildGrime(rng);
     job.contract = null;
     if(contractsUnlocked() && (rng() < contractChance() || (state.sinceContract || 0) >= 2)){
-      for(var ctry=0; ctry<4 && !job.contract; ctry++) job.contract = makeContract(rng);
+      for(var ctry=0; ctry<8 && !job.contract; ctry++) job.contract = makeContract(rng);
     }
     if(contractsUnlocked()) state.sinceContract = job.contract ? 0 : (state.sinceContract || 0) + 1;
     if(job.contract){ job.contract.bonus = contractBonus(); $("contractPct").textContent = Math.round(job.contract.bonus*100) + "%"; }

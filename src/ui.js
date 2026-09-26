@@ -1234,6 +1234,8 @@
     data: { GEAR: GEAR, SHOP: SHOP, PERKS: PERKS, CHEMS: CHEMS, GRIME_TYPES: GRIME_TYPES, JOBS: JOBS, REGIONS: REGIONS, LIMB_DEFS: LIMB_DEFS, DIRT_UNLOCK: DIRT_UNLOCK, WRONG_CHEM: WRONG_CHEM, icons: Object.keys(ICONS) },
     grimeStats: function(){ var n = 0, hp = 0; if(grime) for(var i=0;i<grime.length;i++){ if(grime[i] > 0.03){ n++; hp += grime[i]; } } return { cells: n, hp: hp, cols: gCols, rows: gRows }; },
     night: function(){ return NIGHT; },
+    /* the contract frame against the dirt: how much of its inside is washable, and its bounds */
+    contractFit: function(){ var z = job && job.contract; if(!z) return null; return { fill: z.total / (z.cw*z.ch), cw: z.cw, ch: z.ch, x0: z.cx, y0: z.cy, cols: gCols, rows: gRows }; },
     theme: function(){ return { pref: themePref, effective: effectiveTheme() }; }, applyTheme: applyTheme,
     Sprites: Sprites,
     SPRITES: SPRITES

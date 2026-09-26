@@ -17,18 +17,18 @@
 
   /* design-system colours the canvas painters use (theme-aware) */
   var PAL_FALLBACK = {
-    ink:"#3a2010", sun:"#f6c744", sunHi:"#ffe08a", sunLo:"#c8901a", parch:"#f8dc9c", parchHi:"#fff0c4", parchLo:"#e9c274",
+    ink:"#141424", sun:"#f6c744", sunHi:"#ffe08a", sunLo:"#c8901a", parch:"#f8dc9c", parchHi:"#fff0c4", parchLo:"#e9c274",
     coral:"#e8744c", coralHi:"#f5a07e", coralLo:"#a03a1c", water:"#58a6d8", waterHi:"#a5dcf3", waterLo:"#26668f",
     leaf:"#74b247", leafHi:"#cfe6a8", leafLo:"#386a1b", berry:"#d980a4", stone:"#b9b4a6", stoneLo:"#6f6a60", wood:"#b46a2c", woodLo:"#7e451a",
-    g1:"#2f6b2a", g2:"#4a8f34", g3:"#6fb043", g4:"#9ad35c",
+    g1:"#2c7a24", g2:"#3fa038", g3:"#5cc04a", g4:"#8ee070",
     s1:"#4a2f1a", s2:"#6e4a2b", s3:"#9a6b3e", s4:"#c49560",
-    p1:"#5a3416", p2:"#8a5a2b", p3:"#b8813f", p4:"#d9a962",
-    w1:"#1f5a86", w2:"#2f7fb3", w3:"#4fa6d6", w4:"#8ed3f0",
-    c1:"#6f6b66", c2:"#9a948c", c3:"#c2bcb2", c4:"#e6e1d8", c5:"#f4f0e8",
+    p1:"#5a3416", p2:"#9a6030", p3:"#c88a40", p4:"#e8b460",
+    w1:"#1c58a8", w2:"#2878d0", w3:"#48a0f0", w4:"#98d8ff",
+    c1:"#77757c", c2:"#a6a4a8", c3:"#cfcecb", c4:"#ecebe6", c5:"#f8f8f4",
     skin:"#f2c9a0", white:"#ffffff"
   };
   var PAL_VARS = {
-    ink:"--ink", sun:"--sun", sunHi:"--sun-hi", sunLo:"--sun-lo", parch:"--parchment", parchHi:"--parchment-hi", parchLo:"--parchment-lo",
+    ink:"--scene-ink", sun:"--sun", sunHi:"--sun-hi", sunLo:"--sun-lo", parch:"--parchment", parchHi:"--parchment-hi", parchLo:"--parchment-lo",
     coral:"--coral", coralHi:"--coral-hi", coralLo:"--coral-lo", water:"--water", waterHi:"--water-hi", waterLo:"--water-lo",
     leaf:"--leaf", leafHi:"--leaf-hi", leafLo:"--leaf-lo", berry:"--berry", stone:"--stone", stoneLo:"--stone-lo", wood:"--wood", woodLo:"--wood-lo",
     g1:"--scene-grass-1", g2:"--scene-grass-2", g3:"--scene-grass-3", g4:"--scene-grass-4",

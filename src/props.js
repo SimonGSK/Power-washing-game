@@ -194,7 +194,7 @@
   function windowBox(x,y,w,rng){ R(x-1,y,w+2,3,P.s2); R(x-1,y,w+2,1,P.s3); R(x-2,y+3,w+4,1,P.ink); for(var i=0;i<w;i+=3){ R(x+i,y-2,2,2,[P.berry,P.sun,P.coral][(i/3)%3]); R(x+i+1,y-1,1,1,P.g2); } }
   function smoke(x,y){ R(x,y+8,2,2,P.c4); R(x+2,y+5,2,2,P.c4); R(x+1,y+2,3,2,"#ffffff"); R(x+4,y,3,2,"#ffffff"); }
   function laundryLine(x,y,w){ R(x,y-12,1,14,P.p1); R(x+w,y-12,1,14,P.p1); R(x,y-10,w,1,P.c1); var cols=[P.water,P.parchHi,P.coral,P.leafHi]; for(var i=0;i<4;i++){ var cx=x+4+i*Math.round((w-8)/3); R(cx,y-9,5,6,cols[i]); R(cx,y-9,5,1,mix(cols[i],"#000000",0.25)); R(cx+1,y-10,1,1,P.ink); R(cx+3,y-10,1,1,P.ink); } }
-  function dog(x,y){ R(x-8,y+1,16,1,P.g1); Sprites.draw(bx, "dog", "idle", x, y, false); }
+  function dog(x,y){ R(x-6,y+1,12,1,mix(P.g1,P.ink,0.25)); Sprites.draw(bx, "dog", "idle", x, y, false); }
   function ball(x,y){ R(x-1,y-4,4,1,P.coral); R(x-2,y-3,6,3,P.coral); R(x-1,y,4,1,P.coralLo); R(x-1,y-3,2,1,"#ffffff"); R(x,y-2,2,2,"#ffffff"); R(x-2,y+1,6,1,P.g1); }
   function sprinkler(x,y){ R(x-1,y-4,2,4,P.stoneLo); R(x-2,y-5,4,1,P.ink); for(var i=0;i<5;i++){ R(x-6+i*3, y-8-((i&1)*2), 1, 1, P.waterHi); R(x-5+i*3, y-11-((i&1)*2), 1, 1, "#ffffff"); } R(x-3,y,6,1,P.g1); }
   function birdbath(x,y){ R(x-1,y-6,2,6,P.c2); R(x-4,y-8,8,2,P.c3); R(x-4,y-8,8,1,P.c4); R(x-5,y-9,10,1,P.ink); R(x-3,y-8,6,1,P.waterHi); R(x-3,y,6,1,P.g1); bird(x+1,y-11,P.berry); }
@@ -339,7 +339,7 @@
   function gnome(x,y){ R(x,y-7,1,1,P.coral); R(x-1,y-6,3,2,P.coral); R(x-2,y-4,5,1,P.coralLo); R(x-1,y-3,3,2,P.skin); R(x-1,y-2,1,1,P.ink); R(x+1,y-2,1,1,P.ink); R(x-1,y-1,3,1,P.parchHi); R(x-1,y,3,1,P.water); R(x-2,y+1,5,1,P.g1); }
   function hoseReel(x,y){ box(x-5,y-8,10,8,P.parch,P.parchHi,P.parchLo); R(x-3,y-6,6,4,P.waterLo); R(x-1,y-5,2,2,P.parchLo); R(x-6,y,12,1,P.g1); R(x+5,y-3,4,1,P.waterLo); }
   function bike(x,y){ R(x-9,y-7,7,7,P.ink); R(x-8,y-6,5,5,P.stone); R(x-7,y-5,3,3,P.stoneLo); R(x+2,y-7,7,7,P.ink); R(x+3,y-6,5,5,P.stone); R(x+4,y-5,3,3,P.stoneLo); R(x-5,y-9,9,1,P.coral); R(x-1,y-12,1,4,P.coral); R(x-5,y-8,1,4,P.coral); R(x+3,y-8,1,4,P.coral); R(x-3,y-13,4,1,P.ink); R(x+2,y-11,4,1,P.ink); R(x-9,y+1,18,1,P.g1); }
-  function cat(x,y){ R(x-6,y+1,13,1,P.g1); Sprites.draw(bx, "cat", "idle", x, y, false); }
+  function cat(x,y){ R(x-5,y+1,10,1,mix(P.g1,P.ink,0.25)); Sprites.draw(bx, "cat", "idle", x, y, false); }
   function stones(x,y,n){ for(var i=0;i<n;i++){ var sx=x+i*9, sy=y+((i&1)*2); R(sx,sy,6,3,P.c3); R(sx,sy,6,1,P.c4); R(sx,sy+3,6,1,P.c1); } }
   function crosswalk(x,y,w){ for(var i=0;i<w;i+=8) R(x+i,y,5,6,P.parchHi); }
   function manhole(x,y){ R(x-3,y-1,6,3,P.c1); R(x-2,y,4,1,P.c2); }

@@ -358,25 +358,25 @@
     for(var j=0;j<parts.length;j++){ var q=parts[j]; FX(q[0], q[1], q[2], q[3], q[4]); }
   }
   /* The washer: 14×29, feet at (x,y); the wand snaps to one of 8 directions */
+  /* a soft oval shadow under a character's feet */
+  function groundShadow(x, y, r){ var c = mix(P.g1, P.ink, 0.25); FX(x-r, y, r*2+1, 1, c); FX(x-r+1, y+1, r*2-1, 1, c); }
   function drawWasher(){
     var h = job.def.hero, x = h.x, y = h.y, ax = aim.x, ay = aim.y;
     var facing = ax >= x ? 1 : -1;
-    var handX = x + facing*7, handY = y - 13;
+    var hand = Sprites.anchor("hero", "hand", x, y, facing < 0), handX = hand[0] + facing, handY = hand[1];
     var ang = Math.atan2(ay - handY, ax - handX);
     ang = Math.round(ang / (Math.PI/4)) * (Math.PI/4);
-    var hs = job.def.hose;
-    var hx = x - facing*5;
-    FX(Math.min(hs.x, hx), y+1, Math.abs(hx-hs.x)+1, 2, P.waterLo);
-    FX(hx, y-12, 2, 14, P.waterLo);
-    FX(x-7, y+2, 14, 1, P.g1);
+    /* the hose runs along the ground from the tap to his heel */
+    var hs = job.def.hose, hx = x - facing*4;
+    FX(Math.min(hs.x, hx), y+1, Math.abs(hx-hs.x)+1, 1, P.ink); FX(Math.min(hs.x, hx), y, Math.abs(hx-hs.x)+1, 1, P.waterLo);
+    groundShadow(x, y, 6);
     Sprites.draw(fx, "hero", "idle", x, y, facing < 0);
-    pxLine(x + facing*5, y-14, handX, handY, P.water, 2);
-    pxLine(handX, handY, handX + facing, handY, P.skin, 2);
-    var wandLen = 10;
+    /* the wand: ink-backed steel rod with a brass nozzle, pointing where you aim */
+    var wandLen = 9;
     var tipX = handX + Math.cos(ang)*wandLen, tipY = handY + Math.sin(ang)*wandLen;
-    pxLine(handX, handY, tipX, tipY, P.ink, 2);
-    pxLine(handX + Math.cos(ang), handY + Math.sin(ang), tipX - Math.cos(ang), tipY - Math.sin(ang), P.stone, 1);
-    FX(tipX, tipY, 2, 2, P.sun);
+    pxLine(handX, handY+1, tipX, tipY+1, P.ink, 1);
+    pxLine(handX, handY, tipX, tipY, P.stone, 1);
+    FX(tipX-1, tipY-1, 3, 3, P.ink); FX(tipX, tipY, 1, 1, P.sun); FX(tipX-1, tipY-1, 2, 1, P.sunHi);
     return { tipX:tipX, tipY:tipY, ang:ang };
   }
 
@@ -434,19 +434,17 @@
     if(!sonHired()) return;
     var p = sonPos(), x = p.x, y = p.y, tx = son.target ? son.target.x : aim.x, ty = son.target ? son.target.y : aim.y;
     var facing = tx >= x ? 1 : -1;
-    FX(x-5, y+2, 10, 1, P.g1);
+    groundShadow(x, y, 5);
     Sprites.draw(fx, "son", "idle", x, y, facing < 0);
-    /* a proper water gun: yellow body, green tank on top, orange muzzle, held out at chest height */
-    var gx0 = facing>0 ? x+5 : x-5, gy0 = y-8;
-    var gxl = facing>0 ? gx0 : gx0-9;
-    FX(gxl-1, gy0-1, 11, 5, P.ink);                               /* outline */
-    FX(gxl, gy0, 9, 3, P.sun); FX(gxl, gy0, 9, 1, P.sunHi);       /* body */
-    FX(facing>0 ? gxl+2 : gxl+3, gy0-4, 4, 4, P.ink); FX(facing>0 ? gxl+3 : gxl+4, gy0-3, 2, 3, P.leaf); FX(facing>0 ? gxl+3 : gxl+4, gy0-3, 2, 1, P.leafHi); /* tank */
-    FX(facing>0 ? gxl+9 : gxl-1, gy0+1, 1, 1, P.coral);           /* muzzle */
-    FX(facing>0 ? gxl+1 : gxl+6, gy0+3, 3, 3, P.ink); FX(facing>0 ? gxl+2 : gxl+7, gy0+3, 1, 2, P.sunLo); /* grip */
+    /* a little water gun in his hand: yellow body, green tank, orange muzzle, ink around it */
+    var hnd = Sprites.anchor("son", "hand", x, y, facing < 0);
+    var gxl = facing>0 ? hnd[0] : hnd[0]-4, gy0 = hnd[1] - 1;
+    FX(gxl-1, gy0-1, 7, 4, P.ink); FX(gxl, gy0, 5, 2, P.sun);                         /* body */
+    FX((facing>0 ? gxl+1 : gxl+2)-1, gy0-3, 4, 3, P.ink); FX(facing>0 ? gxl+1 : gxl+2, gy0-2, 2, 2, P.leaf);   /* tank */
+    FX(facing>0 ? gxl+5 : gxl-1, gy0, 1, 1, P.coral);                                  /* muzzle */
     if(son.flash > 0 && son.target){
       /* a thin arc of single drops, like a real water gun */
-      var sx = facing>0 ? gxl+10 : gxl-2, sy = gy0+1;
+      var sx = facing>0 ? gxl+6 : gxl-2, sy = gy0;
       var dx = tx - sx, dy = ty - sy, n = 22;
       for(var i=1;i<n;i++){ var t = i/n, arc = -Math.sin(t*Math.PI)*9; if(i%2===0) FX(sx + dx*t + (i%4===0 ? 1 : 0), sy + dy*t + arc, 1, 1, i%6===0 ? "#ffffff" : P.waterHi); }
       for(var k=0;k<5;k++){ var an = Math.random()*Math.PI*2, rr = sonRadius()*(0.4+Math.random()*0.6); FX(tx + Math.cos(an)*rr, ty + Math.sin(an)*rr, 1, 1, k&1 ? P.waterHi : "#ffffff"); }
@@ -455,7 +453,18 @@
 
   /* WashBot 3000: rides along, blasts the dirtiest spot it can find, any chemical */
   var bot = { target:null, flash:0, acc:0 };
-  function botPos(){ var h = job.def.hero, a = job.area; var side = h.x > a.x + a.w/2 ? -1 : 1; return { x: clamp(h.x + side*26, 10, CW-10), y: h.y }; }
+  /* the bot parks behind you — on the side away from the wash area — and steps past your son
+     rather than standing on him or in front of the wand */
+  function botPos(){
+    var h = job.def.hero, a = job.area, away = h.x > a.x + a.w/2 ? 1 : -1;
+    var spots = [h.x + away*16, h.x + away*30, h.x - away*16, h.x - away*30];
+    for(var i=0; i<spots.length; i++){
+      var x = spots[i]; if(x < 10 || x > CW-10) continue;
+      if(sonHired()){ var sp = sonPos(); if(Math.abs(sp.x - x) < 13 && Math.abs(sp.y - h.y) < 14) continue; }
+      return { x: x, y: h.y };
+    }
+    return { x: clamp(h.x + away*16, 10, CW-10), y: h.y };
+  }
   function botTick(dt){
     if(!state.perks.washbot) return;
     bot.acc += dt; if(bot.flash > 0) bot.flash -= dt;
@@ -473,12 +482,11 @@
   function drawBot(){
     if(!state.perks.washbot) return;
     var p = botPos(), x = p.x, y = p.y, tx = bot.target ? bot.target.x : x, ty = bot.target ? bot.target.y : y-8;
-    FX(x-6, y+1, 12, 1, P.g1);
+    groundShadow(x, y, 6);
     Sprites.draw(fx, "bot", "idle", x, y, tx < x);
-    var facing = tx >= x ? 1 : -1;
-    FX(facing>0 ? x+5 : x-8, y-8, 3, 2, P.ink); FX(facing>0 ? x+8 : x-9, y-8, 1, 2, P.sun);
+    var facing = tx >= x ? 1 : -1, noz = Sprites.anchor("bot", "hand", x, y, facing < 0);
     if(bot.flash > 0 && bot.target){
-      var sx = facing>0 ? x+9 : x-9, sy = y-7, dx = tx-sx, dy = ty-sy;
+      var sx = noz[0] + facing, sy = noz[1], dx = tx-sx, dy = ty-sy;
       for(var i=1;i<24;i++){ var t = i/24; FX(sx+dx*t, sy+dy*t + (i%2), 1, 1, i%3===0 ? "#ffffff" : P.waterHi); }
     }
   }

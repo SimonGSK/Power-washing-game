@@ -51,6 +51,24 @@ test.describe("sprites", () => {
     expect(report).toEqual([]);
   });
 
+  test("the crew are Tiny Crew sized, outlined in scene ink, and know where their hands are", async ({ page }) => {
+    const r = await page.evaluate(() => {
+      const S = window.PowerWashDebug.SPRITES, out = [];
+      for(const name of ["hero", "son", "bot"]){
+        const s = S[name];
+        if(s.h > 16) out.push(name + " is " + s.h + " px tall");
+        if(s.palette.K !== "ink") out.push(name + " outline isn't the scene ink");
+        const a = s.anchors && s.anchors.hand;
+        if(!a) { out.push(name + " has no hand"); continue; }
+        if(a[0] < 0 || a[1] < 0 || a[0] >= s.w || a[1] >= s.h) out.push(name + " hand is outside the sprite");
+        else if(s.frames.idle[a[1]][a[0]] === ".") out.push(name + " hand is on a transparent pixel");
+      }
+      if(S.son.h >= S.hero.h) out.push("the son isn't smaller than the hero");
+      return out;
+    });
+    expect(r).toEqual([]);
+  });
+
   test("the crew sprites the game needs all exist", async ({ page }) => {
     const names = await page.evaluate(() => Object.keys(window.PowerWashDebug.SPRITES));
     for(const n of ["hero", "son", "bot", "cat", "dog"]) expect(names).toContain(n);
